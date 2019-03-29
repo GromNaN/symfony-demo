@@ -143,9 +143,6 @@
     "psr/log": {
         "version": "1.0.x-dev"
     },
-    "psr/simple-cache": {
-        "version": "1.0.x-dev"
-    },
     "sensio/framework-extra-bundle": {
         "version": "5.2",
         "recipe": {
@@ -251,6 +248,9 @@
             "ref": "fe835db90cb5c745dcff7cd0d7814c475a83fda9"
         }
     },
+    "symfony/http-client": {
+        "version": "4.3-dev"
+    },
     "symfony/http-foundation": {
         "version": "4.2-dev"
     },
@@ -262,6 +262,9 @@
     },
     "symfony/intl": {
         "version": "4.2-dev"
+    },
+    "symfony/mime": {
+        "version": "4.3-dev"
     },
     "symfony/monolog-bridge": {
         "version": "4.2-dev"
@@ -290,8 +293,14 @@
     "symfony/polyfill-ctype": {
         "version": "1.9-dev"
     },
+    "symfony/polyfill-iconv": {
+        "version": "v1.11.0"
+    },
     "symfony/polyfill-intl-icu": {
         "version": "1.9-dev"
+    },
+    "symfony/polyfill-intl-idn": {
+        "version": "v1.11.0"
     },
     "symfony/polyfill-mbstring": {
         "version": "1.9-dev"
@@ -301,6 +310,9 @@
     },
     "symfony/polyfill-php72": {
         "version": "1.9-dev"
+    },
+    "symfony/polyfill-php73": {
+        "version": "1.11-dev"
     },
     "symfony/process": {
         "version": "4.2-dev"
@@ -445,8 +457,5 @@
     },
     "zendframework/zend-code": {
         "version": "3.3-dev"
-    },
-    "zendframework/zend-eventmanager": {
-        "version": "3.2.1"
     }
 }

@@ -1,0 +1,29 @@
+proxy_ads:
+    path: /humans.txt
+    controller: Symfony\Bundle\FrameworkBundle\Controller\ProxyController::proxyAction
+    methods: [GET]
+    defaults:
+        url: https://robots-txt.com/humans.txt
+        options:
+            timeout: 1
+
+badconfig:
+    path: /badconfig
+    controller: Symfony\Bundle\FrameworkBundle\Controller\ProxyController::proxyAction
+    methods: [GET]
+    defaults:
+        url: foo
+
+badssl:
+    path: /badssl
+    controller: Symfony\Bundle\FrameworkBundle\Controller\ProxyController::proxyAction
+    methods: [GET]
+    defaults:
+        url: https://wrong.host.badssl.com
+
+esi_top_news:
+    path: /esi_top_news
+    controller: Symfony\Bundle\FrameworkBundle\Controller\ProxyController::proxyAction
+    methods: [GET]
+    defaults:
+        url: https://www.programme.tv/news/_esi/topNews/
