@@ -1,29 +1,37 @@
 proxy_ads:
     path: /humans.txt
-    controller: Symfony\Bundle\FrameworkBundle\Controller\ProxyController::proxyAction
+    controller: Symfony\Bundle\FrameworkBundle\Controller\ProxyController
     methods: [GET]
     defaults:
         url: https://robots-txt.com/humans.txt
         options:
             timeout: 1
+        responseHeaders:
+            Content-Type: text/plain
 
 badconfig:
     path: /badconfig
-    controller: Symfony\Bundle\FrameworkBundle\Controller\ProxyController::proxyAction
+    controller: Symfony\Bundle\FrameworkBundle\Controller\ProxyController
     methods: [GET]
     defaults:
         url: foo
 
 badssl:
     path: /badssl
-    controller: Symfony\Bundle\FrameworkBundle\Controller\ProxyController::proxyAction
+    controller: Symfony\Bundle\FrameworkBundle\Controller\ProxyController
     methods: [GET]
     defaults:
         url: https://wrong.host.badssl.com
 
 esi_top_news:
     path: /esi_top_news
-    controller: Symfony\Bundle\FrameworkBundle\Controller\ProxyController::proxyAction
+    controller: Symfony\Bundle\FrameworkBundle\Controller\ProxyController
     methods: [GET]
     defaults:
         url: https://www.programme.tv/news/_esi/topNews/
+
+huge_file:
+    path: /file
+    controller: Symfony\Bundle\FrameworkBundle\Controller\ProxyController
+    defaults:
+        url: http://ipv6.download.thinkbroadband.com:81/50MB.zip
