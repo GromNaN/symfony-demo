@@ -35,3 +35,16 @@ services:
     # 'arguments' key and define the arguments just below the service class
     App\EventSubscriber\CommentNotificationSubscriber:
         $sender: '%app.notifications.email_sender%'
+
+    avatar.strategy:
+        class: Symfony\Component\Asset\VersionStrategy\JsonManifestVersionStrategy
+        arguments:
+            - '%kernel.project_dir%/public/build/manifest.json'
+
+    avatar.package:
+        class:  Symfony\Component\Asset\Package
+        arguments:
+            - '@avatar.strategy'
+            - '@assets.context'
+        tags:
+            - { name: assets.package, package: avatars }
