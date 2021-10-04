@@ -54,6 +54,10 @@ class PostType extends AbstractType
         // $builder->add('title', null, ['required' => false, ...]);
 
         $builder
+            ->add('id', null, [
+                'label' => 'label.id',
+                'required' => false,
+            ])
             ->add('title', null, [
                 'attr' => ['autofocus' => true],
                 'label' => 'label.title',

@@ -39,8 +39,9 @@ class Post
      * @var int
      *
      * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue(strategy="CUSTOM")
+     * @ORM\CustomIdGenerator(class="Doctrine\ORM\Id\IdentityGenerator")
+     * @ORM\Column(type="integer",options={autoincrement=true})
      */
     private $id;
 
@@ -120,6 +121,11 @@ class Post
         $this->publishedAt = new \DateTime();
         $this->comments = new ArrayCollection();
         $this->tags = new ArrayCollection();
+    }
+
+    public function setId(int $id): void
+    {
+        $this->id = $id;
     }
 
     public function getId(): ?int
