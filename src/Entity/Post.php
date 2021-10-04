@@ -40,8 +40,8 @@ class Post
      *
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class="Doctrine\ORM\Id\IdentityGenerator")
-     * @ORM\Column(type="integer",options={autoincrement=true})
+     * @ORM\CustomIdGenerator(class="App\ORM\Id\AssignableIdentityGenerator")
+     * @ORM\Column(type="integer",columnDefinition="UNSIGNED INT AUTO_INCREMENT")
      */
     private $id;
 
