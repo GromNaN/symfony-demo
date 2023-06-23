@@ -11,10 +11,10 @@
 
 namespace App\Repository;
 
-use App\Entity\Post;
-use App\Entity\Tag;
+use App\Document\Post;
+use App\Document\Tag;
 use App\Pagination\Paginator;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use function Symfony\Component\String\u;
 
@@ -24,35 +24,25 @@ use function Symfony\Component\String\u;
  *
  * See https://symfony.com/doc/current/doctrine.html#querying-for-objects-the-repository
  *
- * @author Ryan Weaver <weaverryan@gmail.com>
- * @author Javier Eguiluz <javier.eguiluz@gmail.com>
- * @author Yonel Ceruto <yonelceruto@gmail.com>
- *
  * @method Post|null findOneByTitle(string $postTitle)
  *
- * @template-extends ServiceEntityRepository<Post>
+ * @template-extends ServiceDocumentRepository<Post>
  */
-class PostRepository extends ServiceEntityRepository
+class PostRepository extends ServiceDocumentRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Post::class);
     }
 
-    public function findLatest(int $page = 1, Tag $tag = null): Paginator
+    public function findLatest(int $page = 1, string $tag = null): Paginator
     {
-        $qb = $this->createQueryBuilder('p')
-            ->addSelect('a', 't')
-            ->innerJoin('p.author', 'a')
-            ->leftJoin('p.tags', 't')
-            ->where('p.publishedAt <= :now')
-            ->orderBy('p.publishedAt', 'DESC')
-            ->setParameter('now', new \DateTime())
-        ;
+        $qb = $this->createQueryBuilder()
+            ->field('publishedAt')->lte(new \DateTimeImmutable()) // $$NOW is a MongoDB variable that returns the current date
+            ->sort('publishedAt', 'DESC');
 
         if (null !== $tag) {
-            $qb->andWhere(':tag MEMBER OF p.tags')
-                ->setParameter('tag', $tag);
+            $qb->field('tag.name')->equals($tag);
         }
 
         return (new Paginator($qb))->paginate($page);
@@ -87,6 +77,18 @@ class PostRepository extends ServiceEntityRepository
         ;
 
         return $result;
+    }
+
+    /**
+     * @return Tag[]
+     */
+    public function findAllTags(): array
+    {
+        return [];
+        $this->createAggregationBuilder()
+            ->unwind('$tags')
+            ->sortByCount('$tags');
+        // @todo aggregation distinct documents
     }
 
     /**

@@ -13,7 +13,7 @@ namespace App\EventSubscriber;
 
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\Console\Event\ConsoleErrorEvent;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -32,7 +32,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 final class CheckRequirementsSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager
+        private readonly DocumentManager $documentManager
     ) {
     }
 
@@ -93,7 +93,7 @@ final class CheckRequirementsSubscriber implements EventSubscriberInterface
      */
     private function isSQLitePlatform(): bool
     {
-        $databasePlatform = $this->entityManager->getConnection()->getDatabasePlatform();
+        $databasePlatform = $this->documentManager->getConnection()->getDatabasePlatform();
 
         return $databasePlatform instanceof SqlitePlatform;
     }

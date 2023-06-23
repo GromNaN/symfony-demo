@@ -11,12 +11,12 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Post;
-use App\Entity\User;
+use App\Document\Post;
+use App\Document\User;
 use App\Form\PostType;
 use App\Repository\PostRepository;
 use App\Security\PostVoter;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\SubmitButton;
@@ -74,7 +74,7 @@ final class BlogController extends AbstractController
     public function new(
         #[CurrentUser] User $user,
         Request $request,
-        EntityManagerInterface $entityManager,
+        DocumentManager $documentManager,
     ): Response {
         $post = new Post();
         $post->setAuthor($user);
@@ -91,8 +91,8 @@ final class BlogController extends AbstractController
         // However, we explicitly add it to improve code readability.
         // See https://symfony.com/doc/current/forms.html#processing-forms
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($post);
-            $entityManager->flush();
+            $documentManager->persist($post);
+            $documentManager->flush();
 
             // Flash messages are used to notify the user about the result of the
             // actions. They are deleted automatically from the session as soon
@@ -119,7 +119,7 @@ final class BlogController extends AbstractController
     /**
      * Finds and displays a Post entity.
      */
-    #[Route('/{id<\d+>}', name: 'admin_post_show', methods: ['GET'])]
+    #[Route('/{id<[a-f0-9]{24}>}', name: 'admin_post_show', methods: ['GET'])]
     public function show(Post $post): Response
     {
         // This security check can also be performed
@@ -134,15 +134,15 @@ final class BlogController extends AbstractController
     /**
      * Displays a form to edit an existing Post entity.
      */
-    #[Route('/{id<\d+>}/edit', name: 'admin_post_edit', methods: ['GET', 'POST'])]
+    #[Route('/{id<[a-f0-9]{24}>}/edit', name: 'admin_post_edit', methods: ['GET', 'POST'])]
     #[IsGranted('edit', subject: 'post', message: 'Posts can only be edited by their authors.')]
-    public function edit(Request $request, Post $post, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Post $post, DocumentManager $documentManager): Response
     {
         $form = $this->createForm(PostType::class, $post);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+            $documentManager->flush();
             $this->addFlash('success', 'post.updated_successfully');
 
             return $this->redirectToRoute('admin_post_edit', ['id' => $post->getId()]);
@@ -159,7 +159,7 @@ final class BlogController extends AbstractController
      */
     #[Route('/{id}/delete', name: 'admin_post_delete', methods: ['POST'])]
     #[IsGranted('delete', subject: 'post')]
-    public function delete(Request $request, Post $post, EntityManagerInterface $entityManager): Response
+    public function delete(Request $request, Post $post, DocumentManager $documentManager): Response
     {
         /** @var string|null $token */
         $token = $request->request->get('token');
@@ -173,8 +173,8 @@ final class BlogController extends AbstractController
         // because foreign key support is not enabled by default in SQLite
         $post->getTags()->clear();
 
-        $entityManager->remove($post);
-        $entityManager->flush();
+        $documentManager->remove($post);
+        $documentManager->flush();
 
         $this->addFlash('success', 'post.deleted_successfully');
 

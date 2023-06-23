@@ -11,14 +11,14 @@
 
 namespace App\Controller;
 
-use App\Entity\Comment;
-use App\Entity\Post;
-use App\Entity\User;
+use App\Document\Comment;
+use App\Document\Post;
+use App\Document\User;
 use App\Event\CommentCreatedEvent;
 use App\Form\CommentType;
 use App\Repository\PostRepository;
 use App\Repository\TagRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -48,12 +48,9 @@ final class BlogController extends AbstractController
     #[Route('/rss.xml', name: 'blog_rss', defaults: ['page' => '1', '_format' => 'xml'], methods: ['GET'])]
     #[Route('/page/{page<[1-9]\d{0,8}>}', name: 'blog_index_paginated', defaults: ['_format' => 'html'], methods: ['GET'])]
     #[Cache(smaxage: 10)]
-    public function index(Request $request, int $page, string $_format, PostRepository $posts, TagRepository $tags): Response
+    public function index(Request $request, int $page, string $_format, PostRepository $posts): Response
     {
-        $tag = null;
-        if ($request->query->has('tag')) {
-            $tag = $tags->findOneBy(['name' => $request->query->get('tag')]);
-        }
+        $tag = $request->query->getString('tag');
         $latestPosts = $posts->findLatest($page, $tag);
 
         // Every template name also has two extensions that specify the format and
@@ -61,7 +58,7 @@ final class BlogController extends AbstractController
         // See https://symfony.com/doc/current/templates.html#template-naming
         return $this->render('blog/index.'.$_format.'.twig', [
             'paginator' => $latestPosts,
-            'tagName' => $tag?->getName(),
+            'tagName' => $tag,
         ]);
     }
 
@@ -105,7 +102,7 @@ final class BlogController extends AbstractController
         Request $request,
         #[MapEntity(mapping: ['postSlug' => 'slug'])] Post $post,
         EventDispatcherInterface $eventDispatcher,
-        EntityManagerInterface $entityManager,
+        DocumentManager $documentManager,
     ): Response {
         $comment = new Comment();
         $comment->setAuthor($user);
@@ -115,8 +112,8 @@ final class BlogController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($comment);
-            $entityManager->flush();
+            $documentManager->persist($comment);
+            $documentManager->flush();
 
             // When an event is dispatched, Symfony notifies it to all the listeners
             // and subscribers registered to it. Listeners can modify the information

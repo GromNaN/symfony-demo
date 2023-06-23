@@ -11,7 +11,7 @@
 
 namespace App\Twig\Components;
 
-use App\Entity\Post;
+use App\Document\Post;
 use App\Repository\PostRepository;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;

@@ -11,10 +11,10 @@
 
 namespace App\Command;
 
-use App\Entity\User;
+use App\Document\User;
 use App\Repository\UserRepository;
 use App\Utils\Validator;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
@@ -56,7 +56,7 @@ final class AddUserCommand extends Command
     private SymfonyStyle $io;
 
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
+        private readonly DocumentManager $documentManager,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly Validator $validator,
         private readonly UserRepository $users
@@ -192,8 +192,8 @@ final class AddUserCommand extends Command
         $hashedPassword = $this->passwordHasher->hashPassword($user, $plainPassword);
         $user->setPassword($hashedPassword);
 
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
+        $this->documentManager->persist($user);
+        $this->documentManager->flush();
 
         $this->io->success(sprintf('%s was successfully created: %s (%s)', $isAdmin ? 'Administrator user' : 'User', $user->getUsername(), $user->getEmail()));
 

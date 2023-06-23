@@ -11,10 +11,10 @@
 
 namespace App\Controller;
 
-use App\Entity\User;
+use App\Document\User;
 use App\Form\ChangePasswordType;
 use App\Form\UserType;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,13 +38,13 @@ final class UserController extends AbstractController
     public function edit(
         #[CurrentUser] User $user,
         Request $request,
-        EntityManagerInterface $entityManager,
+        DocumentManager $documentManager,
     ): Response {
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+            $documentManager->flush();
 
             $this->addFlash('success', 'user.updated_successfully');
 
@@ -61,14 +61,14 @@ final class UserController extends AbstractController
     public function changePassword(
         #[CurrentUser] User $user,
         Request $request,
-        EntityManagerInterface $entityManager,
+        DocumentManager $documentManager,
         LogoutUrlGenerator $logoutUrlGenerator,
     ): Response {
         $form = $this->createForm(ChangePasswordType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+            $documentManager->flush();
 
             return $this->redirect($logoutUrlGenerator->getLogoutPath());
         }

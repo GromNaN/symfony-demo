@@ -9,46 +9,31 @@
  * file that was distributed with this source code.
  */
 
-namespace App\Entity;
+namespace App\Document;
 
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
+use Doctrine\ODM\MongoDB\Types\Type;
 use Symfony\Component\Validator\Constraints as Assert;
 use function Symfony\Component\String\u;
 
 /**
- * Defines the properties of the Comment entity to represent the blog comments.
- * See https://symfony.com/doc/current/doctrine.html#creating-an-entity-class.
- *
- * Tip: if you have an existing database, you can generate these entity class automatically.
- * See https://symfony.com/doc/current/doctrine/reverse_engineering.html
- *
- * @author Ryan Weaver <weaverryan@gmail.com>
- * @author Javier Eguiluz <javier.eguiluz@gmail.com>
+ * Defines the properties of the Comment document to represent the blog comments.
  */
-#[ORM\Entity]
-#[ORM\Table(name: 'symfony_demo_comment')]
+#[ODM\Document]
 class Comment
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(type: Types::INTEGER)]
-    private ?int $id = null;
+    #[ODM\Id]
+    private ?string $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'comments')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Post $post = null;
-
-    #[ORM\Column(type: Types::TEXT)]
+    #[ODM\Field(type: Type::STRING)]
     #[Assert\NotBlank(message: 'comment.blank')]
     #[Assert\Length(min: 5, minMessage: 'comment.too_short', max: 10000, maxMessage: 'comment.too_long')]
     private ?string $content = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ODM\Field(type: Type::DATE)]
     private \DateTime $publishedAt;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ODM\EmbedOne(nullable: false, targetDocument: User::class)]
     private ?User $author = null;
 
     public function __construct()
@@ -64,7 +49,7 @@ class Comment
         return !$containsInvalidCharacters;
     }
 
-    public function getId(): ?int
+    public function getId(): ?string
     {
         return $this->id;
     }
