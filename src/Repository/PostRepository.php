@@ -42,7 +42,7 @@ class PostRepository extends ServiceDocumentRepository
             ->sort('publishedAt', 'DESC');
 
         if ($tag) {
-            $qb->field('tag.name')->equals($tag);
+            $qb->field('tags.name')->equals($tag);
         }
 
         return (new Paginator($qb))->paginate($page);
@@ -53,28 +53,16 @@ class PostRepository extends ServiceDocumentRepository
      */
     public function findBySearchQuery(string $query, int $limit = Paginator::PAGE_SIZE): array
     {
-        $searchTerms = $this->extractSearchTerms($query);
-
-        if (0 === \count($searchTerms)) {
+        if (!$query) {
             return [];
         }
 
-        $queryBuilder = $this->createQueryBuilder('p');
-
-        foreach ($searchTerms as $key => $term) {
-            $queryBuilder
-                ->orWhere('p.title LIKE :t_'.$key)
-                ->setParameter('t_'.$key, '%'.$term.'%')
-            ;
-        }
-
         /** @var Post[] $result */
-        $result = $queryBuilder
-            ->orderBy('p.publishedAt', 'DESC')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult()
-        ;
+        $result = $this->findBy(
+            ['$text' => ['$search' => $query]],
+            ['publishedAt' => -1],
+            $limit
+        );
 
         return $result;
     }
@@ -89,21 +77,5 @@ class PostRepository extends ServiceDocumentRepository
             ->unwind('$tags')
             ->sortByCount('$tags');
         // @todo aggregation distinct documents
-    }
-
-    /**
-     * Transforms the search string into an array of search terms.
-     *
-     * @return string[]
-     */
-    private function extractSearchTerms(string $searchQuery): array
-    {
-        $searchQuery = u($searchQuery)->replaceMatches('/[[:space:]]+/', ' ')->trim();
-        $terms = array_unique($searchQuery->split(' '));
-
-        // ignore the search terms that are too short
-        return array_filter($terms, static function ($term) {
-            return 2 <= $term->length();
-        });
     }
 }
