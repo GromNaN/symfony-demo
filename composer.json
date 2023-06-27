@@ -15,6 +15,7 @@
     "require": {
         "php": ">=8.1",
         "ext-mongodb": "*",
+        "doctrine/data-fixtures": "^1.6",
         "doctrine/mongodb-odm-bundle": "^4.5",
         "league/commonmark": "^2.1",
         "symfony/apache-pack": "^1.0",

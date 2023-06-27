@@ -35,13 +35,13 @@ class PostRepository extends ServiceDocumentRepository
         parent::__construct($registry, Post::class);
     }
 
-    public function findLatest(int $page = 1, string $tag = null): Paginator
+    public function findLatest(int $page = 1, ?string $tag = null): Paginator
     {
         $qb = $this->createQueryBuilder()
             ->field('publishedAt')->lte(new \DateTimeImmutable()) // $$NOW is a MongoDB variable that returns the current date
             ->sort('publishedAt', 'DESC');
 
-        if (null !== $tag) {
+        if ($tag) {
             $qb->field('tag.name')->equals($tag);
         }
 

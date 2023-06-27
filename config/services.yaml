@@ -27,7 +27,7 @@ services:
         resource: '../src/'
         exclude:
             - '../src/DependencyInjection/'
-            - '../src/Entity/'
+            - '../src/Document/'
             - '../src/Kernel.php'
 
     # when the service definition only contains arguments, you can omit the
@@ -40,3 +40,7 @@ services:
     # Enable autowiring for MongoDB ODM Repositories
     # This is incompatible with Doctrine ORM which also declare this alias
     Doctrine\Persistence\ManagerRegistry: '@doctrine_mongodb'
+
+    # Necessary to resolve the documents in controller arguments
+    Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver:
+        tags: ['controller.argument_value_resolver']

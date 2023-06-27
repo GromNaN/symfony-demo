@@ -33,7 +33,7 @@ class Comment
     #[ODM\Field(type: Type::DATE)]
     private \DateTime $publishedAt;
 
-    #[ODM\EmbedOne(nullable: false, targetDocument: User::class)]
+    #[ODM\ReferenceOne(nullable: false, targetDocument: User::class)]
     private ?User $author = null;
 
     public function __construct()

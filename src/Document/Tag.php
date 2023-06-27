@@ -20,7 +20,9 @@ use Doctrine\ODM\MongoDB\Types\Type;
 class Tag implements \JsonSerializable
 {
     #[ODM\Field(type: Type::STRING)]
-    #[ODM\UniqueIndex(keys: ['name' => 'asc'], options: ['unique' => true])]
+    // With embedded documents, we don't need the unique index because the data
+    // is duplicated in each document
+    //#[ODM\UniqueIndex(keys: ['name' => 'asc'], options: ['unique' => true])]
     private readonly string $name;
 
     public function __construct(string $name)
