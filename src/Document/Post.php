@@ -145,6 +145,7 @@ class Post
 
     public function addComment(Comment $comment): void
     {
+        $comment->setPost($this);
         if (!$this->comments->contains($comment)) {
             $this->comments->add($comment);
         }

@@ -68,14 +68,18 @@ class PostRepository extends ServiceDocumentRepository
     }
 
     /**
-     * @return Tag[]
+     * @return string[]
      */
     public function findAllTags(): array
     {
-        return [];
-        $this->createAggregationBuilder()
+        $result = $this->createAggregationBuilder()
             ->unwind('$tags')
-            ->sortByCount('$tags');
-        // @todo aggregation distinct documents
+            ->sortByCount('$tags.name')
+            ->project()->includeFields(['_id'])
+            ->getAggregation()
+            ->getIterator()
+            ->toArray();
+
+        return array_column($result, '_id');
     }
 }
