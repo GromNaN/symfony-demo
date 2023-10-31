@@ -8,7 +8,7 @@ framework:
     # Enables session support. Note that the session will ONLY be started if you read or write from it.
     # Remove or comment this section to explicitly disable session support.
     session:
-        handler_id: null
+        handler_id: session.handler.mongodb
         cookie_secure: auto
         cookie_samesite: lax
         storage_factory_id: session.storage.factory.native
@@ -33,3 +33,12 @@ when@test:
         test: true
         session:
             storage_factory_id: session.storage.factory.mock_file
+
+services:
+    session.handler.mongodb:
+        class: Symfony\Component\HttpFoundation\Session\Storage\Handler\MongoDbSessionHandler
+        arguments:
+            $mongo: '@doctrine_mongodb.odm.default_connection'
+            $options:
+                database: '%env(MONGODB_DB)%'
+                collection: 'sessions'
