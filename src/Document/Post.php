@@ -26,6 +26,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 #[ODM\Document(repositoryClass: PostRepository::class)]
 #[ODM\UniqueIndex(keys: ['slug' => 1], options: ['unique' => true])]
+#[ODM\Index(['order' => 'desc', 'tags.name' => 'asc'])]
 #[Unique(fields: ['slug'], message: 'post.slug_unique', errorPath: 'title')]
 class Post
 {
