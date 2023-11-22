@@ -16,9 +16,14 @@ use App\Entity\Post;
 use App\Entity\User;
 use App\Event\CommentCreatedEvent;
 use App\Form\CommentType;
+use App\MongoDB\Document\Tag;
+use App\MongoDB\Pagination\Paginator;
+use App\MongoDB\Repository;
+use App\Repository\BlogPostRepository;
 use App\Repository\PostRepository;
 use App\Repository\TagRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use MongoDB\Client;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -48,20 +53,61 @@ final class BlogController extends AbstractController
     #[Route('/rss.xml', name: 'blog_rss', defaults: ['page' => '1', '_format' => 'xml'], methods: ['GET'])]
     #[Route('/page/{page<[1-9]\d{0,8}>}', name: 'blog_index_paginated', defaults: ['_format' => 'html'], methods: ['GET'])]
     #[Cache(smaxage: 10)]
-    public function index(Request $request, int $page, string $_format, PostRepository $posts, TagRepository $tags): Response
+    public function index(Request $request, int $page, string $_format, Repository $repository): Response
     {
         $tag = null;
         if ($request->query->has('tag')) {
-            $tag = $tags->findOneBy(['name' => $request->query->get('tag')]);
+            $tag = $repository->findOne(Tag::class, ['name' => $request->query->get('tag')]);
         }
-        $latestPosts = $posts->findLatest($page, $tag);
+        $results = $repository->findMany(\App\MongoDB\Document\Post::class,
+            [
+                ...(null !== $tag ? ['tags.$id' => $tag->id] : [])
+            ],
+            [
+                'sort' => ['publishedAt' => -1],
+                'skip' => ($page - 1) * 10,
+                'limit' => 10,
+            ]
+        );
+
+        $results = $repository->aggregate(\App\MongoDB\Document\Post::class, [
+            ['$match' => ['tags.$id' => ['eq' => $tag->id]]],
+            ['$sort' => ['publishedAt' => -1]],
+            ['$skip' => ($page - 1) * 10],
+            ['$limit' => 10],
+            // Many-to-many relation
+            ['$lookup' => [
+                'from' => 'tags',
+                'localField' => 'tags.$id',
+                'foreignField' => '_id',
+                'as' => 'tags',
+            ]],
+            // Many-to-One relation
+            ['$lookup' => [
+                'from' => 'users',
+                'localField' => 'author.$id',
+                'foreignField' => '_id',
+                'as' => 'author',
+            ]],
+            ['$addFields' => [
+                'author' => ['$first' => '$author'],
+            ]]
+        ]);
+
+        $latestPosts = new Paginator(
+            $results,
+            $page,
+            $repository->getCollection(\App\MongoDB\Document\Post::class)->countDocuments([
+                ...(null !== $tag ? ['tags.$id' => $tag->id] : [])
+            ]),
+        );
 
         // Every template name also has two extensions that specify the format and
         // engine for that template.
         // See https://symfony.com/doc/current/templates.html#template-naming
         return $this->render('blog/index.'.$_format.'.twig', [
             'paginator' => $latestPosts,
-            'tagName' => $tag?->getName(),
+            'tagName' => $tag?->name,
         ]);
     }
 
