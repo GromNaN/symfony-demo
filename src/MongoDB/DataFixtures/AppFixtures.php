@@ -44,9 +44,10 @@ final class AppFixtures implements FixtureInterface
                 $fullname,
                 $username,
                 $email,
-                $password,
+                null,
                 $roles
             );
+            $user->password = $this->passwordHasher->hashPassword($user, $password);
 
             $repository->insert($user);
             $this->addReference($username, $user);

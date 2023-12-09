@@ -71,7 +71,7 @@ final class BlogController extends AbstractController
         );
 
         $results = $repository->aggregate(\App\MongoDB\Document\Post::class, [
-            ['$match' => ['tags.$id' => ['eq' => $tag->id]]],
+            ['$match' => $tag ? ['tags.$id' => ['eq' => $tag->id]] : new \stdClass()],
             ['$sort' => ['publishedAt' => -1]],
             ['$skip' => ($page - 1) * 10],
             ['$limit' => 10],
