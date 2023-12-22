@@ -32,7 +32,7 @@ final class Paginator
     private int $numResults;
 
     /**
-     * @var \Traversable<int, object>
+     * @var \Traversable<array-key, object>
      */
     private \Traversable $results;
 

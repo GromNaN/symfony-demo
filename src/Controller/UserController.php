@@ -16,12 +16,12 @@ use App\Form\ChangePasswordType;
 use App\Form\UserType;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Security\Http\Logout\LogoutUrlGenerator;
 
 /**
  * Controller used to manage current user. The #[CurrentUser] attribute
@@ -48,7 +48,7 @@ final class UserController extends AbstractController
 
             $this->addFlash('success', 'user.updated_successfully');
 
-            return $this->redirectToRoute('user_edit');
+            return $this->redirectToRoute('user_edit', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('user/edit.html.twig', [
@@ -62,7 +62,7 @@ final class UserController extends AbstractController
         #[CurrentUser] User $user,
         Request $request,
         DocumentManager $documentManager,
-        LogoutUrlGenerator $logoutUrlGenerator,
+        Security $security,
     ): Response {
         $form = $this->createForm(ChangePasswordType::class, $user);
         $form->handleRequest($request);
@@ -70,7 +70,9 @@ final class UserController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $documentManager->flush();
 
-            return $this->redirect($logoutUrlGenerator->getLogoutPath());
+            // The logout method applies an automatic protection against CSRF attacks;
+            // it's explicitly disabled here because the form already has a CSRF token validated.
+            return $security->logout(validateCsrfToken: false) ?? $this->redirectToRoute('homepage');
         }
 
         return $this->render('user/change_password.html.twig', [

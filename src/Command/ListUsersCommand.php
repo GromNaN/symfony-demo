@@ -20,6 +20,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
@@ -47,6 +48,7 @@ final class ListUsersCommand extends Command
 {
     public function __construct(
         private readonly MailerInterface $mailer,
+        #[Autowire('%app.notifications.email_sender%')]
         private readonly string $emailSender,
         private readonly UserRepository $users
     ) {
@@ -91,7 +93,7 @@ final class ListUsersCommand extends Command
         // Use ->findBy() instead of ->findAll() to allow result sorting and limiting
         $allUsers = $this->users->findBy([], ['id' => 'DESC'], $maxResults);
 
-        $createUserArray = static function (User $user) {
+        $createUserArray = static function (User $user): array {
             return [
                 $user->getId(),
                 $user->getFullName(),

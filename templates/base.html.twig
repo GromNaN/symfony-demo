@@ -8,6 +8,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <meta name="view-transition" content="same-origin" />
         <title>{% block title %}Symfony Demo application{% endblock %}</title>
         <link rel="alternate" type="application/rss+xml" title="{{ 'rss.title'|trans }}" href="{{ path('blog_rss') }}">
 
@@ -15,14 +16,11 @@
             Those two blocks defines frontend entrypoint for CSS and JavaScript assets
             See https://symfony.com/doc/current/frontend.html
         #}
-        {% block stylesheets %}
-            {{ encore_entry_link_tags('app') }}
-        {% endblock %}
+        {% block stylesheets %}{% endblock %}
         {% block javascripts %}
-            {{ encore_entry_script_tags('app') }}
+            {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
-
-        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+        <link rel="shortcut icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     </head>
 
     <body id="{% block body_id %}{% endblock %}">
@@ -80,48 +78,14 @@
                                 {% endif %}
 
                                 <li class="nav-item dropdown">
-                                    <a href="#" class="nav-link dropdown-toggle" data-toggle="modal" data-target="#locale-selector-modal" role="button" id="locales">
-                                        <i class="fa fa-solid fa-globe" aria-hidden="true"></i>
-                                        <span class="caret"></span>
-                                        <span class="sr-only">{{ 'menu.choose_language'|trans }}</span>
-                                    </a>
+                                    {% from 'default/_language_selector.html.twig' import render_language_selector %}
+                                    {{ render_language_selector() }}
                                 </li>
                             </ul>
                         </div>
                     </div>
                 </nav>
             </header>
-
-            <div id="locale-selector-modal" class="modal" tabindex="-1" aria-hidden="true">
-                <div class="modal-lg modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <p class="modal-title" lang="en">
-                                {# display this title always in English to make the language selector easier to use #}
-                                Choose your language
-                            </p>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-
-                        <div class="modal-body">
-                            <ul class="locales">
-                                {% for locale in locales() %}
-                                    {% set is_active = app.request.locale == locale.code %}
-                                    {% set is_rtl = locale.code in ['ar', 'fa', 'he'] %}
-                                    <li class="{{ is_active ? 'active' }} {{ is_rtl ? 'rtl' }}" translate="no">
-                                        <a class="stretched-link" lang="{{ locale.code }}" hreflang="{{ locale.code }}" href="{{ path(app.request.get('_route', 'blog_index'), app.request.get('_route_params', [])|merge({_locale: locale.code})) }}">
-                                            {{ locale.name|capitalize }}
-                                            <small>{{ locale.code }}</small>
-                                        </a>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
         {% endblock %}
 
         <div class="container body-container">
@@ -156,14 +120,11 @@
                         </div>
                         <div id="footer-resources" class="col-md-6">
                             <p>
-                                <a href="https://twitter.com/symfony" title="Symfony Twitter">
-                                    <i class="fa fa-twitter" aria-hidden="true"></i>
+                                <a rel="noopener noreferrer" target="_blank" href="https://twitter.com/symfony" title="Symfony on X (formerly Twitter)">
+                                    <i class="fa-brands fa-x-twitter" aria-hidden="true"></i>
                                 </a>
-                                <a href="https://www.facebook.com/SensioLabs" title="SensioLabs Facebook">
-                                    <i class="fa fa-facebook" aria-hidden="true"></i>
-                                </a>
-                                <a href="https://symfony.com/blog/" title="Symfony Blog">
-                                    <i class="fa fa-rss" aria-hidden="true"></i>
+                                <a target="_blank" href="https://symfony.com/blog/" title="Symfony Blog">
+                                    <i class="fa-solid fa-rss" aria-hidden="true"></i>
                                 </a>
                             </p>
                         </div>
