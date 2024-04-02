@@ -22,7 +22,8 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\SubmitButton;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -41,6 +42,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted(User::ROLE_ADMIN)]
 final class BlogController extends AbstractController
 {
+    private const MONGODB_OBJECTID = '[0-9a-f]{24}';
+
     /**
      * Lists all Post entities.
      *
@@ -118,7 +121,7 @@ final class BlogController extends AbstractController
     /**
      * Finds and displays a Post entity.
      */
-    #[Route('/{id<[a-f0-9]{24}>}', name: 'admin_post_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'admin_post_show', requirements: ['id' => self::MONGODB_OBJECTID], methods: ['GET'])]
     public function show(Post $post): Response
     {
         // This security check can also be performed
@@ -133,7 +136,7 @@ final class BlogController extends AbstractController
     /**
      * Displays a form to edit an existing Post entity.
      */
-    #[Route('/{id<[a-f0-9]{24}>}/edit', name: 'admin_post_edit', methods: ['GET', 'POST'])]
+    #[Route('/{id}/edit', name: 'admin_post_edit', requirements: ['id' => self::MONGODB_OBJECTID], methods: ['GET', 'POST'])]
     #[IsGranted('edit', subject: 'post', message: 'Posts can only be edited by their authors.')]
     public function edit(Request $request, Post $post, DocumentManager $documentManager): Response
     {
@@ -156,12 +159,12 @@ final class BlogController extends AbstractController
     /**
      * Deletes a Post entity.
      */
-    #[Route('/{id}/delete', name: 'admin_post_delete', methods: ['POST'])]
+    #[Route('/{id}/delete', name: 'admin_post_delete', requirements: ['id' => self::MONGODB_OBJECTID], methods: ['POST'])]
     #[IsGranted('delete', subject: 'post')]
     public function delete(Request $request, Post $post, DocumentManager $documentManager): Response
     {
         /** @var string|null $token */
-        $token = $request->request->get('token');
+        $token = $request->getPayload()->get('token');
 
         if (!$this->isCsrfTokenValid('delete', $token)) {
             return $this->redirectToRoute('admin_post_index', [], Response::HTTP_SEE_OTHER);

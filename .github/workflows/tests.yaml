@@ -26,14 +26,15 @@ jobs:
                 operating-system: ['ubuntu-latest']
                 php-version: ['8.2', '8.3']
                 include:
-                    - operating-system: 'macos-latest'
+                    # TODO: change this to 'macos-latest' on June 2024, when '14' will become 'latest'
+                    - operating-system: 'macos-14'
                       php-version: '8.2'
                     - operating-system: 'windows-latest'
                       php-version: '8.2'
 
         steps:
             - name: "Checkout code"
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: "Install PHP with extensions"
               uses: shivammathur/setup-php@v2
@@ -52,7 +53,7 @@ jobs:
               shell: bash
 
             - name: "Cache composer"
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               with:
                   path: ${{ steps.composer-cache.outputs.dir }}
                   key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
@@ -61,8 +62,11 @@ jobs:
             - name: "Install dependencies"
               run: composer install --ansi --no-interaction --no-progress
 
-            - name: "Build Sass"
-              run: php bin/console sass:build
+            - name: "Build and compile assets"
+              run: |
+                php bin/console importmap:install
+                php bin/console sass:build
+                php bin/console asset-map:compile
 
             - name: "Install PHPUnit"
               run: vendor/bin/simple-phpunit install
