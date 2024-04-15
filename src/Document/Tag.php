@@ -9,38 +9,25 @@
  * file that was distributed with this source code.
  */
 
-namespace App\Entity;
+namespace App\Document;
 
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
-
+use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
+use Doctrine\ODM\MongoDB\Types\Type;
 /**
- * Defines the properties of the Tag entity to represent the post tags.
- *
- * See https://symfony.com/doc/current/doctrine.html#creating-an-entity-class
- *
- * @author Yonel Ceruto <yonelceruto@gmail.com>
+ * Defines the properties of the Tag document to represent the post tags.
  */
-#[ORM\Entity]
-#[ORM\Table(name: 'symfony_demo_tag')]
+#[ODM\EmbeddedDocument]
 class Tag implements \JsonSerializable
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(type: Types::INTEGER)]
-    private ?int $id = null;
-
-    #[ORM\Column(type: Types::STRING, unique: true)]
+    #[ODM\Field(type: Type::STRING)]
+    // With embedded documents, we don't need the unique index because the data
+    // is duplicated in each document
+    //#[ODM\UniqueIndex(keys: ['name' => 'asc'], options: ['unique' => true])]
     private readonly string $name;
 
     public function __construct(string $name)
     {
         $this->name = $name;
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getName(): string

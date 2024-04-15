@@ -6,10 +6,14 @@ framework:
     http_method_override: false
     handle_all_throwables: true
 
+    # this defines the codes of the locales (languages) available in the application
+    # https://symfony.com/doc/current/reference/configuration/framework.html#enabled-locales
+    enabled_locales: ['ar', 'bg', 'bn', 'bs', 'ca', 'cs', 'de', 'en', 'es', 'eu', 'fr', 'hr', 'id', 'it', 'ja', 'lt', 'ne', 'nl', 'pl', 'pt_BR', 'ro', 'ru', 'sl', 'sq', 'sr_Cyrl', 'sr_Latn', 'tr', 'uk', 'vi', 'zh_CN']
+
     # Enables session support. Note that the session will ONLY be started if you read or write from it.
     # Remove or comment this section to explicitly disable session support.
     session:
-        handler_id: null
+        handler_id: session.handler.mongodb
         cookie_secure: auto
         cookie_samesite: lax
 
@@ -33,3 +37,12 @@ when@test:
         test: true
         session:
             storage_factory_id: session.storage.factory.mock_file
+
+services:
+    session.handler.mongodb:
+        class: Symfony\Component\HttpFoundation\Session\Storage\Handler\MongoDbSessionHandler
+        arguments:
+            $mongo: '@doctrine_mongodb.odm.default_connection'
+            $options:
+                database: '%env(MONGODB_DB)%'
+                collection: 'sessions'

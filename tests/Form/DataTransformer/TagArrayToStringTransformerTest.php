@@ -11,7 +11,7 @@
 
 namespace App\Tests\Form\DataTransformer;
 
-use App\Entity\Tag;
+use App\Document\Tag;
 use App\Form\DataTransformer\TagArrayToStringTransformer;
 use App\Repository\TagRepository;
 use PHPUnit\Framework\TestCase;

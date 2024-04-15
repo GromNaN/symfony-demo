@@ -9,27 +9,19 @@
  * file that was distributed with this source code.
  */
 
-namespace App\Entity;
+namespace App\Document;
 
 use App\Repository\UserRepository;
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
+use Doctrine\ODM\MongoDB\Types\Type;
 
 /**
- * Defines the properties of the User entity to represent the application users.
- * See https://symfony.com/doc/current/doctrine.html#creating-an-entity-class.
- *
- * Tip: if you have an existing database, you can generate these entity class automatically.
- * See https://symfony.com/doc/current/doctrine/reverse_engineering.html
- *
- * @author Ryan Weaver <weaverryan@gmail.com>
- * @author Javier Eguiluz <javier.eguiluz@gmail.com>
+ * Defines the properties of the User document to represent the application users.
  */
-#[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(name: 'symfony_demo_user')]
+#[ODM\Document(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     // We can use constants for roles to find usages all over the application rather
@@ -38,34 +30,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     final public const ROLE_USER = 'ROLE_USER';
     final public const ROLE_ADMIN = 'ROLE_ADMIN';
 
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(type: Types::INTEGER)]
-    private ?int $id = null;
+    #[ODM\Id]
+    private ?string $id = null;
 
-    #[ORM\Column(type: Types::STRING)]
+    #[ODM\Field(type: Type::STRING)]
     #[Assert\NotBlank]
     private ?string $fullName = null;
 
-    #[ORM\Column(type: Types::STRING, unique: true)]
+    #[ODM\Field(type: Type::STRING)]
+    #[ODM\UniqueIndex]
     #[Assert\NotBlank]
     #[Assert\Length(min: 2, max: 50)]
     private ?string $username = null;
 
-    #[ORM\Column(type: Types::STRING, unique: true)]
+    #[ODM\Field(type: Type::STRING)]
+    #[ODM\UniqueIndex]
     #[Assert\Email]
     private ?string $email = null;
 
-    #[ORM\Column(type: Types::STRING)]
+    #[ODM\Field(type: Type::STRING)]
     private ?string $password = null;
 
     /**
      * @var string[]
      */
-    #[ORM\Column(type: Types::JSON)]
+    #[ODM\Field(type: Type::COLLECTION, strategy: 'set')]
     private array $roles = [];
 
-    public function getId(): ?int
+    public function getId(): ?string
     {
         return $this->id;
     }

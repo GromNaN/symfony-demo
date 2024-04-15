@@ -11,7 +11,7 @@
 
 namespace App\Tests\Controller;
 
-use App\Entity\User;
+use App\Document\User;
 use App\Pagination\Paginator;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;

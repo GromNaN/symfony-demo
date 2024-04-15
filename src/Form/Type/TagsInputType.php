@@ -12,7 +12,7 @@
 namespace App\Form\Type;
 
 use App\Form\DataTransformer\TagArrayToStringTransformer;
-use App\Repository\TagRepository;
+use App\Repository\PostRepository;
 use Symfony\Bridge\Doctrine\Form\DataTransformer\CollectionToArrayTransformer;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -31,7 +31,7 @@ use Symfony\Component\Form\FormView;
 final class TagsInputType extends AbstractType
 {
     public function __construct(
-        private readonly TagRepository $tags
+        private readonly PostRepository $postRepository
     ) {
     }
 
@@ -43,13 +43,13 @@ final class TagsInputType extends AbstractType
             // but here we're doing the transformation in two steps (Collection <-> array <-> string)
             // and reuse the existing CollectionToArrayTransformer.
             ->addModelTransformer(new CollectionToArrayTransformer(), true)
-            ->addModelTransformer(new TagArrayToStringTransformer($this->tags), true)
+            ->addModelTransformer(new TagArrayToStringTransformer(), true)
         ;
     }
 
     public function buildView(FormView $view, FormInterface $form, array $options): void
     {
-        $view->vars['tags'] = $this->tags->findAll();
+        $view->vars['tags'] = $this->postRepository->findAllTags();
     }
 
     public function getParent(): ?string

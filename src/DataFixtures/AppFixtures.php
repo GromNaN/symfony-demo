@@ -11,11 +11,11 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Comment;
-use App\Entity\Post;
-use App\Entity\Tag;
-use App\Entity\User;
-use Doctrine\Bundle\FixturesBundle\Fixture;
+use App\Document\Comment;
+use App\Document\Post;
+use App\Document\Tag;
+use App\Document\User;
+use Doctrine\Bundle\MongoDBBundle\Fixture\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\String\AbstractUnicodeString;
@@ -88,6 +88,7 @@ final class AppFixtures extends Fixture
                 $comment->setPublishedAt(new \DateTime('now + '.$i.'seconds'));
 
                 $post->addComment($comment);
+                $manager->persist($comment);
             }
 
             $manager->persist($post);

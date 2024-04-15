@@ -11,7 +11,7 @@
 
 namespace App\Tests\Controller\Admin;
 
-use App\Entity\User;
+use App\Document\User;
 use App\Repository\PostRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -110,7 +110,7 @@ class BlogControllerTest extends WebTestCase
         /** @var PostRepository $postRepository */
         $postRepository = static::getContainer()->get(PostRepository::class);
 
-        /** @var \App\Entity\Post $post */
+        /** @var \App\Document\Post $post */
         $post = $postRepository->findOneByTitle($postTitle);
 
         $this->assertNotNull($post);
@@ -166,7 +166,7 @@ class BlogControllerTest extends WebTestCase
         /** @var PostRepository $postRepository */
         $postRepository = static::getContainer()->get(PostRepository::class);
 
-        /** @var \App\Entity\Post $post */
+        /** @var \App\Document\Post $post */
         $post = $postRepository->find(1);
 
         $this->assertSame($newBlogPostTitle, $post->getTitle());
