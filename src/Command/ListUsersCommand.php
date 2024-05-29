@@ -13,6 +13,8 @@ namespace App\Command;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
+use League\Flysystem\Filesystem;
+use League\Flysystem\FilesystemOperator;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -50,7 +52,8 @@ final class ListUsersCommand extends Command
         private readonly MailerInterface $mailer,
         #[Autowire('%app.notifications.email_sender%')]
         private readonly string $emailSender,
-        private readonly UserRepository $users
+        private readonly UserRepository $users,
+        private FilesystemOperator $defaultStorage,
     ) {
         parent::__construct();
     }
@@ -87,6 +90,8 @@ final class ListUsersCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->defaultStorage->write('date.txt', date(DATE_ATOM));
+
         /** @var int|null $maxResults */
         $maxResults = $input->getOption('max-results');
 

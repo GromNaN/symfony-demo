@@ -15,6 +15,7 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Utils\Validator;
 use Doctrine\ORM\EntityManagerInterface;
+use League\Flysystem\FilesystemOperator;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -51,7 +52,8 @@ final class DeleteUserCommand extends Command
         private readonly EntityManagerInterface $entityManager,
         private readonly Validator $validator,
         private readonly UserRepository $users,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private FilesystemOperator $defaultStorage,
     ) {
         parent::__construct();
     }

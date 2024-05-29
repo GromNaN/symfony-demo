@@ -1,0 +1,24 @@
+# Read the documentation at https://github.com/thephpleague/flysystem-bundle/blob/master/docs/1-getting-started.md
+services:
+    #mongodb_client:
+    #    class: 'MongoDB\Client'
+    #    arguments:
+    #        - '%env(MONGODB_URI)%'
+
+    #mongodb_database:
+    #    class: 'MongoDB\Database'
+    #    factory: ['@doctrine_mongodb.odm.default_connection', 'selectDatabase']
+    #    arguments: ['%env(MONGODB_DATABASE)%']
+
+    #mongodb_gridfs_bucket:
+    #    class: 'MongoDB\GridFS\Bucket'
+    #    factory: ['@mongodb_database', 'selectGridFSBucket']
+
+flysystem:
+    storages:
+        default.storage:
+            adapter: 'gridfs'
+            options:
+                #bucket: 'mongodb_gridfs_bucket'
+                mongodb_uri: '%env(MONGODB_URI)%'
+                database: '%env(MONGODB_DB)%'
