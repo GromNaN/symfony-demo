@@ -19,7 +19,29 @@ services:
       # - ./docker/db/data:/var/lib/postgresql/data:rw
 ###< doctrine/doctrine-bundle ###
 
+###> doctrine/mongodb-odm-bundle ###
+  mongodb:
+    # In production, you may want to use a managed database service
+    image: mongodb/mongodb-community-server:latest
+    # Or switch to the Atlas Local image to use Atlas Search and other cloud features
+    # image: mongodb/mongodb-atlas-local:latest
+    environment:
+      - MONGODB_INITDB_DATABASE=${MONGODB_DB}
+      - MONGODB_INITDB_ROOT_USERNAME=${MONGODB_USERNAME:-}
+      # You should definitely set a password in production
+      - MONGODB_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD:-}
+    volumes:
+      - mongodb_data:/data/db:rw
+      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
+      # - ./docker/mongodb/data:/data/db:rw
+    ports:
+      - '27017:27017'
+###< doctrine/mongodb-odm-bundle ###
+
 volumes:
 ###> doctrine/doctrine-bundle ###
   database_data:
 ###< doctrine/doctrine-bundle ###
+###> doctrine/mongodb-odm-bundle ###
+  mongodb_data:
+###< doctrine/mongodb-odm-bundle ###
