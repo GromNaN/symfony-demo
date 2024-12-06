@@ -19,6 +19,9 @@ class Product
     #[Assert\NotBlank]
     public string $name;
 
+    #[ODM\Field]
+    public string $bulk;
+
     #[ODM\ReferenceMany(targetDocument: Offer::class, mappedBy: 'product', cascade: ['persist'], storeAs: 'id')]
     public Collection $offers;
 

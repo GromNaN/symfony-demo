@@ -7,22 +7,24 @@
         "php": ">=8.2",
         "ext-ctype": "*",
         "ext-iconv": "*",
-        "api-platform/doctrine-odm": "^4.0",
-        "api-platform/doctrine-orm": "^4.0",
-        "api-platform/symfony": "^4.0",
-        "doctrine/dbal": "^3",
-        "doctrine/doctrine-bundle": "^2.13",
-        "doctrine/doctrine-migrations-bundle": "^3.3",
-        "doctrine/mongodb-odm-bundle": "^5.1",
-        "doctrine/orm": "^3.3",
+        "ext-mongodb": "*",
+        "api-platform/doctrine-odm": "^4.0.14",
+        "api-platform/doctrine-orm": "^4.0.14",
+        "api-platform/symfony": "^4.0.14",
+        "doctrine/dbal": "^3.9.3",
+        "doctrine/doctrine-bundle": "^2.13.1",
+        "doctrine/doctrine-migrations-bundle": "^3.3.1",
+        "doctrine/mongodb-odm-bundle": "^5.1.2",
+        "doctrine/orm": "^3.3.1",
         "nelmio/cors-bundle": "^2.5",
-        "phpdocumentor/reflection-docblock": "^5.6",
+        "phpdocumentor/reflection-docblock": "^5.6.1",
         "phpstan/phpdoc-parser": "^2.0",
+        "runtime/frankenphp-symfony": "^0.2.0",
         "symfony/asset": "7.2.*",
         "symfony/console": "7.2.*",
         "symfony/dotenv": "7.2.*",
         "symfony/expression-language": "7.2.*",
-        "symfony/flex": "^2",
+        "symfony/flex": "^2.4.7",
         "symfony/framework-bundle": "7.2.*",
         "symfony/property-access": "7.2.*",
         "symfony/property-info": "7.2.*",
@@ -82,5 +84,8 @@
             "allow-contrib": false,
             "require": "7.2.*"
         }
+    },
+    "require-dev": {
+        "symfony/maker-bundle": "^1.61"
     }
 }
