@@ -131,20 +131,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * Returns the salt that was originally used to encode the password.
-     *
-     * {@inheritdoc}
-     */
-    public function getSalt(): ?string
-    {
-        // We're using bcrypt in security.yaml to encode the password, so
-        // the salt value is built-in and you don't have to generate one
-        // See https://en.wikipedia.org/wiki/Bcrypt
-
-        return null;
-    }
-
-    /**
      * Removes sensitive data from the user.
      *
      * {@inheritdoc}
@@ -160,7 +146,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function __serialize(): array
     {
-        // add $this->salt too if you don't use Bcrypt or Argon2i
         return [$this->id, $this->username, $this->password];
     }
 
@@ -169,7 +154,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function __unserialize(array $data): void
     {
-        // add $this->salt too if you don't use Bcrypt or Argon2i
         [$this->id, $this->username, $this->password] = $data;
     }
 }

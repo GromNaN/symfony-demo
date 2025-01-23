@@ -51,7 +51,7 @@ final class DeleteUserCommand extends Command
         private readonly DocumentManager $documentManager,
         private readonly Validator $validator,
         private readonly UserRepository $users,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
         parent::__construct();
     }
@@ -83,7 +83,10 @@ final class DeleteUserCommand extends Command
 
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        if (null !== $input->getArgument('username')) {
+        /** @var string|null $username */
+        $username = $input->getArgument('username');
+
+        if (null !== $username) {
             return;
         }
 
@@ -112,7 +115,7 @@ final class DeleteUserCommand extends Command
         $user = $this->users->findOneByUsername($username);
 
         if (null === $user) {
-            throw new RuntimeException(sprintf('User with username "%s" not found.', $username));
+            throw new RuntimeException(\sprintf('User with username "%s" not found.', $username));
         }
 
         // After an entity has been removed, its in-memory state is the same
@@ -126,7 +129,7 @@ final class DeleteUserCommand extends Command
         $userUsername = $user->getUsername();
         $userEmail = $user->getEmail();
 
-        $this->io->success(sprintf('User "%s" (ID: %s, email: %s) was successfully deleted.', $userUsername, $userId, $userEmail));
+        $this->io->success(\sprintf('User "%s" (ID: %s, email: %s) was successfully deleted.', $userUsername, $userId, $userEmail));
 
         // Logging is helpful and important to keep a trace of what happened in the software runtime flow.
         // See https://symfony.com/doc/current/logging.html

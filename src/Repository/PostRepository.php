@@ -68,6 +68,8 @@ class PostRepository extends ServiceDocumentRepository
     }
 
     /**
+     * Transforms the search string into an array of search terms.
+     *
      * @return string[]
      */
     public function findAllTags(): array

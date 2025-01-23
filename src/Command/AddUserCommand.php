@@ -59,7 +59,7 @@ final class AddUserCommand extends Command
         private readonly DocumentManager $documentManager,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly Validator $validator,
-        private readonly UserRepository $users
+        private readonly UserRepository $users,
     ) {
         parent::__construct();
     }
@@ -102,7 +102,16 @@ final class AddUserCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        if (null !== $input->getArgument('username') && null !== $input->getArgument('password') && null !== $input->getArgument('email') && null !== $input->getArgument('full-name')) {
+        /** @var string|null $username */
+        $username = $input->getArgument('username');
+        /** @var string|null $password */
+        $password = $input->getArgument('password');
+        /** @var string|null $email */
+        $email = $input->getArgument('email');
+        /** @var string|null $fullName */
+        $fullName = $input->getArgument('full-name');
+
+        if (null !== $username && null !== $password && null !== $email && null !== $fullName) {
             return;
         }
 
@@ -117,7 +126,6 @@ final class AddUserCommand extends Command
         ]);
 
         // Ask for the username if it's not defined
-        $username = $input->getArgument('username');
         if (null !== $username) {
             $this->io->text(' > <info>Username</info>: '.$username);
         } else {
@@ -126,9 +134,6 @@ final class AddUserCommand extends Command
         }
 
         // Ask for the password if it's not defined
-        /** @var string|null $password */
-        $password = $input->getArgument('password');
-
         if (null !== $password) {
             $this->io->text(' > <info>Password</info>: '.u('*')->repeat(u($password)->length()));
         } else {
@@ -137,8 +142,6 @@ final class AddUserCommand extends Command
         }
 
         // Ask for the email if it's not defined
-        $email = $input->getArgument('email');
-
         if (null !== $email) {
             $this->io->text(' > <info>Email</info>: '.$email);
         } else {
@@ -147,8 +150,6 @@ final class AddUserCommand extends Command
         }
 
         // Ask for the full name if it's not defined
-        $fullName = $input->getArgument('full-name');
-
         if (null !== $fullName) {
             $this->io->text(' > <info>Full Name</info>: '.$fullName);
         } else {
@@ -197,12 +198,12 @@ final class AddUserCommand extends Command
         $this->documentManager->persist($user);
         $this->documentManager->flush();
 
-        $this->io->success(sprintf('%s was successfully created: %s (%s)', $isAdmin ? 'Administrator user' : 'User', $user->getUsername(), $user->getEmail()));
+        $this->io->success(\sprintf('%s was successfully created: %s (%s)', $isAdmin ? 'Administrator user' : 'User', $user->getUsername(), $user->getEmail()));
 
         $event = $stopwatch->stop('add-user-command');
 
         if ($output->isVerbose()) {
-            $this->io->comment(sprintf('New user database id: %d / Elapsed time: %.2f ms / Consumed memory: %.2f MB', $user->getId(), $event->getDuration(), $event->getMemory() / (1024 ** 2)));
+            $this->io->comment(\sprintf('New user database id: %d / Elapsed time: %.2f ms / Consumed memory: %.2f MB', $user->getId(), $event->getDuration(), $event->getMemory() / (1024 ** 2)));
         }
 
         return Command::SUCCESS;
@@ -214,7 +215,7 @@ final class AddUserCommand extends Command
         $existingUser = $this->users->findOneBy(['username' => $username]);
 
         if (null !== $existingUser) {
-            throw new RuntimeException(sprintf('There is already a user registered with the "%s" username.', $username));
+            throw new RuntimeException(\sprintf('There is already a user registered with the "%s" username.', $username));
         }
 
         // validate password and email if is not this input means interactive.
@@ -226,7 +227,7 @@ final class AddUserCommand extends Command
         $existingEmail = $this->users->findOneBy(['email' => $email]);
 
         if (null !== $existingEmail) {
-            throw new RuntimeException(sprintf('There is already a user registered with the "%s" email.', $email));
+            throw new RuntimeException(\sprintf('There is already a user registered with the "%s" email.', $email));
         }
     }
 

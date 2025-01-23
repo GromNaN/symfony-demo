@@ -166,7 +166,7 @@ class BlogControllerTest extends WebTestCase
         /** @var PostRepository $postRepository */
         $postRepository = static::getContainer()->get(PostRepository::class);
 
-        /** @var \App\Document\Post $post */
+        /** @var \App\Entity\Post $post */
         $post = $postRepository->find(1);
 
         $this->assertSame($newBlogPostTitle, $post->getTitle());
