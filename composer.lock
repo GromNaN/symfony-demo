@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4d6f63b1e80151bfaa991b5319190862",
+    "content-hash": "b44e35997acb37a265ae8cd5b71e5a8a",
     "packages": [
         {
             "name": "api-platform/doctrine-common",
@@ -556,16 +556,16 @@
         },
         {
             "name": "api-platform/metadata",
-            "version": "v4.0.16",
+            "version": "v4.1.0-beta.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/metadata.git",
-                "reference": "64676272f0b5ed41bde6844e7129f8e7e9862bd4"
+                "reference": "1c2f490296afefa04866ddf66934e568cc9f2000"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/metadata/zipball/64676272f0b5ed41bde6844e7129f8e7e9862bd4",
-                "reference": "64676272f0b5ed41bde6844e7129f8e7e9862bd4",
+                "url": "https://api.github.com/repos/api-platform/metadata/zipball/1c2f490296afefa04866ddf66934e568cc9f2000",
+                "reference": "1c2f490296afefa04866ddf66934e568cc9f2000",
                 "shasum": ""
             },
             "require": {
@@ -646,22 +646,22 @@
                 "swagger"
             ],
             "support": {
-                "source": "https://github.com/api-platform/metadata/tree/v4.0.16"
+                "source": "https://github.com/api-platform/metadata/tree/v4.1.0-beta.1"
             },
-            "time": "2025-01-10T14:24:27+00:00"
+            "time": "2025-01-27T16:16:57+00:00"
         },
         {
             "name": "api-platform/openapi",
-            "version": "v4.0.16",
+            "version": "v4.1.0-beta.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/openapi.git",
-                "reference": "3145c45ad6e668e20beff2653c1f245296c33d1c"
+                "reference": "6297e8a3df81ea2ac0354f2c7de5bce1fe1cc215"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/openapi/zipball/3145c45ad6e668e20beff2653c1f245296c33d1c",
-                "reference": "3145c45ad6e668e20beff2653c1f245296c33d1c",
+                "url": "https://api.github.com/repos/api-platform/openapi/zipball/6297e8a3df81ea2ac0354f2c7de5bce1fe1cc215",
+                "reference": "6297e8a3df81ea2ac0354f2c7de5bce1fe1cc215",
                 "shasum": ""
             },
             "require": {
@@ -731,9 +731,9 @@
                 "swagger"
             ],
             "support": {
-                "source": "https://github.com/api-platform/openapi/tree/v4.0.16"
+                "source": "https://github.com/api-platform/openapi/tree/v4.1.0-beta.1"
             },
-            "time": "2025-01-09T14:23:11+00:00"
+            "time": "2025-01-27T16:16:57+00:00"
         },
         {
             "name": "api-platform/serializer",
@@ -1040,16 +1040,16 @@
         },
         {
             "name": "api-platform/validator",
-            "version": "v4.0.16",
+            "version": "v4.1.0-beta.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/validator.git",
-                "reference": "095b76546a16c3826441d93f63458b441fefffcb"
+                "reference": "659947a910ba6ef8731586bf19479d8a8436d5f2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/validator/zipball/095b76546a16c3826441d93f63458b441fefffcb",
-                "reference": "095b76546a16c3826441d93f63458b441fefffcb",
+                "url": "https://api.github.com/repos/api-platform/validator/zipball/659947a910ba6ef8731586bf19479d8a8436d5f2",
+                "reference": "659947a910ba6ef8731586bf19479d8a8436d5f2",
                 "shasum": ""
             },
             "require": {
@@ -1107,9 +1107,9 @@
                 "validator"
             ],
             "support": {
-                "source": "https://github.com/api-platform/validator/tree/v4.1.0-alpha.1"
+                "source": "https://github.com/api-platform/validator/tree/v4.1.0-beta.1"
             },
-            "time": "2024-11-04T14:21:40+00:00"
+            "time": "2025-01-27T16:16:57+00:00"
         },
         {
             "name": "doctrine/cache",
@@ -7265,7 +7265,10 @@
     "stability-flags": {
         "api-platform/doctrine-common": 20,
         "api-platform/doctrine-odm": 20,
-        "api-platform/symfony": 20
+        "api-platform/metadata": 20,
+        "api-platform/openapi": 20,
+        "api-platform/symfony": 20,
+        "api-platform/validator": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,
@@ -7275,6 +7278,6 @@
         "ext-iconv": "*",
         "ext-mongodb": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }
