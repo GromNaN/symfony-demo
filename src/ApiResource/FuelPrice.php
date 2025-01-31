@@ -4,7 +4,7 @@ namespace App\ApiResource;
 
 class FuelPrice
 {
-    public readonly int $id;
+    public int $id;
 
     /** Fuel name */
     public string $name;

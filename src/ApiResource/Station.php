@@ -3,11 +3,12 @@
 namespace App\ApiResource;
 
 use ApiPlatform\Metadata\ApiResource;
+use App\State\StationStateProvider;
 
-#[ApiResource]
+#[ApiResource(provider: StationStateProvider::class)]
 class Station
 {
-    public readonly int $id;
+    public int $id;
 
     /** Address of the Gas station */
     public Address $address;

@@ -2,6 +2,7 @@
 
 namespace App\Tests\Storage;
 
+use App\ApiResource\Station;
 use App\Storage\CsvStore;
 use PHPUnit\Framework\TestCase;
 
@@ -13,8 +14,8 @@ class CsvStoreTest extends TestCase
         $store = $this->getStore();
         $result = $store->find(27120002);
 
-        $this->assertNotNull($result);
-        $this->assertEquals($id, $result['id']);
+        self::assertInstanceOf(Station::class, $result);
+        self::assertEquals($id, $result->id);
     }
 
     public function testAll()
@@ -25,8 +26,8 @@ class CsvStoreTest extends TestCase
 
         $result = iterator_to_array($result);
 
-        $this->assertCount(2, $result);
-        $this->assertArrayHasKey('id', $result[0]);
+        self::assertCount(2, $result);
+        self::assertInstanceOf(Station::class, $result[0]);
     }
 
     private function getStore(): CsvStore
