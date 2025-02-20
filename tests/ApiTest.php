@@ -59,6 +59,10 @@ class ApiTest extends ApiTestCase
                 'content' => 'New post content',
                 'publishedAt' => '2017-08-01T00:00:00Z',
                 'author' => '/api/users/1',
+                'tags' => [
+                    ['name' => 'tag1'],
+                    ['name' => 'tag2'],
+                ],
             ],
         ]);
         self::assertResponseIsSuccessful();
@@ -69,6 +73,7 @@ class ApiTest extends ApiTestCase
             'content' => 'New post content',
             'publishedAt' => '2017-08-01T00:00:00+00:00',
             'author' => '/api/users/1',
+            'tags' => ['tag1', 'tag2'],
         ]);
         $id = $client->getResponse()->toArray()['id'];
 
@@ -90,6 +95,10 @@ class ApiTest extends ApiTestCase
                 'title' => 'Updated post',
                 'slug' => 'updated-post',
                 'author' => '/api/users/2',
+                'tags' => [
+                    ['name' => 'tag2'],
+                    ['name' => 'tag3'],
+                ],
             ],
         ]);
         self::assertResponseIsSuccessful();
@@ -101,6 +110,7 @@ class ApiTest extends ApiTestCase
             'content' => 'New post content',
             'publishedAt' => '2017-08-01T00:00:00+00:00',
             'author' => '/api/users/2',
+            'tags' => ['tag2', 'tag3'],
         ]);
 
         $client->request('DELETE', "/api/posts/$id");
