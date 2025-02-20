@@ -32,6 +32,6 @@ class CsvStoreTest extends TestCase
 
     private function getStore(): CsvStore
     {
-        return new CsvStore(__DIR__ . '/../../data/prix-des-carburants-en-france-flux-instantane-v2.csv');
+        return new CsvStore(__DIR__.'/../../data/prix-des-carburants-en-france-flux-instantane-v2.csv');
     }
 }

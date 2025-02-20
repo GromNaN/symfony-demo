@@ -2,7 +2,6 @@
 
 namespace App\UsingBsonEncode;
 
-
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Operation;
@@ -13,7 +12,6 @@ use MongoDB\BSON\ObjectId;
 use MongoDB\Bundle\Attribute\AutowireCollection;
 use MongoDB\Collection;
 
-
 /**
  * @implements ProviderInterface<Plane>
  * @implements ProcessorInterface<Plane>
@@ -23,8 +21,7 @@ class State implements ProcessorInterface, ProviderInterface
     public function __construct(
         #[AutowireCollection(collection: 'planes')]
         private Collection $collection,
-    )
-    {
+    ) {
     }
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
@@ -43,7 +40,7 @@ class State implements ProcessorInterface, ProviderInterface
     {
         if ($operation instanceof CollectionOperationInterface) {
             $cursor = $this->collection->aggregate([
-                ['$match' => new \stdClass],
+                ['$match' => new \stdClass()],
             ]);
             $cursor->setTypeMap(['root' => Plane::class]);
 

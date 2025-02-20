@@ -2,7 +2,6 @@
 
 namespace Functional;
 
-
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 
 class StationApiTest extends ApiTestCase

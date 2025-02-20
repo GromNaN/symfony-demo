@@ -10,11 +10,11 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 class CsvStore
 {
     private array $headers;
+
     public function __construct(
         #[Autowire('%kernel.project_dir%/%env(CSV_FILE)%')]
         private string $path,
-    )
-    {
+    ) {
         $file = fopen($this->path, 'rb');
         $headers = fgetcsv($file, null, ';', escape: '');
         fclose($file);
@@ -28,9 +28,9 @@ class CsvStore
         $file = fopen($this->path, 'rb');
         fgets($file);
 
-        while(!feof($file)) {
+        while (!feof($file)) {
             $data = fgetcsv($file, null, ';', escape: '');
-            if ($data === false) {
+            if (false === $data) {
                 continue;
             }
 
@@ -46,18 +46,18 @@ class CsvStore
     public function all(int $limit = 20, int $offset = 0): \Generator
     {
         // Ignore the first line, it contains the headers
-        $offset++;
+        ++$offset;
 
         $file = fopen($this->path, 'rb');
 
         // Moves the file pointer after $offet lines
-        while($offset-- > 0 && !feof($file)) {
+        while ($offset-- > 0 && !feof($file)) {
             fgets($file);
         }
 
-        while($limit-- > 0 && !feof($file)) {
+        while ($limit-- > 0 && !feof($file)) {
             $data = fgetcsv($file, null, ';', escape: '');
-            if ($data === false) {
+            if (false === $data) {
                 continue;
             }
 
@@ -75,14 +75,13 @@ class CsvStore
             }
         }
 
-
         $object = new Station();
         $object->id = $data['id'];
         $object->services = $data['services'] ? (array) $data['services']['service'] : [];
         $object->address = new Address();
         $object->address->address = $data['Adresse'];
         $object->address->city = $data['Ville'];
-        $object->address->postCode = $data['Code postal'];;
+        $object->address->postCode = $data['Code postal'];
         $object->prices = [];
 
         foreach ($data['prix'] as $values) {
