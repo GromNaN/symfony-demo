@@ -19,6 +19,10 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
+        api:
+            pattern: ^/api/
+            security: false
+
         main:
             # this firewall does not have a 'pattern' option because it applies to all URLs
             lazy: true

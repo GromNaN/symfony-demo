@@ -11,6 +11,11 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\BooleanFilter;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\PostRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -34,6 +39,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 #[ORM\Table(name: 'symfony_demo_post')]
 #[UniqueEntity(fields: ['slug'], errorPath: 'title', message: 'post.slug_unique')]
+#[ApiResource]
+#[ApiFilter(DateFilter::class, properties: ['publishedAt'])]
+#[ApiFilter(SearchFilter::class, properties: ['title' => 'ipartial', 'summary' => 'ipartial'])]
 class Post
 {
     #[ORM\Id]
@@ -59,6 +67,7 @@ class Post
     private ?string $content = null;
 
     #[ORM\Column]
+    #[ApiFilter(BooleanFilter::class)]
     private \DateTimeImmutable $publishedAt;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
