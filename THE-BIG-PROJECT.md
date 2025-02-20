@@ -46,3 +46,16 @@ https://github.com/symfony/symfony/pull/51741
 https://www.youtube.com/watch?v=IVJjADhU7WM&list=PL3hoUDjLa7eQ4jnGymiYRBmmOBz_skNmM&index=3
 
 
+Provider/Processor
+https://youtu.be/aSZPIiqe3cg?si=O-5M2FtQmRZAG7G3&t=928
+
+
+webrpc database
+
+
+A parte: utilisation de registerAttributeForAutoconfiguration (JsonEncode, ApiResource)
+même si ce n'est pas des services, on peut utiliser la détection automatique pour les injecter dans un service.
+
+
+Using automapper.
+

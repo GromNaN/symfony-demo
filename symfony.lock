@@ -26,6 +26,18 @@
             "src/Document/.gitignore"
         ]
     },
+    "mongodb/symfony-bundle": {
+        "version": "0.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "0.1",
+            "ref": "117afa1e88497f721fd84a9e83dccca616b3029a"
+        },
+        "files": [
+            "config/packages/mongodb.yaml"
+        ]
+    },
     "nelmio/cors-bundle": {
         "version": "2.5",
         "recipe": {
