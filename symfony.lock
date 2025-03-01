@@ -50,6 +50,9 @@
             "migrations/.gitignore"
         ]
     },
+    "gromnan/workos-symfony": {
+        "version": "dev-main"
+    },
     "phpstan/phpstan": {
         "version": "1.12",
         "recipe": {

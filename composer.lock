@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "04ced2ef7ae5ade373d9ae5cee448e3c",
+    "content-hash": "13ff8042f366db613930ee24a553bef1",
     "packages": [
         {
             "name": "composer/semver",
@@ -1437,6 +1437,57 @@
                 }
             ],
             "time": "2024-12-27T00:36:43+00:00"
+        },
+        {
+            "name": "gromnan/workos-symfony",
+            "version": "1.x-dev",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:GromNaN/workos-symfony.git",
+                "reference": "a156ddfa4189545459f904fd6460beba1a72fbc2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/GromNaN/workos-symfony/zipball/a156ddfa4189545459f904fd6460beba1a72fbc2",
+                "reference": "a156ddfa4189545459f904fd6460beba1a72fbc2",
+                "shasum": ""
+            },
+            "require": {
+                "symfony/http-kernel": "^6.4|^7",
+                "symfony/security-bundle": "^6.4|^7",
+                "workos/workos-php": "^4.20"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.70",
+                "phpunit/phpunit": "^12.0"
+            },
+            "default-branch": true,
+            "type": "symfony-bundle",
+            "autoload": {
+                "psr-4": {
+                    "GromNaN\\WorkOS\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "GromNaN\\WorkOS\\Tests": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jérôme Tamarelle",
+                    "email": "jerome@tamarelle.net"
+                }
+            ],
+            "description": "Symfony Bundle for WorkOS authentication",
+            "support": {
+                "source": "https://github.com/GromNaN/workos-symfony/tree/1.x",
+                "issues": "https://github.com/GromNaN/workos-symfony/issues"
+            },
+            "time": "2025-02-24T23:40:01+00:00"
         },
         {
             "name": "league/commonmark",
@@ -8174,6 +8225,52 @@
                 }
             ],
             "time": "2025-02-13T08:34:43+00:00"
+        },
+        {
+            "name": "workos/workos-php",
+            "version": "v4.20.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/workos/workos-php.git",
+                "reference": "17bb8408033892cb3c0cc9e5e3fe833aeb32eec1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/workos/workos-php/zipball/17bb8408033892cb3c0cc9e5e3fe833aeb32eec1",
+                "reference": "17bb8408033892cb3c0cc9e5e3fe833aeb32eec1",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "php": ">=7.3.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^2.15|^3.6",
+                "phpunit/phpunit": "^10"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "WorkOS\\": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "WorkOS",
+                    "email": "eng@workos.com"
+                }
+            ],
+            "description": "WorkOS PHP Library",
+            "homepage": "https://workos.com",
+            "support": {
+                "issues": "https://github.com/workos/workos-php/issues",
+                "source": "https://github.com/workos/workos-php/tree/v4.20.0"
+            },
+            "time": "2025-02-21T20:33:48+00:00"
         }
     ],
     "packages-dev": [
@@ -9255,14 +9352,16 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "gromnan/workos-symfony": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": ">=8.2",
         "ext-pdo_sqlite": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "platform-overrides": {
         "php": "8.2.0"
     },

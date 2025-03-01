@@ -5,6 +5,9 @@
     "description": "Symfony Demo Application",
     "minimum-stability": "dev",
     "prefer-stable": true,
+    "repositories": [
+        { "type": "github", "url": "https://github.com/GromNaN/workos-symfony" }
+    ],
     "replace": {
         "symfony/polyfill-php72": "*",
         "symfony/polyfill-php73": "*",
@@ -14,6 +17,7 @@
         "symfony/polyfill-php82": "*"
     },
     "require": {
+        "gromnan/workos-symfony": "^1@dev",
         "php": ">=8.2",
         "ext-pdo_sqlite": "*",
         "doctrine/dbal": "^4.0",
