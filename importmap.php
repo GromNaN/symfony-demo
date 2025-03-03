@@ -20,30 +20,33 @@ return [
         'path' => './assets/admin.js',
         'entrypoint' => true,
     ],
+    '@symfony/stimulus-bundle' => [
+        'path' => './vendor/symfony/stimulus-bundle/assets/dist/loader.js',
+    ],
+    '@symfony/ux-live-component' => [
+        'path' => './vendor/symfony/ux-live-component/assets/dist/live_controller.js',
+    ],
     '@hotwired/stimulus' => [
         'version' => '3.2.2',
     ],
     'bootstrap/js/dist/alert' => [
-        'version' => '4.6.2',
+        'version' => '5.3.3',
     ],
     'bootstrap/dist/css/bootstrap.min.css' => [
-        'version' => '4.6.2',
+        'version' => '5.3.3',
         'type' => 'css',
     ],
     'jquery' => [
         'version' => '3.7.1',
     ],
     'highlight.js/lib/core' => [
-        'version' => '11.9.0',
+        'version' => '11.11.1',
     ],
     'highlight.js/lib/languages/php' => [
-        'version' => '11.9.0',
+        'version' => '11.11.1',
     ],
     'highlight.js/lib/languages/twig' => [
-        'version' => '11.9.0',
-    ],
-    '@symfony/stimulus-bundle' => [
-        'path' => './vendor/symfony/stimulus-bundle/assets/dist/loader.js',
+        'version' => '11.11.1',
     ],
     'flatpickr' => [
         'version' => '4.6.13',
@@ -56,19 +59,19 @@ return [
         'type' => 'css',
     ],
     'bootstrap/js/dist/collapse' => [
-        'version' => '4.6.2',
+        'version' => '5.3.3',
     ],
     'bootstrap/js/dist/dropdown' => [
-        'version' => '4.6.2',
+        'version' => '5.3.3',
     ],
     'bootstrap/js/dist/tab' => [
-        'version' => '4.6.2',
+        'version' => '5.3.3',
     ],
     'bootstrap/js/dist/modal' => [
-        'version' => '4.6.2',
+        'version' => '5.3.3',
     ],
     'highlight.js/styles/github-dark-dimmed.css' => [
-        'version' => '11.9.0',
+        'version' => '11.11.1',
         'type' => 'css',
     ],
     'lato-font/css/lato-font.css' => [
@@ -88,21 +91,87 @@ return [
         'version' => '4.1.1',
     ],
     'es6-promise' => [
-        'version' => '3.3.1',
+        'version' => '4.2.8',
     ],
     'storage2' => [
         'version' => '0.1.2',
     ],
     'superagent' => [
-        'version' => '3.8.3',
+        'version' => '10.1.1',
     ],
     'component-emitter' => [
-        'version' => '1.3.1',
+        'version' => '2.0.0',
     ],
     'bootstrap-tagsinput' => [
         'version' => '0.7.1',
     ],
-    '@symfony/ux-live-component' => [
-        'path' => './vendor/symfony/ux-live-component/assets/dist/live_controller.js',
+    '@popperjs/core' => [
+        'version' => '2.11.8',
+    ],
+    'fast-safe-stringify' => [
+        'version' => '2.1.1',
+    ],
+    'qs' => [
+        'version' => '6.13.0',
+    ],
+    'side-channel' => [
+        'version' => '1.0.6',
+    ],
+    'get-intrinsic' => [
+        'version' => '1.2.4',
+    ],
+    'call-bind/callBound' => [
+        'version' => '1.0.7',
+    ],
+    'object-inspect' => [
+        'version' => '1.13.1',
+    ],
+    'es-errors/type' => [
+        'version' => '1.3.0',
+    ],
+    'es-errors' => [
+        'version' => '1.3.0',
+    ],
+    'es-errors/eval' => [
+        'version' => '1.3.0',
+    ],
+    'es-errors/range' => [
+        'version' => '1.3.0',
+    ],
+    'es-errors/ref' => [
+        'version' => '1.3.0',
+    ],
+    'es-errors/syntax' => [
+        'version' => '1.3.0',
+    ],
+    'es-errors/uri' => [
+        'version' => '1.3.0',
+    ],
+    'has-symbols' => [
+        'version' => '1.0.3',
+    ],
+    'has-proto' => [
+        'version' => '1.0.1',
+    ],
+    'function-bind' => [
+        'version' => '1.1.2',
+    ],
+    'hasown' => [
+        'version' => '2.0.0',
+    ],
+    'set-function-length' => [
+        'version' => '1.2.1',
+    ],
+    'es-define-property' => [
+        'version' => '1.0.0',
+    ],
+    'define-data-property' => [
+        'version' => '1.1.2',
+    ],
+    'has-property-descriptors' => [
+        'version' => '1.0.1',
+    ],
+    'gopd' => [
+        'version' => '1.0.1',
     ],
 ];

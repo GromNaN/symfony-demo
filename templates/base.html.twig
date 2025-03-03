@@ -4,7 +4,7 @@
    See https://symfony.com/doc/current/templates.html#template-inheritance-and-layouts
 #}
 <!DOCTYPE html>
-<html lang="{{ app.request.locale }}">
+<html lang="{{ app.locale }}">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -26,7 +26,7 @@
     <body id="{% block body_id %}{% endblock %}">
 
         {% block header %}
-            {% set _route = app.request.get('_route') %}
+            {% set _route = app.current_route %}
             <header>
                 <nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-primary">
                     <div class="container">
@@ -102,7 +102,7 @@
                             {{ render_esi(controller('Symfony\\Bundle\\FrameworkBundle\\Controller\\TemplateController::templateAction', {
                                 'template': 'blog/about.html.twig',
                                 'sharedAge': 600,
-                                '_locale': app.request.locale
+                                '_locale': app.locale
                             })) }}
                         {% endblock %}
                     </div>
