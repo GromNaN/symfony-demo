@@ -59,3 +59,10 @@ même si ce n'est pas des services, on peut utiliser la détection automatique p
 
 Using automapper.
 
+
+
+More advanced patch syntax
+https://datatracker.ietf.org/doc/html/rfc6902 JavaScript Object Notation (JSON) Patch
+https://github.com/mrcranky/rfc6902-mongodb Helper module for converting JSON Patch documents into MongoDB update calls 
+
+
