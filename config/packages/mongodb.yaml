@@ -1,0 +1,5 @@
+mongodb:
+    clients:
+        default:
+            uri: '%env(MONGODB_URI)%'
+            default_database: '%env(MONGODB_DB)%'

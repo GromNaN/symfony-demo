@@ -18,8 +18,8 @@ class Post
     #[ODM\Field]
     public string $title;
 
-    //#[ODM\Field]
-    //public string $body;
+    // #[ODM\Field]
+    // public string $body;
 
     #[ODM\Field(type: 'date')]
     public \DateTimeInterface $date;

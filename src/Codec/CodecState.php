@@ -1,6 +1,6 @@
 <?php
 
-namespace App\UsingBsonEncode;
+namespace App\Codec;
 
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Delete;
@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use ApiPlatform\State\ProviderInterface;
+use App\UsingBsonEncode\Plane;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Bundle\Attribute\AutowireCollection;
 use MongoDB\Collection;
@@ -18,18 +19,18 @@ use MongoDB\Collection;
  * @implements ProviderInterface<Plane>
  * @implements ProcessorInterface<Plane>
  */
-class State implements ProcessorInterface, ProviderInterface
+class CodecState implements ProcessorInterface, ProviderInterface
 {
     public function __construct(
-        #[AutowireCollection(collection: 'planes')]
+        // The collection must be configured with the codec
+        #[AutowireCollection(collection: 'planes', codec: PlaneCodec::class)]
         private Collection $collection,
     ) {
-        $this->collection = $collection->withOptions(['typeMap' => ['root' => Plane::class]]);
     }
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        if (!$data instanceof Plane) {
+        if (!$data instanceof CodecPlane) {
             return;
         }
 
@@ -53,7 +54,6 @@ class State implements ProcessorInterface, ProviderInterface
             $cursor = $this->collection->aggregate([
                 ['$match' => new \stdClass()],
             ]);
-            //$cursor->setTypeMap(['root' => Plane::class]);
 
             return $cursor->toArray();
         }
@@ -70,7 +70,6 @@ class State implements ProcessorInterface, ProviderInterface
                 ['$match' => ['_id' => $objectId]], // @todo match the request ID
                 ['$limit' => 1],
             ]);
-            //$cursor->setTypeMap(['root' => Plane::class]);
 
             return $cursor->toArray()[0] ?? null;
         }

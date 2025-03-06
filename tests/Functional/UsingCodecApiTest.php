@@ -10,10 +10,9 @@ use MongoDB\BSON\UTCDateTime;
 use MongoDB\Client;
 use MongoDB\Collection;
 
-class UsingBsonEncodeApiTest extends ApiTestCase
+class UsingCodecApiTest extends ApiTestCase
 {
-    private const BASE_URL = '/api/planes';
-
+    public const BASE_URL = '/api/codec_planes';
     private Collection $collection;
 
     public function setUp(): void
@@ -27,8 +26,8 @@ class UsingBsonEncodeApiTest extends ApiTestCase
 
         foreach (range(10, 99) as $i) {
             $bulk[] = ['insertOne' => [[
-                '_id' => new ObjectId('60b5f1b3e4b0c5f3b3f3b3'.$i),
-                'name' => 'A'.$i,
+                '_id' => new ObjectId('60b5f1b3e4b0c5f3b3f3b3' . $i),
+                'name' => 'A' . $i,
                 'created_at' => new UTCDateTime(new \DateTimeImmutable('2021-06-01T00:00:00Z')),
             ]]];
         }
@@ -74,7 +73,7 @@ class UsingBsonEncodeApiTest extends ApiTestCase
 
     public function testGetPlane(): void
     {
-        $response = static::createClient()->request('GET', '/api/planes/60b5f1b3e4b0c5f3b3f3b312');
+        $response = static::createClient()->request('GET', self::BASE_URL.'/60b5f1b3e4b0c5f3b3f3b312');
         self::assertResponseIsSuccessful();
         self::assertJsonContains([
             'id' => '60b5f1b3e4b0c5f3b3f3b312',
@@ -83,7 +82,7 @@ class UsingBsonEncodeApiTest extends ApiTestCase
 
     public function testGetPlaneNotFound(): void
     {
-        $response = static::createClient()->request('GET', '/api/planes/60b5f1b3e4b0c5f3b3f3b3b3');
+        $response = static::createClient()->request('GET', self::BASE_URL.'/60b5f1b3e4b0c5f3b3f3b3b3');
         self::assertResponseStatusCodeSame(404);
     }
 
@@ -95,7 +94,7 @@ class UsingBsonEncodeApiTest extends ApiTestCase
 
     public function testPatchPlane(): void
     {
-        $response = static::createClient()->request('PATCH', '/api/planes/60b5f1b3e4b0c5f3b3f3b312', [
+        $response = static::createClient()->request('PATCH', self::BASE_URL.'/60b5f1b3e4b0c5f3b3f3b312', [
             'headers' => ['Content-Type' => 'application/merge-patch+json'],
             'json' => [
                 'name' => 'A390',
@@ -104,7 +103,7 @@ class UsingBsonEncodeApiTest extends ApiTestCase
 
         self::assertResponseIsSuccessful();
 
-        $response = static::createClient()->request('GET', '/api/planes/60b5f1b3e4b0c5f3b3f3b312');
+        $response = static::createClient()->request('GET', self::BASE_URL.'/60b5f1b3e4b0c5f3b3f3b312');
         self::assertResponseIsSuccessful();
 
         self::assertJsonContains([
@@ -114,13 +113,13 @@ class UsingBsonEncodeApiTest extends ApiTestCase
 
     public function testDeletePlane(): void
     {
-        $response = static::createClient()->request('DELETE', '/api/planes/60b5f1b3e4b0c5f3b3f3b312');
+        $response = static::createClient()->request('DELETE', self::BASE_URL.'/60b5f1b3e4b0c5f3b3f3b312');
         self::assertResponseIsSuccessful();
 
-        $response = static::createClient()->request('GET', '/api/planes/60b5f1b3e4b0c5f3b3f3b312');
+        $response = static::createClient()->request('GET', self::BASE_URL.'/60b5f1b3e4b0c5f3b3f3b312');
         self::assertResponseStatusCodeSame(404);
 
-        $response = static::createClient()->request('DELETE', '/api/planes/60b5f1b3e4b0c5f3b3f3b312');
+        $response = static::createClient()->request('DELETE', self::BASE_URL.'/60b5f1b3e4b0c5f3b3f3b312');
         // Should be idempotent
         // self::assertResponseIsSuccessful();
         self::assertResponseStatusCodeSame(404);
