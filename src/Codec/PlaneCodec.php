@@ -2,7 +2,6 @@
 
 namespace App\Codec;
 
-use App\UsingBsonEncode\Plane;
 use MongoDB\BSON\Document;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\UTCDateTime;

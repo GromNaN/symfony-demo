@@ -10,9 +10,9 @@ use MongoDB\BSON\UTCDateTime;
 use MongoDB\Client;
 use MongoDB\Collection;
 
-class UsingCodecApiTest extends ApiTestCase
+class UsingAutomapperApiTest extends ApiTestCase
 {
-    public const BASE_URL = '/api/codec_planes';
+    public const BASE_URL = '/api/automapper_planes';
     private Collection $collection;
 
     public function setUp(): void
@@ -33,17 +33,6 @@ class UsingCodecApiTest extends ApiTestCase
         }
 
         $this->collection->bulkWrite($bulk);
-    }
-
-    public function testBsonEncodeDecode(): void
-    {
-        $plane = new Plane();
-        $plane->id = (string) (new ObjectId());
-        $plane->name = 'A380';
-        $plane->createdAt = new \DateTimeImmutable('2021-06-01T00:00:00Z');
-
-        $result = Document::fromPHP($plane)->toPHP(['root' => Plane::class]);
-        self::assertEquals($plane, $result);
     }
 
     public function testPostPlaneValidation(): void

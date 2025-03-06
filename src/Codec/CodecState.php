@@ -23,7 +23,7 @@ class CodecState implements ProcessorInterface, ProviderInterface
 {
     public function __construct(
         // The collection must be configured with the codec
-        #[AutowireCollection(collection: 'planes', codec: PlaneCodec::class)]
+        #[AutowireCollection(collection: 'planes', codec: CodecPlane::class)]
         private Collection $collection,
     ) {
     }
