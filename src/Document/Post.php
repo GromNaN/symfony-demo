@@ -33,24 +33,24 @@ class Post
     #[ODM\Id]
     private ?string $id = null;
 
-    #[ODM\Field(type: Type::STRING)]
+    #[ODM\Field]
     #[Assert\NotBlank]
     private ?string $title = null;
 
-    #[ODM\Field(type: Type::STRING)]
+    #[ODM\Field]
     private ?string $slug = null;
 
-    #[ODM\Field(type: Type::STRING)]
+    #[ODM\Field]
     #[Assert\NotBlank(message: 'post.blank_summary')]
     #[Assert\Length(max: 255)]
     private ?string $summary = null;
 
-    #[ODM\Field(type: Type::STRING)]
+    #[ODM\Field]
     #[Assert\NotBlank(message: 'post.blank_content')]
     #[Assert\Length(min: 10, minMessage: 'post.too_short_content')]
     private ?string $content = null;
 
-    #[ODM\Field(type: Type::DATE_IMMUTABLE)]
+    #[ODM\Field]
     private \DateTimeImmutable $publishedAt;
 
     #[ODM\ReferenceOne(nullable: false, targetDocument: User::class)]
