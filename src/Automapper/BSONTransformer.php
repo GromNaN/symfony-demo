@@ -7,7 +7,7 @@ use MongoDB\BSON\UTCDateTime;
 
 final class BSONTransformer
 {
-    public static function transformObjectIdToSting(ObjectId $value): string
+    public static function transformObjectIdToString(ObjectId $value): string
     {
         return (string) $value;
     }

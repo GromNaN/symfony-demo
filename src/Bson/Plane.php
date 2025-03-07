@@ -1,6 +1,6 @@
 <?php
 
-namespace App\UsingBsonEncode;
+namespace App\Bson;
 
 use ApiPlatform\Metadata\ApiResource;
 use MongoDB\BSON\ObjectId;
@@ -10,7 +10,11 @@ use MongoDB\BSON\UTCDateTime;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 /** @phpstan-type PlaneBson array{_id: ObjectId, name: string, created_at: UTCDateTime} */
-#[ApiResource(shortName: 'planes', provider: State::class, processor: State::class)]
+#[ApiResource(
+    shortName: 'planes',
+    provider: State::class,
+    processor: State::class,
+)]
 class Plane implements Serializable, Unserializable
 {
     public string $id;

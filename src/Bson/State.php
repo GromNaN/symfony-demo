@@ -1,6 +1,6 @@
 <?php
 
-namespace App\UsingBsonEncode;
+namespace App\Bson;
 
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Delete;
@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use ApiPlatform\State\ProviderInterface;
 use MongoDB\BSON\ObjectId;
@@ -38,8 +39,8 @@ class State implements ProcessorInterface, ProviderInterface
             $this->collection->insertOne($data);
         }
 
-        if ($operation instanceof Patch) {
-            $this->collection->updateOne(['_id' => new ObjectId($data->id)], ['$set' => $data]);
+        if ($operation instanceof Put || $operation instanceof Patch) {
+            $this->collection->replaceOne(['_id' => new ObjectId($data->id)], $data);
         }
 
         if ($operation instanceof Delete) {

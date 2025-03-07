@@ -38,13 +38,13 @@ class PlaneCodec implements DocumentCodec
         return $value instanceof CodecPlane;
     }
 
-    /** @param CodecPlane */
+    /** @param CodecPlane $value */
     public function encode($value): Document
     {
         assert($this->canEncode($value));
 
         return Document::fromPHP([
-            '_id' => $value->id,
+            '_id' => new ObjectId($value->id ?? null),
             'name' => $value->name,
             'created_at' => new UTCDateTime($value->createdAt),
         ]);
