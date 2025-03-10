@@ -14,18 +14,21 @@ use ApiPlatform\State\ProviderInterface;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Bundle\Attribute\AutowireCollection;
 use MongoDB\Collection;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Contracts\Service\ServiceProviderInterface;
 
 /**
  * @implements ProviderInterface<Plane>
  * @implements ProcessorInterface<Plane>
  */
-class State implements ProcessorInterface, ProviderInterface
+readonly class State implements ProcessorInterface, ProviderInterface
 {
     public function __construct(
-        #[AutowireCollection(collection: 'planes')]
+        #[AutowireCollection(collection: 'planes', typeMap: ['typeMap' => ['root' => Plane::class]])]
         private Collection $collection,
+        #[Autowire(service: 'api_platform.filter_locator')]
+        private ServiceProviderInterface $filters,
     ) {
-        $this->collection = $collection->withOptions(['typeMap' => ['root' => Plane::class]]);
     }
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])

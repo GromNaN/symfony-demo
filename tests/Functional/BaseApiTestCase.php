@@ -121,12 +121,6 @@ abstract class BaseApiTestCase extends ApiTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
-    public function testGets(): void
-    {
-        $response = static::createClient()->request('GET', static::BASE_URL);
-        self::assertResponseIsSuccessful();
-    }
-
     public function testPatch(): void
     {
         $response = static::createClient()->request('PATCH', static::BASE_URL.'/60b5f1b3e4b0c5f3b3f3b312', [

@@ -19,7 +19,6 @@ services:
         resource: '../src/'
         exclude:
             - '../src/DependencyInjection/'
-            - '../src/Document/'
             - '../src/Kernel.php'
 
 
