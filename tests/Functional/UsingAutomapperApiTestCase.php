@@ -19,14 +19,14 @@ class UsingAutomapperApiTestCase extends BaseApiTestCase
         /** @var AutoMapper $automapper */
         $automapper = $this->getContainer()->get('automapper');
 
-        $plane = $automapper->map(['_id' => $id, 'name' => 'Boeing 747', 'created_at' => new UTCDateTime($date)], AutomapperPlane::class, ['groups' => ['bson']]);
+        $plane = $automapper->map(['_id' => $id, 'name' => 'Boeing 747', 'created_at' => new UTCDateTime($date)], AutomapperPlane::class);
 
         self::assertInstanceOf(AutomapperPlane::class, $plane);
         self::assertEquals('Boeing 747', $plane->name);
         self::assertEquals($date, $plane->createdAt);
         self::assertEquals('60b5f1b4f3e3f0000f000000', $plane->id);
 
-        $data = $automapper->map($plane, 'array', ['groups' => ['bson']]);
+        $data = $automapper->map($plane, 'array');
 
         self::assertArrayHasKey('_id', $data);
         self::assertEquals($id, $data['_id']);

@@ -30,7 +30,7 @@ class AutomapperCodec implements DocumentCodec
 
         $value = $value->toPHP(['root' => 'array', 'document' => 'array', 'array' => 'array']);
 
-        return $this->mapper->map($value, AutomapperPlane::class, ['groups' => ['bson']]);
+        return $this->mapper->map($value, AutomapperPlane::class);
     }
 
     public function canEncode($value): bool
@@ -43,7 +43,7 @@ class AutomapperCodec implements DocumentCodec
     {
         assert($this->canEncode($value));
 
-        $value = $this->mapper->map($value, AutomapperPlane::class, ['groups' => ['bson']]);
+        $value = $this->mapper->map($value, 'array');
 
         return Document::fromPHP($value);
     }

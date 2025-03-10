@@ -44,11 +44,29 @@ abstract class BaseApiTestCase extends ApiTestCase
             $bulk[] = ['insertOne' => [[
                 '_id' => new ObjectId('60b5f1b3e4b0c5f3b3f3b3'.$i),
                 'name' => 'A'.$i,
-                'created_at' => new UTCDateTime(new \DateTimeImmutable('2021-06-01T00:00:00Z')),
+                'created_at' => new UTCDateTime((new \DateTimeImmutable('2021-06-01T00:00:00Z'))->add(new \DateInterval('P'.($i - 10).'D'))),
             ]]];
         }
 
         $this->collection->bulkWrite($bulk);
+    }
+
+    public function testGetList(): void
+    {
+        $response = static::createClient()->request('GET', static::BASE_URL);
+        self::assertResponseIsSuccessful();
+        self::assertJsonContains([
+            'totalItems' => 90,
+        ]);
+    }
+
+    public function testGetListFiltered(): void
+    {
+        $response = static::createClient()->request('GET', static::BASE_URL.'?name=A2');
+        self::assertResponseIsSuccessful();
+        self::assertJsonContains([
+            'totalItems' => 10,
+        ]);
     }
 
     public function testPostValidation(): void
@@ -93,7 +111,7 @@ abstract class BaseApiTestCase extends ApiTestCase
         self::assertJsonContains([
             'id' => '60b5f1b3e4b0c5f3b3f3b312',
             'name' => 'A12',
-            'createdAt' => '2021-06-01T00:00:00+00:00',
+            'createdAt' => '2021-06-03T00:00:00+00:00',
         ]);
     }
 

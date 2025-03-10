@@ -43,6 +43,7 @@ class PlaneCodec implements DocumentCodec
     {
         assert($this->canEncode($value));
 
+        // BSON writer would avoid creating an array and directly write the values to the buffer
         return Document::fromPHP([
             '_id' => new ObjectId($value->id ?? null),
             'name' => $value->name,
