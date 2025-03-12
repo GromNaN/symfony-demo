@@ -19,8 +19,13 @@ use ApiPlatform\State\ProcessorInterface;
 use ApiPlatform\State\ProviderInterface;
 use App\Document\Plane;
 use AutoMapper\AutoMapperInterface;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * @implements ProviderInterface<BridgedPlane>
+ * @implements ProcessorInterface<BridgedPlane>
+ */
 class BridgedState implements ProcessorInterface, ProviderInterface
 {
     public function __construct(
@@ -29,6 +34,7 @@ class BridgedState implements ProcessorInterface, ProviderInterface
         private ItemProvider $itemProvider,
         private PersistProcessor $persistProcessor,
         private RemoveProcessor $removeProcessor,
+        private DocumentManager $documentManager,
     ) {
     }
 
@@ -39,7 +45,13 @@ class BridgedState implements ProcessorInterface, ProviderInterface
             return;
         }
 
-        $targetToPopulate = $context['request']->attributes->get('doctrine_data');
+        // If the data has an ID, we need to get the managed object from doctrine
+        if (isset($data->id)) {
+            $targetToPopulate = $this->documentManager->getReference(Plane::class, $data->id);
+        } else {
+            $targetToPopulate = null;
+        }
+
         $data = $this->autoMapper->map($data, Plane::class, ['target_to_populate' => $targetToPopulate]);
 
         if ($operation instanceof Delete) {
@@ -70,10 +82,6 @@ class BridgedState implements ProcessorInterface, ProviderInterface
             if (null === $item) {
                 return null;
             }
-
-            // Keep the doctrine object in the request attributes to be used in the process method
-            // This is necessary because the object manager tracks this object
-            $context['request']->attributes->set('doctrine_data', $item);
 
             return $this->autoMapper->map($item, BridgedPlane::class);
         }
