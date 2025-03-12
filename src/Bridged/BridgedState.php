@@ -56,11 +56,11 @@ class BridgedState implements ProcessorInterface, ProviderInterface
             $results = $this->collectionProvider->provide($operation, $uriVariables, $context);
             assert($results instanceof PaginatorInterface);
 
-            $mapper = $this->autoMapper->getMapper(Plane::class, BridgedPlane::class);
-
             return new TraversablePaginator(
                 new \ArrayIterator($this->autoMapper->mapCollection($results, BridgedPlane::class)),
-                $results->getCurrentPage(), $results->getItemsPerPage(), $results->getTotalItems()
+                $results->getCurrentPage(),
+                $results->getItemsPerPage(),
+                $results->getTotalItems(),
             );
         }
 
@@ -70,6 +70,9 @@ class BridgedState implements ProcessorInterface, ProviderInterface
             if (null === $item) {
                 return null;
             }
+
+            // Keep the doctrine object in the request attributes to be used in the process method
+            // This is necessary because the object manager tracks this object
             $context['request']->attributes->set('doctrine_data', $item);
 
             return $this->autoMapper->map($item, BridgedPlane::class);
