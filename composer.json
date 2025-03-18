@@ -10,7 +10,9 @@
         "ext-mongodb": "*",
         "api-platform/doctrine-common": "^4.1@dev",
         "api-platform/doctrine-odm": "^4.1@dev",
+        "api-platform/doctrine-orm": "*",
         "api-platform/documentation": "^4.1@dev",
+        "api-platform/graphql": "^4.1",
         "api-platform/http-cache": "^4.1@dev",
         "api-platform/hydra": "^4.1@dev",
         "api-platform/json-schema": "^4.1@dev",
@@ -21,6 +23,7 @@
         "api-platform/state": "^4.1@dev",
         "api-platform/symfony": "^4.1@dev",
         "api-platform/validator": "^4.1@dev",
+        "doctrine/doctrine-bundle": "^2.13",
         "doctrine/mongodb-odm": "^2.10.1",
         "doctrine/mongodb-odm-bundle": "^5.2",
         "jolicode/automapper": ">=9.3.0",
@@ -45,6 +48,7 @@
         "symfony/yaml": "7.2.*"
     },
     "require-dev": {
+        "doctrine/doctrine-fixtures-bundle": "^4.0",
         "friendsofphp/php-cs-fixer": "^3.70.2",
         "phpunit/phpunit": "^9.6.22",
         "symfony/browser-kit": "7.2.*",
