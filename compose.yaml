@@ -17,9 +17,9 @@ services:
 ###> doctrine/mongodb-odm-bundle ###
   mongodb:
     # In production, you may want to use a managed database service
-    image: mongodb/mongodb-community-server:latest
+    # image: mongodb/mongodb-community-server:latest
     # Or switch to the Atlas Local image to use Atlas Search and other cloud features
-    # image: mongodb/mongodb-atlas-local:latest
+    image: mongodb/mongodb-atlas-local:latest
     environment:
       - MONGODB_INITDB_DATABASE=${MONGODB_DB}
       - MONGODB_INITDB_ROOT_USERNAME=${MONGODB_USERNAME:-}

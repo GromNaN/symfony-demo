@@ -5,6 +5,7 @@ namespace App\Entity;
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Ignore;
 
 #[ORM\Entity]
 class Popularity
@@ -16,6 +17,7 @@ class Popularity
 
     #[ORM\OneToOne(targetEntity: Recipe::class, inversedBy: 'popularity')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Ignore]
     public Recipe $recipe;
 
     #[ORM\Column(type: 'float')]

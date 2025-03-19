@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Ignore;
 
 #[ORM\Entity]
 class Step
@@ -10,10 +11,12 @@ class Step
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Ignore]
     public ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Recipe::class, inversedBy: 'steps')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Ignore]
     public Recipe $recipe;
 
     #[ORM\Column(type: 'integer')]

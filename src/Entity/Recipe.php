@@ -6,14 +6,13 @@ use ApiPlatform\Metadata\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Ignore;
 
 #[ApiResource]
 #[ORM\Entity]
 class Recipe
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Id, ORM\GeneratedValue, ORM\Column]
     public ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -39,6 +38,7 @@ class Recipe
     public string $author_name;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'recipes', cascade: ['persist', 'remove'])]
+    #[Ignore]
     public ?User $author_user;
 
     #[ORM\OneToOne(mappedBy: 'recipe', targetEntity: Popularity::class, cascade: ['persist', 'remove'])]

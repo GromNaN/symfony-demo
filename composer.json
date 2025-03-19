@@ -15,6 +15,8 @@
         "api-platform/graphql": "^4.1",
         "api-platform/http-cache": "^4.1@dev",
         "api-platform/hydra": "^4.1@dev",
+        "api-platform/json-api": "*",
+        "api-platform/json-hal": "^4.1",
         "api-platform/json-schema": "^4.1@dev",
         "api-platform/jsonld": "^4.1@dev",
         "api-platform/metadata": "^4.1@dev",

@@ -5,6 +5,7 @@ namespace App\Entity;
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Ignore;
 
 #[ORM\Entity]
 class RecipeIngredient
@@ -16,6 +17,7 @@ class RecipeIngredient
 
     #[ORM\ManyToOne(targetEntity: Recipe::class, inversedBy: 'ingredients')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Ignore]
     public Recipe $recipe;
 
     #[ORM\ManyToOne(targetEntity: Ingredient::class)]
