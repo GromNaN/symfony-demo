@@ -8,7 +8,7 @@ use MongoDB\BSON\ObjectId;
 
 class UsingBsonApiTestCase extends BaseApiTestCase
 {
-    public const BASE_URL = '/api/planes';
+    public const BASE_URL = '/api/bson_planes';
 
     public function testBsonEncodeDecode(): void
     {

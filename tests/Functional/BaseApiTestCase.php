@@ -11,7 +11,7 @@ use MongoDB\Collection;
 abstract class BaseApiTestCase extends ApiTestCase
 {
     public const BASE_URL = '';
-    private Collection $collection;
+    protected Collection $collection;
 
     public function setUp(): void
     {

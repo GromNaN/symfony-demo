@@ -12,8 +12,11 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use ApiPlatform\State\ProviderInterface;
 use MongoDB\BSON\ObjectId;
-use MongoDB\Bundle\Attribute\AutowireCollection;
+use MongoDB\BSON\Serializable;
+use MongoDB\BSON\Unserializable;
+use MongoDB\Bundle\Attribute\AutowireDatabase;
 use MongoDB\Collection;
+use MongoDB\Database;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
@@ -24,8 +27,8 @@ use Symfony\Contracts\Service\ServiceProviderInterface;
 readonly class State implements ProcessorInterface, ProviderInterface
 {
     public function __construct(
-        #[AutowireCollection(collection: 'planes', typeMap: ['typeMap' => ['root' => Plane::class]])]
-        private Collection $collection,
+        #[AutowireDatabase]
+        private Database $database,
         #[Autowire(service: 'api_platform.filter_locator')]
         private ServiceProviderInterface $filters,
     ) {
@@ -33,33 +36,45 @@ readonly class State implements ProcessorInterface, ProviderInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        if (!$data instanceof Plane) {
-            return;
+        if (!$data instanceof $context['resource_class']) {
+            throw new \LogicException(sprintf('The data must be an instance of "%s".', $context['resource_class']));
         }
 
         if ($operation instanceof Post) {
             $data->id ??= new ObjectId();
-            $this->collection->insertOne($data);
+            $this->getCollection($context)->insertOne($data);
         }
 
         if ($operation instanceof Put || $operation instanceof Patch) {
-            $this->collection->replaceOne(['_id' => new ObjectId($data->id)], $data);
+            $this->getCollection($context)->replaceOne(['_id' => new ObjectId($data->id)], $data);
         }
 
         if ($operation instanceof Delete) {
-            $this->collection->deleteOne(['_id' => new ObjectId($data->id)]);
+            $this->getCollection($context)->deleteOne(['_id' => new ObjectId($data->id)]);
         }
+
+        return $data;
     }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        if ($operation instanceof CollectionOperationInterface) {
-            $cursor = $this->collection->aggregate([
-                ['$match' => new \stdClass()],
-            ]);
-            // $cursor->setTypeMap(['root' => Plane::class]);
+        $resourceClass = $context['resource_class'];
+        if (!is_subclass_of($resourceClass, Serializable::class) && !is_subclass_of($resourceClass, Unserializable::class)) {
+            throw new \LogicException(sprintf('The resource class "%s" must implement "%s" and "%s".', $resourceClass, Serializable::class, Unserializable::class));
+        }
 
-            return $cursor->toArray();
+        if ($operation instanceof CollectionOperationInterface) {
+            $pipeline = [];
+            foreach ($operation->getFilters() as $filterId) {
+                $filter = $this->filters->get($filterId);
+                assert($filter instanceof FilterInterface, new \LogicException(sprintf('The filter "%s" must implement "%s".', $filter::class, FilterInterface::class)));
+                $pipeline = $filter->apply($pipeline, $context);
+            }
+
+            return $this->getCollection($context)->aggregate(
+                $pipeline,
+                ['typeMap' => ['root' => $resourceClass]],
+            )->toArray();
         }
 
         if ($operation instanceof Get || $operation instanceof Patch || $operation instanceof Delete) {
@@ -70,13 +85,31 @@ readonly class State implements ProcessorInterface, ProviderInterface
                 // @todo throw a 404 exception
             }
 
-            $cursor = $this->collection->aggregate([
-                ['$match' => ['_id' => $objectId]], // @todo match the request ID
+            $pipeline = [
+                ['$match' => ['_id' => $objectId]],
                 ['$limit' => 1],
-            ]);
-            // $cursor->setTypeMap(['root' => Plane::class]);
+            ];
 
-            return $cursor->toArray()[0] ?? null;
+            $results = $this->getCollection($context)->aggregate(
+                $pipeline,
+                ['typeMap' => ['root' => $resourceClass]]
+            )->toArray();
+
+            return $results[0] ?? null;
         }
+    }
+
+    private function aggregate(array $context, array $pipeline): array
+    {
+        $options = ['typeMap' => ['root' => $context['resource_class']]];
+
+        return $this->getCollection($context)->aggregate($pipeline, $options)->toArray();
+    }
+
+    private function getCollection(array $context): Collection
+    {
+        $collectionName = strtolower((new \ReflectionClass($context['resource_class']))->getShortName().'s');
+
+        return $this->database->getCollection($collectionName);
     }
 }

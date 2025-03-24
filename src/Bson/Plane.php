@@ -2,6 +2,7 @@
 
 namespace App\Bson;
 
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\Serializable;
@@ -11,7 +12,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 /** @phpstan-type PlaneBson array{_id: ObjectId, name: string, created_at: UTCDateTime} */
 #[ApiResource(
-    shortName: 'planes',
+    shortName: 'bson_planes',
     provider: State::class,
     processor: State::class,
 )]
@@ -20,12 +21,12 @@ class Plane implements Serializable, Unserializable
     public string $id;
 
     #[NotBlank]
+    #[ApiFilter(SearchFilter::class, strategy: 'partial')]
     public string $name;
 
     #[NotBlank]
     public \DateTimeInterface $createdAt;
 
-    /** @return PlaneBson */
     public function bsonSerialize(): array
     {
         return [
@@ -35,9 +36,6 @@ class Plane implements Serializable, Unserializable
         ];
     }
 
-    /**
-     * @param PlaneBson $data
-     */
     public function bsonUnserialize(array $data): void
     {
         $this->id = (string) $data['_id'];
