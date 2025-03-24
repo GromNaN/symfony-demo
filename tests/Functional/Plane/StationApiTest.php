@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Functional;
+namespace Functional\Plane;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 

@@ -2,20 +2,15 @@
 
 namespace App\DataFixtures\ODM;
 
-use App\DataFixtures\AppFixtures;
 use App\Document\Author;
+use App\Document\Ingredient;
 use App\Document\Popularity;
 use App\Document\Recipe;
-use App\Document\Ingredient;
 use App\Document\Step;
 use App\Document\User;
 use Doctrine\Bundle\MongoDBBundle\Fixture\Fixture;
-use Doctrine\Bundle\MongoDBBundle\Fixture\ODMFixtureInterface;
-use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\ODM\MongoDB\DocumentManager;
-use Doctrine\ORM\EntityManager;
 use Doctrine\Persistence\ObjectManager;
-use MongoDB\BSON\ObjectId;
 
 class RecipeDocumentFixtures extends Fixture
 {
@@ -109,7 +104,7 @@ class RecipeDocumentFixtures extends Fixture
     private function generateLasagna(ObjectManager $manager): void
     {
         $recipe = new Recipe();
-        $recipe->id = (string) new ObjectId();
+        $recipe->id = '67da8b6c606149379d0a7ba7';
         $recipe->title = 'Lasagna Bolognese';
         $recipe->description = 'A traditional Italian dish, tasty and comforting.';
         $recipe->preparationTime = 30;

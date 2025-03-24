@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Functional;
+namespace Functional\Plane;
 
 use App\Automapper\AutomapperPlane;
 use AutoMapper\AutoMapper;

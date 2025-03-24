@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Functional;
+namespace Functional\Plane;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 use MongoDB\BSON\ObjectId;
@@ -32,6 +32,20 @@ abstract class BaseApiTestCase extends ApiTestCase
                         '_id' => ['bsonType' => 'objectId'],
                         'name' => ['bsonType' => 'string'],
                         'created_at' => ['bsonType' => 'date'],
+                        'seats' => [
+                            'bsonType' => 'array',
+                            'items' => [
+                                'bsonType' => 'object',
+                                'required' => ['_id', 'number', 'row', 'column'],
+                                'additionalProperties' => false,
+                                'properties' => [
+                                    '_id' => ['bsonType' => 'objectId'],
+                                    'number' => ['bsonType' => 'int'],
+                                    'row' => ['bsonType' => 'int'],
+                                    'column' => ['bsonType' => 'int'],
+                                ],
+                            ],
+                        ],
                     ],
                     'additionalProperties' => false,
                 ],
@@ -45,6 +59,12 @@ abstract class BaseApiTestCase extends ApiTestCase
                 '_id' => new ObjectId('60b5f1b3e4b0c5f3b3f3b3'.$i),
                 'name' => 'A'.$i,
                 'created_at' => new UTCDateTime((new \DateTimeImmutable('2021-06-01T00:00:00Z'))->add(new \DateInterval('P'.($i - 10).'D'))),
+                'seats' => array_map(fn ($j) => [
+                    '_id' => new ObjectId(),
+                    'number' => $j,
+                    'row' => $j % 10,
+                    'column' => (int) floor($j / 10),
+                ], range(0, 30)),
             ]]];
         }
 

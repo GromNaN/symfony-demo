@@ -8,7 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Ignore;
 
-#[ApiResource]
+#[ApiResource(shortName: 'recipe_entities')]
 #[ORM\Entity]
 class Recipe
 {

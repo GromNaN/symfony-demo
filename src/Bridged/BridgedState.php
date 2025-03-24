@@ -42,7 +42,7 @@ class BridgedState implements ProcessorInterface, ProviderInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         if (!$data instanceof BridgedPlane) {
-            return;
+            return $data;
         }
 
         // If the data has an ID, we need to get the managed object from doctrine
@@ -59,6 +59,8 @@ class BridgedState implements ProcessorInterface, ProviderInterface
         } elseif ($operation instanceof Patch || $operation instanceof Put || $operation instanceof Post) {
             $this->persistProcessor->process($data, $operation, $uriVariables, $context);
         }
+
+        return $data;
     }
 
     /** @param array{request: Request, ...} $context */

@@ -1,8 +1,6 @@
 <?php
 
-namespace Functional;
-
-use App\Tests\Functional\BaseApiTestCase;
+namespace Functional\Plane;
 
 class BridgedApiTest extends BaseApiTestCase
 {

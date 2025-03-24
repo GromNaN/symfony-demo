@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Functional;
+namespace Functional\Plane;
 
 class UsingCodecApiTestCase extends BaseApiTestCase
 {

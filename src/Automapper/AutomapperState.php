@@ -31,7 +31,7 @@ class AutomapperState implements ProcessorInterface, ProviderInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         if (!$data instanceof AutomapperPlane) {
-            return;
+            return null;
         }
 
         if ($operation instanceof Post) {
@@ -46,6 +46,8 @@ class AutomapperState implements ProcessorInterface, ProviderInterface
         if ($operation instanceof Delete) {
             $this->collection->deleteOne(['_id' => new ObjectId($data->id)]);
         }
+
+        return $data;
     }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
