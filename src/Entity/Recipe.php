@@ -6,10 +6,16 @@ use ApiPlatform\Metadata\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\Ignore;
 
-#[ApiResource(shortName: 'recipe_entities')]
+#[ApiResource(
+    shortName: 'recipe_entities',
+    normalizationContext: ['groups' => ['recipe:read']],
+    denormalizationContext: ['groups' => ['recipe:write']],
+)]
 #[ORM\Entity]
+#[Groups(['recipe:read', 'recipe:write'])]
 class Recipe
 {
     #[ORM\Id, ORM\GeneratedValue, ORM\Column]
@@ -41,7 +47,7 @@ class Recipe
     #[Ignore]
     public ?User $author_user;
 
-    #[ORM\OneToOne(mappedBy: 'recipe', targetEntity: Popularity::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(mappedBy: 'recipe', targetEntity: Popularity::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     public ?Popularity $popularity = null;
 
     public function __construct()

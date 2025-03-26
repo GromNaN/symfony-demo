@@ -5,9 +5,11 @@ namespace App\Entity;
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\Ignore;
 
 #[ORM\Entity]
+#[Groups(['recipe:read', 'recipe:write'])]
 class Popularity
 {
     #[ORM\Id]
