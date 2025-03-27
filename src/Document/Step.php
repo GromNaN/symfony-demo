@@ -3,6 +3,7 @@
 namespace App\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ODM\EmbeddedDocument]
 class Step
@@ -13,6 +14,7 @@ class Step
     #[ODM\Field]
     public int $stepNumber;
 
+    #[Groups(['recipe:read', 'recipe:write'])]
     #[ODM\Field]
     public string $description;
 }

@@ -13,8 +13,8 @@ use Symfony\Component\Validator\Constraints\NotBlank;
     stateOptions: new Options(
         documentClass: Plane::class,
     ),
-    provider: BridgedState::class,
-    processor: BridgedState::class,
+    provider: State::class,
+    processor: State::class,
 )]
 class BridgedPlane
 {

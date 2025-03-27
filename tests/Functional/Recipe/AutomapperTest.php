@@ -4,9 +4,9 @@ namespace Functional\Recipe;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 
-class EntityTest extends ApiTestCase
+class AutomapperTest extends ApiTestCase
 {
-    private const BASE_URL = '/api/recipe_entities';
+    private const BASE_URL = '/api/automapper_recipes';
 
     public function testGetList()
     {
@@ -24,22 +24,24 @@ class EntityTest extends ApiTestCase
             'json' => [
                 'title' => 'Lasagna Bolognese',
                 'description' => 'A traditional Italian dish, tasty and comforting.',
+                'preparationTime' => 30,
+                'cookingTime' => 45,
                 'ingredients' => [
-                    ['quantity' => 12.0, 'unit' => 'sheets', 'ingredient' => '/api/ingredients/1'],
-                    ['quantity' => 500.0, 'unit' => 'g', 'ingredient' => '/api/ingredients/2'],
-                    ['quantity' => 500.0, 'unit' => 'ml', 'ingredient' => '/api/ingredients/3'],
-                    ['quantity' => 100.0, 'unit' => 'g', 'ingredient' => '/api/ingredients/4'],
-                    ['quantity' => 2.0, 'unit' => 'cloves', 'ingredient' => '/api/ingredients/5'],
-                    ['quantity' => 100.0, 'unit' => 'g', 'ingredient' => '/api/ingredients/6'],
-                    ['quantity' => 50.0, 'unit' => 'g', 'ingredient' => '/api/ingredients/7'],
-                    ['quantity' => 2.0, 'unit' => 'tbsp', 'ingredient' => '/api/ingredients/8'],
-                    ['quantity' => 400.0, 'unit' => 'ml', 'ingredient' => '/api/ingredients/9'],
-                    ['quantity' => 100.0, 'unit' => 'g', 'ingredient' => '/api/ingredients/10'],
-                    ['quantity' => 150.0, 'unit' => 'g', 'ingredient' => '/api/ingredients/11'],
-                    ['quantity' => 1.0, 'unit' => 'tsp', 'ingredient' => '/api/ingredients/12'],
-                    ['quantity' => 1.0, 'unit' => 'tsp', 'ingredient' => '/api/ingredients/13'],
-                    ['quantity' => 1.0, 'unit' => 'tsp', 'ingredient' => '/api/ingredients/14'],
-                    ['quantity' => 100.0, 'unit' => 'ml', 'ingredient' => '/api/ingredients/15'],
+                    ['quantity' => 12.0, 'unit' => 'sheets', 'ingredient' => ''],
+                    ['quantity' => 500.0, 'unit' => 'g', 'ingredient' => ''],
+                    ['quantity' => 500.0, 'unit' => 'ml', 'ingredient' => ''],
+                    ['quantity' => 100.0, 'unit' => 'g', 'ingredient' => ''],
+                    ['quantity' => 2.0, 'unit' => 'cloves', 'ingredient' => ''],
+                    ['quantity' => 100.0, 'unit' => 'g', 'ingredient' => ''],
+                    ['quantity' => 50.0, 'unit' => 'g', 'ingredient' => ''],
+                    ['quantity' => 2.0, 'unit' => 'tbsp', 'ingredient' => ''],
+                    ['quantity' => 400.0, 'unit' => 'ml', 'ingredient' => ''],
+                    ['quantity' => 100.0, 'unit' => 'g', 'ingredient' => ''],
+                    ['quantity' => 150.0, 'unit' => 'g', 'ingredient' => ''],
+                    ['quantity' => 1.0, 'unit' => 'tsp', 'ingredient' => ''],
+                    ['quantity' => 1.0, 'unit' => 'tsp', 'ingredient' => ''],
+                    ['quantity' => 1.0, 'unit' => 'tsp', 'ingredient' => ''],
+                    ['quantity' => 100.0, 'unit' => 'ml', 'ingredient' => ''],
                 ],
                 'steps' => [
                     'Chop onions, garlic, carrots, and celery finely.',

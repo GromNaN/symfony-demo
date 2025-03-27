@@ -8,16 +8,23 @@ use AutoMapper\Metadata\TargetPropertyMetadata;
 use AutoMapper\Metadata\TypesMatching;
 use AutoMapper\Transformer\PropertyTransformer\PropertyTransformerInterface;
 use AutoMapper\Transformer\PropertyTransformer\PropertyTransformerSupportInterface;
+use MongoDB\BSON\ObjectId;
 
-class ObjectIdTransformer implements PropertyTransformerInterface, PropertyTransformerSupportInterface
+class StringToObjectIdTransformer
+{
+}
+
+/*
+class StringToObjectIdTransformer implements PropertyTransformerInterface, PropertyTransformerSupportInterface
 {
     public function transform(mixed $value, object|array $source, array $context): mixed
     {
-        // TODO: Implement transform() method.
+        return new ObjectId($value);
     }
 
     public function supports(TypesMatching $types, SourcePropertyMetadata $source, TargetPropertyMetadata $target, MapperMetadata $mapperMetadata): bool
     {
-        // TODO: Implement supports() method.
+        return $target->property === '_id';
     }
 }
+*/

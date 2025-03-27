@@ -7,7 +7,7 @@ use MongoDB\BSON\Regex;
 use Symfony\Component\DependencyInjection\Attribute\Exclude;
 
 /**
- * Excluded from the auto-configuration. The definition is created by
+ * Excluded from the autoconfiguration. The definition is created by
  * the {@see AttributeFilterPass}.
  */
 #[Exclude]
@@ -17,30 +17,25 @@ class SearchFilter implements FilterInterface
     {
     }
 
-    public function apply(array $pipeline, array $context): array
+    public function apply(array $query = [], array $context = []): array
     {
         if (!$filters = $context['filters'] ?? []) {
-            return $pipeline;
+            return $query;
         }
 
-        $match = [];
         foreach ($this->properties as $property => $strategy) {
             if (!array_key_exists($property, $filters)) {
                 continue;
             }
 
-            $value = $context['filters'][$property];
-            $match[$property] = match ($strategy) {
+            $value = $filters[$property];
+            $query[$property] = match ($strategy) {
                 'exact' => ['$eq' => $value],
                 'partial' => ['$regex' => new Regex(preg_quote($value), 'i')],
             };
         }
 
-        if ($match) {
-            $pipeline[] = ['$match' => $match];
-        }
-
-        return $pipeline;
+        return $query;
     }
 
     public function getDescription(string $resourceClass): array

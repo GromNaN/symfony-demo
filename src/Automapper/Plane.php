@@ -2,7 +2,9 @@
 
 namespace App\Automapper;
 
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use App\Bson\SearchFilter;
 use AutoMapper\Attribute\MapFrom;
 use AutoMapper\Attribute\Mapper;
 use AutoMapper\Attribute\MapTo;
@@ -10,12 +12,13 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 #[ApiResource(
     shortName: 'automapper_planes',
-    provider: AutomapperState::class,
-    processor: AutomapperState::class,
+    provider: State::class,
+    processor: State::class,
 )]
 #[Mapper(source: 'array', target: 'array')]
-class AutomapperPlane
+class Plane
 {
+    // How to make
     #[MapFrom(
         priority: 1,
         source: 'array',
@@ -32,6 +35,7 @@ class AutomapperPlane
     public string $id;
 
     #[NotBlank]
+    #[ApiFilter(SearchFilter::class, strategy: 'partial')]
     public string $name;
 
     #[NotBlank]

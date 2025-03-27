@@ -1,6 +1,6 @@
 <?php
 
-namespace Functional\Plane;
+namespace App\Tests\Functional\Plane;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 use MongoDB\BSON\ObjectId;

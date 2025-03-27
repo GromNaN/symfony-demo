@@ -1,6 +1,6 @@
 <?php
 
-namespace Functional\Plane;
+namespace App\Tests\Functional\Plane;
 
 use App\Bson\Plane;
 use MongoDB\BSON\Document;

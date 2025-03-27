@@ -4,18 +4,18 @@ namespace App\Automapper;
 
 use AutoMapper\AutoMapper;
 use MongoDB\BSON\Document;
-use MongoDB\Codec\Codec;
 use MongoDB\Codec\DecodeIfSupported;
 use MongoDB\Codec\DocumentCodec;
 use MongoDB\Codec\EncodeIfSupported;
+use Symfony\Component\DependencyInjection\Attribute\Exclude;
 
-/** @extends Codec<AutomapperPlane> */
-class AutomapperCodec implements DocumentCodec
+#[Exclude]
+class Codec implements DocumentCodec
 {
     use EncodeIfSupported;
     use DecodeIfSupported;
 
-    public function __construct(private AutoMapper $mapper)
+    public function __construct(private AutoMapper $mapper, private string $class)
     {
     }
 
@@ -24,21 +24,21 @@ class AutomapperCodec implements DocumentCodec
         return $value instanceof Document && $value->has('_id');
     }
 
-    public function decode($value): AutomapperPlane
+    public function decode($value): object
     {
         assert($this->canDecode($value));
 
         $value = $value->toPHP(['root' => 'array', 'document' => 'array', 'array' => 'array']);
 
-        return $this->mapper->map($value, AutomapperPlane::class);
+        return $this->mapper->map($value, $this->class);
     }
 
     public function canEncode($value): bool
     {
-        return $value instanceof AutomapperPlane;
+        return $value instanceof $this->class;
     }
 
-    /** @param AutomapperPlane $value */
+    /** @param Plane $value */
     public function encode($value): Document
     {
         assert($this->canEncode($value));

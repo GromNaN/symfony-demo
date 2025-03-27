@@ -62,9 +62,10 @@ class CodecState implements ProcessorInterface, ProviderInterface
         if ($operation instanceof Get || $operation instanceof Patch || $operation instanceof Delete) {
             assert(isset($uriVariables['id']));
             try {
+                // Validate the ObjectId is lowercast. Or use Requirement::MONGODB_ID
                 $objectId = new ObjectId($uriVariables['id']);
             } catch (\Exception) {
-                // @todo throw a 404 exception
+                return null;
             }
 
             $cursor = $this->collection->aggregate([

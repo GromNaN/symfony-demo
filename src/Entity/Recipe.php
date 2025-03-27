@@ -19,35 +19,45 @@ use Symfony\Component\Serializer\Attribute\Ignore;
 class Recipe
 {
     #[ORM\Id, ORM\GeneratedValue, ORM\Column]
+    #[Groups(['recipe:read', 'recipe:write'])]
     public ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['recipe:read', 'recipe:write'])]
     public string $title;
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Groups(['recipe:read', 'recipe:write'])]
     public ?string $description = null;
 
     #[ORM\Column(type: 'integer')]
+    #[Groups(['recipe:read', 'recipe:write'])]
     public int $preparationTime;
 
     #[ORM\Column(type: 'integer')]
+    #[Groups(['recipe:read', 'recipe:write'])]
     public int $cookingTime;
 
-    #[ORM\OneToMany(mappedBy: 'recipe', targetEntity: RecipeIngredient::class, cascade: ['persist'], orphanRemoval: true)]
+    /** @var Collection<RecipeIngredient> */
+    #[ORM\OneToMany(mappedBy: 'recipe', targetEntity: RecipeIngredient::class, cascade: ['persist'], orphanRemoval: true, fetch: 'EAGER')]
+    #[Groups(['recipe:read', 'recipe:write'])]
     public Collection $ingredients;
 
-    #[ORM\OneToMany(mappedBy: 'recipe', targetEntity: Step::class, cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'recipe', targetEntity: Step::class, cascade: ['persist'], orphanRemoval: true, fetch: 'EAGER')]
     #[ORM\OrderBy(['stepNumber' => 'ASC'])]
+    #[Groups(['recipe:read', 'recipe:write'])]
     public Collection $steps;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['recipe:read', 'recipe:write'])]
     public string $author_name;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'recipes', cascade: ['persist', 'remove'])]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'recipes', cascade: ['persist', 'remove'], fetch: 'EAGER')]
     #[Ignore]
     public ?User $author_user;
 
-    #[ORM\OneToOne(mappedBy: 'recipe', targetEntity: Popularity::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToOne(mappedBy: 'recipe', targetEntity: Popularity::class, cascade: ['persist', 'remove'], orphanRemoval: true, fetch: 'EAGER')]
+    #[Groups(['recipe:read', 'recipe:write'])]
     public ?Popularity $popularity = null;
 
     public function __construct()

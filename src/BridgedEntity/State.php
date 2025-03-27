@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Bridged;
+namespace App\BridgedEntity;
 
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 use ApiPlatform\Doctrine\Common\State\RemoveProcessor;
-use ApiPlatform\Doctrine\Odm\State\CollectionProvider;
-use ApiPlatform\Doctrine\Odm\State\ItemProvider;
+use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
+use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -17,16 +17,11 @@ use ApiPlatform\State\Pagination\PaginatorInterface;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProcessorInterface;
 use ApiPlatform\State\ProviderInterface;
-use App\Document\Plane;
 use AutoMapper\AutoMapperInterface;
-use Doctrine\ODM\MongoDB\DocumentManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
-/**
- * @implements ProviderInterface<Recipe>
- * @implements ProcessorInterface<Recipe>
- */
-class BridgedState implements ProcessorInterface, ProviderInterface
+class State implements ProcessorInterface, ProviderInterface
 {
     public function __construct(
         private AutoMapperInterface $autoMapper,
@@ -34,25 +29,28 @@ class BridgedState implements ProcessorInterface, ProviderInterface
         private ItemProvider $itemProvider,
         private PersistProcessor $persistProcessor,
         private RemoveProcessor $removeProcessor,
-        private DocumentManager $documentManager,
+        private EntityManagerInterface $entityManager,
     ) {
     }
 
     /** @param array{request: Request, ...} $context */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        if (!$data instanceof Recipe) {
+        $modelClass = $operation->getClass();
+        $entityClass = $operation->getStateOptions()->getEntityClass();
+
+        if (!$data instanceof $modelClass) {
             return $data;
         }
 
         // If the data has an ID, we need to get the managed object from doctrine
         if (isset($data->id)) {
-            $targetToPopulate = $this->documentManager->getReference(Plane::class, $data->id);
+            $targetToPopulate = $this->entityManager->getReference($entityClass, $data->id);
         } else {
             $targetToPopulate = null;
         }
 
-        $data = $this->autoMapper->map($data, Plane::class, ['target_to_populate' => $targetToPopulate]);
+        $data = $this->autoMapper->map($data, $entityClass, ['target_to_populate' => $targetToPopulate]);
 
         if ($operation instanceof Delete) {
             $this->removeProcessor->process($data, $operation, $uriVariables, $context);
@@ -66,12 +64,14 @@ class BridgedState implements ProcessorInterface, ProviderInterface
     /** @param array{request: Request, ...} $context */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
+        $modelClass = $operation->getClass();
+
         if ($operation instanceof GetCollection) {
             $results = $this->collectionProvider->provide($operation, $uriVariables, $context);
             assert($results instanceof PaginatorInterface);
 
             return new TraversablePaginator(
-                new \ArrayIterator($this->autoMapper->mapCollection($results, Recipe::class)),
+                new \ArrayIterator($this->autoMapper->mapCollection($results, $modelClass)),
                 $results->getCurrentPage(),
                 $results->getItemsPerPage(),
                 $results->getTotalItems(),
@@ -85,7 +85,7 @@ class BridgedState implements ProcessorInterface, ProviderInterface
                 return null;
             }
 
-            return $this->autoMapper->map($item, Recipe::class);
+            return $this->autoMapper->map($item, $modelClass);
             // Additional query to embed additional data
         }
     }

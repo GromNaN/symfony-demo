@@ -4,9 +4,9 @@ namespace Functional\Recipe;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 
-class EntityTest extends ApiTestCase
+class BsonTest extends ApiTestCase
 {
-    private const BASE_URL = '/api/recipe_entities';
+    private const BASE_URL = '/api/bson_recipes';
 
     public function testGetList()
     {
@@ -24,6 +24,8 @@ class EntityTest extends ApiTestCase
             'json' => [
                 'title' => 'Lasagna Bolognese',
                 'description' => 'A traditional Italian dish, tasty and comforting.',
+                'preparationTime' => 30,
+                'cookingTime' => 45,
                 'ingredients' => [
                     ['quantity' => 12.0, 'unit' => 'sheets', 'ingredient' => '/api/ingredients/1'],
                     ['quantity' => 500.0, 'unit' => 'g', 'ingredient' => '/api/ingredients/2'],

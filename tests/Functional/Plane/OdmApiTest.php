@@ -1,6 +1,6 @@
 <?php
 
-namespace Functional\Plane;
+namespace App\Tests\Functional\Plane;
 
 use MongoDB\Builder\Pipeline;
 use MongoDB\Builder\Search;
