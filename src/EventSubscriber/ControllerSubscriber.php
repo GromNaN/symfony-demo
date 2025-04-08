@@ -12,6 +12,7 @@
 namespace App\EventSubscriber;
 
 use App\Twig\SourceCodeExtension;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -23,20 +24,14 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * @author Ryan Weaver <weaverryan@gmail.com>
  * @author Javier Eguiluz <javier.eguiluz@gmail.com>
  */
-final readonly class ControllerSubscriber implements EventSubscriberInterface
+final readonly class ControllerSubscriber
 {
     public function __construct(
         private SourceCodeExtension $twigExtension,
     ) {
     }
 
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            KernelEvents::CONTROLLER => 'registerCurrentController',
-        ];
-    }
-
+    #[AsEventListener(KernelEvents::CONTROLLER)]
     public function registerCurrentController(ControllerEvent $event): void
     {
         // this check is needed because in Symfony a request can perform any

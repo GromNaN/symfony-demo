@@ -14,6 +14,7 @@ namespace App\Command;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -42,9 +43,24 @@ use Symfony\Component\Mime\Email;
 #[AsCommand(
     name: 'app:list-users',
     description: 'Lists all the existing users',
-    aliases: ['app:users']
+    aliases: ['app:users'],
+    help: <<<'HELP'
+        The <info>%command.name%</info> command lists all the users registered in the application:
+
+          <info>php %command.full_name%</info>
+
+        By default the command only displays the 50 most recent users. Set the number of
+        results to display with the <comment>--max-results</comment> option:
+
+          <info>php %command.full_name%</info> <comment>--max-results=2000</comment>
+
+        In addition to displaying the user list, you can also send this information to
+        the email address specified in the <comment>--send-to</comment> option:
+
+          <info>php %command.full_name%</info> <comment>--send-to=fabien@symfony.com</comment>
+        HELP
 )]
-final class ListUsersCommand extends Command
+final class ListUsersCommand
 {
     public function __construct(
         private readonly MailerInterface $mailer,
@@ -52,44 +68,16 @@ final class ListUsersCommand extends Command
         private readonly string $emailSender,
         private readonly UserRepository $users,
     ) {
-        parent::__construct();
     }
 
-    protected function configure(): void
+    public function __invoke(
+        InputInterface $input,
+        OutputInterface $output,
+        SymfonyStyle $io,
+        #[Option(name: 'max-results', description: 'Limits the number of users listed')] int $maxResults = 50,
+        #[Option(name: 'send-to', description: 'If set, the result is sent to the given email address')] ?string $email = null,
+    ): int
     {
-        $this
-            ->setHelp(<<<'HELP'
-                The <info>%command.name%</info> command lists all the users registered in the application:
-
-                  <info>php %command.full_name%</info>
-
-                By default the command only displays the 50 most recent users. Set the number of
-                results to display with the <comment>--max-results</comment> option:
-
-                  <info>php %command.full_name%</info> <comment>--max-results=2000</comment>
-
-                In addition to displaying the user list, you can also send this information to
-                the email address specified in the <comment>--send-to</comment> option:
-
-                  <info>php %command.full_name%</info> <comment>--send-to=fabien@symfony.com</comment>
-                HELP
-            )
-            // commands can optionally define arguments and/or options (mandatory and optional)
-            // see https://symfony.com/doc/current/components/console/console_arguments.html
-            ->addOption('max-results', null, InputOption::VALUE_OPTIONAL, 'Limits the number of users listed', 50)
-            ->addOption('send-to', null, InputOption::VALUE_OPTIONAL, 'If set, the result is sent to the given email address')
-        ;
-    }
-
-    /**
-     * This method is executed after initialize(). It usually contains the logic
-     * to execute to complete this command task.
-     */
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
-        /** @var int|null $maxResults */
-        $maxResults = $input->getOption('max-results');
-
         // Use ->findBy() instead of ->findAll() to allow result sorting and limiting
         $allUsers = $this->users->findBy([], ['id' => 'DESC'], $maxResults);
 
@@ -111,20 +99,12 @@ final class ListUsersCommand extends Command
         // command uses the BufferedOutput type instead, to be able to get the output
         // contents before displaying them. This is needed because the command allows
         // to send the list of users via email with the '--send-to' option
-        $bufferedOutput = new BufferedOutput();
-        $io = new SymfonyStyle($input, $bufferedOutput);
         $io->table(
             ['ID', 'Full Name', 'Username', 'Email', 'Roles'],
             $usersAsPlainArrays
         );
 
         // instead of just displaying the table of users, store its contents in a variable
-        $usersAsATable = $bufferedOutput->fetch();
-        $output->write($usersAsATable);
-
-        /** @var string|null $email */
-        $email = $input->getOption('send-to');
-
         if (null !== $email) {
             $this->sendReport($usersAsATable, $email);
         }

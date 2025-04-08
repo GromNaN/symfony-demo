@@ -12,8 +12,7 @@
 namespace App\Twig;
 
 use Symfony\Component\Intl\Locales;
-use Twig\Extension\AbstractExtension;
-use Twig\TwigFunction;
+use Twig\Attribute\AsTwigFunction;
 
 /**
  * See https://symfony.com/doc/current/templating/twig_extension.html.
@@ -22,7 +21,7 @@ use Twig\TwigFunction;
  * @author Javier Eguiluz <javier.eguiluz@gmail.com>
  * @author Julien ITARD <julienitard@gmail.com>
  */
-final class AppExtension extends AbstractExtension
+final class AppExtension
 {
     /**
      * @var list<array{code: string, name: string}>|null
@@ -37,13 +36,6 @@ final class AppExtension extends AbstractExtension
     ) {
     }
 
-    public function getFunctions(): array
-    {
-        return [
-            new TwigFunction('locales', $this->getLocales(...)),
-        ];
-    }
-
     /**
      * Takes the list of codes of the locales (languages) enabled in the
      * application and returns an array with the name of each locale written
@@ -51,6 +43,7 @@ final class AppExtension extends AbstractExtension
      *
      * @return array<int, array<string, string>>
      */
+    #[AsTwigFunction(name:'locales')]
     public function getLocales(): array
     {
         if (null !== $this->locales) {
