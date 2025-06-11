@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4af99b87175ad5d4f9ab537976bdafcd",
+    "content-hash": "f9ec0d682dba10e88a026070f6244986",
     "packages": [
         {
             "name": "doctrine/cache",
@@ -396,16 +396,16 @@
         },
         {
             "name": "doctrine/mongodb-odm",
-            "version": "2.11.2",
+            "version": "dev-fle",
             "source": {
                 "type": "git",
-                "url": "https://github.com/doctrine/mongodb-odm.git",
-                "reference": "9cc829197581df02c227f00cfa789b077949dffa"
+                "url": "https://github.com/GromNaN/mongodb-odm.git",
+                "reference": "9e5d36d7d5a7eda22c6cc97dbc07f82b63c361d1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/mongodb-odm/zipball/9cc829197581df02c227f00cfa789b077949dffa",
-                "reference": "9cc829197581df02c227f00cfa789b077949dffa",
+                "url": "https://api.github.com/repos/GromNaN/mongodb-odm/zipball/9e5d36d7d5a7eda22c6cc97dbc07f82b63c361d1",
+                "reference": "9e5d36d7d5a7eda22c6cc97dbc07f82b63c361d1",
                 "shasum": ""
             },
             "require": {
@@ -435,8 +435,9 @@
                 "ext-bcmath": "*",
                 "jmikola/geojson": "^1.0",
                 "phpbench/phpbench": "^1.0.0",
-                "phpstan/phpstan": "~1.10.67",
-                "phpstan/phpstan-phpunit": "^1.0",
+                "phpstan/phpstan": "^2.1",
+                "phpstan/phpstan-deprecation-rules": "^2.0",
+                "phpstan/phpstan-phpunit": "^2.0",
                 "phpunit/phpunit": "^10.4",
                 "squizlabs/php_codesniffer": "^3.5",
                 "symfony/cache": "^5.4 || ^6.0 || ^7.0"
@@ -451,7 +452,16 @@
                     "Doctrine\\ODM\\MongoDB\\": "lib/Doctrine/ODM/MongoDB"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Doctrine\\ODM\\MongoDB\\Benchmark\\": "benchmark",
+                    "Doctrine\\ODM\\MongoDB\\Tests\\": "tests/Doctrine/ODM/MongoDB/Tests",
+                    "Documentation\\": "tests/Documentation",
+                    "Documents\\": "tests/Documents",
+                    "Stubs\\": "tests/Stubs",
+                    "TestDocuments\\": "tests/Doctrine/ODM/MongoDB/Tests/Mapping/Driver/fixtures"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -489,37 +499,36 @@
                 "php"
             ],
             "support": {
-                "issues": "https://github.com/doctrine/mongodb-odm/issues",
-                "source": "https://github.com/doctrine/mongodb-odm/tree/2.11.2"
+                "source": "https://github.com/GromNaN/mongodb-odm/tree/fle"
             },
             "funding": [
                 {
-                    "url": "https://www.doctrine-project.org/sponsorship.html",
-                    "type": "custom"
+                    "type": "patreon",
+                    "url": "https://www.patreon.com/phpdoctrine"
                 },
                 {
-                    "url": "https://www.patreon.com/phpdoctrine",
-                    "type": "patreon"
+                    "type": "tidelift",
+                    "url": "https://tidelift.com/funding/github/packagist/doctrine%2Fmongodb-odm"
                 },
                 {
-                    "url": "https://tidelift.com/funding/github/packagist/doctrine%2Fmongodb-odm",
-                    "type": "tidelift"
+                    "type": "custom",
+                    "url": "https://www.doctrine-project.org/sponsorship.html"
                 }
             ],
-            "time": "2025-05-23T07:27:12+00:00"
+            "time": "2025-05-23T13:48:11+00:00"
         },
         {
             "name": "doctrine/mongodb-odm-bundle",
-            "version": "5.3.0",
+            "version": "dev-fix-kms-xsd-docs-alignment",
             "source": {
                 "type": "git",
-                "url": "https://github.com/doctrine/DoctrineMongoDBBundle.git",
-                "reference": "e0a1b4342fb5f82abceef0098302b398ec2f67d7"
+                "url": "https://github.com/GromNaN/DoctrineMongoDBBundle.git",
+                "reference": "4dad098a402cf81af9e196a8d105d8b8ac45c9b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/DoctrineMongoDBBundle/zipball/e0a1b4342fb5f82abceef0098302b398ec2f67d7",
-                "reference": "e0a1b4342fb5f82abceef0098302b398ec2f67d7",
+                "url": "https://api.github.com/repos/GromNaN/DoctrineMongoDBBundle/zipball/4dad098a402cf81af9e196a8d105d8b8ac45c9b6",
+                "reference": "4dad098a402cf81af9e196a8d105d8b8ac45c9b6",
                 "shasum": ""
             },
             "require": {
@@ -563,7 +572,11 @@
                     "Doctrine\\Bundle\\MongoDBBundle\\": "src"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Doctrine\\Bundle\\MongoDBBundle\\Tests\\": "tests"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -589,10 +602,9 @@
                 "symfony"
             ],
             "support": {
-                "issues": "https://github.com/doctrine/DoctrineMongoDBBundle/issues",
-                "source": "https://github.com/doctrine/DoctrineMongoDBBundle/tree/5.3.0"
+                "source": "https://github.com/GromNaN/DoctrineMongoDBBundle/tree/fix-kms-xsd-docs-alignment"
             },
-            "time": "2025-04-08T16:32:24+00:00"
+            "time": "2025-06-11T09:36:16+00:00"
         },
         {
             "name": "doctrine/persistence",
@@ -3714,9 +3726,25 @@
         }
     ],
     "packages-dev": [],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "doctrine/mongodb-odm",
+            "version": "dev-fle",
+            "alias": "2.12",
+            "alias_normalized": "2.12.0.0"
+        },
+        {
+            "package": "doctrine/mongodb-odm-bundle",
+            "version": "dev-fix-kms-xsd-docs-alignment",
+            "alias": "5.4",
+            "alias_normalized": "5.4.0.0"
+        }
+    ],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "doctrine/mongodb-odm": 20,
+        "doctrine/mongodb-odm-bundle": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
