@@ -3,21 +3,18 @@
     "license": "proprietary",
     "minimum-stability": "stable",
     "prefer-stable": true,
-    "repositories": [
-        { "type": "github", "url": "git@github.com:GromNaN/DoctrineMongoDBBundle.git" },
-        { "type": "github", "url": "git@github.com:GromNaN/mongodb-odm.git"}
-    ],
     "require": {
         "php": ">=8.2",
-        "ext-mongodb": "^2.0",
         "ext-ctype": "*",
         "ext-iconv": "*",
-        "doctrine/mongodb-odm": "dev-fle as 2.12",
-        "doctrine/mongodb-odm-bundle": "dev-fix-kms-xsd-docs-alignment as 5.4",
+        "ext-mongodb": "^2.0",
+        "doctrine/mongodb-odm": "dev-feature/queryable-encryption as 2.12",
+        "doctrine/mongodb-odm-bundle": "dev-feature/queryable-encryption as 5.4",
         "symfony/console": "7.2.*",
         "symfony/dotenv": "7.2.*",
-        "symfony/flex": "^2.7.1",
+        "symfony/flex": "^2.8.0",
         "symfony/framework-bundle": "7.2.*",
+        "symfony/http-client": "7.2.*",
         "symfony/runtime": "7.2.*",
         "symfony/yaml": "7.2.*"
     },
@@ -70,5 +67,9 @@
             "allow-contrib": false,
             "require": "7.2.*"
         }
+    },
+    "require-dev": {
+        "doctrine/data-fixtures": "^2.0",
+        "phpunit/phpunit": "^12.2"
     }
 }

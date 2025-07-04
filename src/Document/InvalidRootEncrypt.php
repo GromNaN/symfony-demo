@@ -10,7 +10,7 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations\Encrypt;
 
 /** Root document cannot be encrypted. */
 #[Document]
-#[Encrypt]
+//#[Encrypt]
 class InvalidRootEncrypt
 {
     #[ODM\Id]

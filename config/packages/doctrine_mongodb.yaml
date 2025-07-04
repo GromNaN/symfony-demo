@@ -5,11 +5,17 @@ doctrine_mongodb:
         default:
             server: '%env(resolve:MONGODB_URL)%'
             options: {}
-            driver_options:
-                autoEncryption:
-                    kmsProviders:
-                        local:
-                            key: '%env(resolve:MONGODB_KMS_PROVIDER_LOCAL_KEY)%'
+            autoEncryption:
+                kmsProvider:
+                    type: 'local'
+                    key: '%env(resolve:MONGODB_KMS_PROVIDER_LOCAL_KEY)%'
+                #encryptedFieldsMap:
+                extraOptions:
+                    cryptSharedLibPath: '%kernel.project_dir%/bin/mongo_crypt_v1.dylib'
+
+        other:
+            server: '%env(resolve:MONGODB_URL)%'
+            options: { }
     default_database: '%env(resolve:MONGODB_DB)%'
     document_managers:
         default:
