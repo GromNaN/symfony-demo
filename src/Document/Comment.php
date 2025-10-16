@@ -14,10 +14,16 @@ namespace App\Document;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use Doctrine\ODM\MongoDB\Types\Type;
 use Symfony\Component\Validator\Constraints as Assert;
+
 use function Symfony\Component\String\u;
 
 /**
  * Defines the properties of the Comment document to represent the blog comments.
+ *
+ * See https://symfony.com/doc/current/doctrine.html#creating-an-entity-class
+ *
+ * @author Ryan Weaver <weaverryan@gmail.com>
+ * @author Javier Eguiluz <javier.eguiluz@gmail.com>
  */
 #[ODM\Document]
 class Comment
@@ -27,7 +33,7 @@ class Comment
 
     #[ODM\Field(type: Type::STRING)]
     #[Assert\NotBlank(message: 'comment.blank')]
-    #[Assert\Length(min: 5, minMessage: 'comment.too_short', max: 10000, maxMessage: 'comment.too_long')]
+    #[Assert\Length(min: 5, max: 10000, minMessage: 'comment.too_short', maxMessage: 'comment.too_long')]
     private ?string $content = null;
 
     #[ODM\Field(type: Type::DATE_IMMUTABLE)]

@@ -23,10 +23,6 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
-        exclude:
-            - '../src/DependencyInjection/'
-            - '../src/Entity/'
-            - '../src/Kernel.php'
 
     # Enable autowiring for MongoDB ODM Repositories
     # This is incompatible with Doctrine ORM which also declare this alias

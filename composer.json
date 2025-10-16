@@ -3,18 +3,12 @@
     "license": "MIT",
     "type": "project",
     "description": "Symfony Demo Application",
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true,
-    "replace": {
-        "symfony/polyfill-php72": "*",
-        "symfony/polyfill-php73": "*",
-        "symfony/polyfill-php74": "*",
-        "symfony/polyfill-php80": "*",
-        "symfony/polyfill-php81": "*",
-        "symfony/polyfill-php82": "*"
-    },
     "require": {
         "php": ">=8.2",
+        "ext-ctype": "*",
+        "ext-iconv": "*",
         "ext-pdo_sqlite": "*",
         "doctrine/data-fixtures": "^1.7",
         "doctrine/mongodb-odm-bundle": "^5",
@@ -44,7 +38,8 @@
         "symfony/ux-live-component": "^2.6",
         "symfony/validator": "^7",
         "symfony/yaml": "^7",
-        "symfonycasts/sass-bundle": "^0.7",
+        "symfonycasts/sass-bundle": "^0.8.3",
+        "twbs/bootstrap": "^5",
         "twig/extra-bundle": "^3.3",
         "twig/intl-extra": "^3.3",
         "twig/markdown-extra": "^3.3"
@@ -60,8 +55,17 @@
         "symfony/debug-bundle": "^7",
         "symfony/maker-bundle": "^1.36",
         "symfony/stopwatch": "^7",
-        "symfony/web-profiler-bundle": "^7",
-        "twbs/bootstrap": "^5"
+        "symfony/web-profiler-bundle": "^7"
+    },
+    "replace": {
+        "symfony/polyfill-ctype": "*",
+        "symfony/polyfill-iconv": "*",
+        "symfony/polyfill-php72": "*",
+        "symfony/polyfill-php73": "*",
+        "symfony/polyfill-php74": "*",
+        "symfony/polyfill-php80": "*",
+        "symfony/polyfill-php81": "*",
+        "symfony/polyfill-php82": "*"
     },
     "config": {
         "allow-plugins": {
@@ -89,6 +93,7 @@
     },
     "scripts": {
         "auto-scripts": {
+            "-r \"@rename('.env.local.demo', '.env.local');\"": "php-script",
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd",
             "importmap:install": "symfony-cmd",

@@ -18,12 +18,12 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: "Checkout code"
-              uses: actions/checkout@v4
+              uses: actions/checkout@v5
 
             - name: PHP-CS-Fixer
-              uses: docker://oskarstark/php-cs-fixer-ga
+              uses: docker://ghcr.io/php-cs-fixer/php-cs-fixer:3-php8.2
               with:
-                  args: --diff --dry-run
+                  args: check --diff --using-cache=no
 
     linters:
         name: Linters
@@ -34,7 +34,7 @@ jobs:
 
         steps:
             - name: "Checkout code"
-              uses: actions/checkout@v4
+              uses: actions/checkout@v5
 
             - name: "Install PHP with extensions"
               uses: shivammathur/setup-php@v2
@@ -43,6 +43,9 @@ jobs:
                   extensions: intl
                   php-version: ${{ matrix.php-version }}
                   tools: composer:v2
+
+            - name: Lint Composer config
+              run: composer validate --no-check-publish --strict
 
             - name: "Install dependencies"
               id: install
@@ -72,10 +75,6 @@ jobs:
               if: always() && steps.install.outcome == 'success'
               run: ./bin/console doctrine:schema:validate --skip-sync -vvv --no-interaction
 
-            - name: Lint Composer config
-              if: always() && steps.install.outcome == 'success'
-              run: composer validate --strict
-
             - name: Check if any dependencies are compromised
               if: always() && steps.install.outcome == 'success'
               run: composer audit
@@ -86,7 +85,7 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@v5
 
             - name: Setup PHP
               uses: shivammathur/setup-php@v2

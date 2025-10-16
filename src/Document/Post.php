@@ -15,14 +15,17 @@ use App\Repository\PostRepository;
 use Doctrine\Bundle\MongoDBBundle\Validator\Constraints\Unique;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
-use Doctrine\ODM\MongoDB\Types\Type;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
-use MongoDB\BSON\ObjectId;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Defines the properties of the Post document to represent the blog posts.
+ *
+ * See https://symfony.com/doc/current/doctrine.html#creating-an-entity-class
+ *
+ * @author Ryan Weaver <weaverryan@gmail.com>
+ * @author Javier Eguiluz <javier.eguiluz@gmail.com>
+ * @author Yonel Ceruto <yonelceruto@gmail.com>
  */
 #[ODM\Document(repositoryClass: PostRepository::class)]
 #[ODM\UniqueIndex(keys: ['slug' => 1], options: ['unique' => true])]

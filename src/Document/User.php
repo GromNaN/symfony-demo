@@ -20,6 +20,11 @@ use Doctrine\ODM\MongoDB\Types\Type;
 
 /**
  * Defines the properties of the User document to represent the application users.
+ *
+ * See https://symfony.com/doc/current/doctrine.html#creating-an-entity-class
+ *
+ * @author Ryan Weaver <weaverryan@gmail.com>
+ * @author Javier Eguiluz <javier.eguiluz@gmail.com>
  */
 #[ODM\Document(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
