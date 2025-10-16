@@ -12,7 +12,7 @@
 namespace App\Pagination;
 
 use Doctrine\ODM\MongoDB\DocumentManager;
-use Doctrine\ODM\MongoDB\Query\Builder;
+use Doctrine\ODM\MongoDB\Query\Builder as DoctrineQueryBuilder;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 
 /**
@@ -37,8 +37,8 @@ final class Paginator
     private \Traversable $results;
 
     public function __construct(
-        private readonly Builder $queryBuilder,
-        private readonly int $pageSize = self::PAGE_SIZE
+        private readonly DoctrineQueryBuilder $queryBuilder,
+        private readonly int $pageSize = self::PAGE_SIZE,
     ) {
     }
 

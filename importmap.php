@@ -75,16 +75,16 @@ return [
         'version' => '4.1.1',
     ],
     'es6-promise' => [
-        'version' => '4.2.8',
+        'version' => '3.3.1',
     ],
     'storage2' => [
         'version' => '0.1.2',
     ],
     'superagent' => [
-        'version' => '10.1.1',
+        'version' => '3.8.3',
     ],
     'component-emitter' => [
-        'version' => '2.0.0',
+        'version' => '1.3.1',
     ],
     'bootstrap-tagsinput' => [
         'version' => '0.7.1',

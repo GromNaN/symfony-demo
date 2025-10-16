@@ -10,7 +10,6 @@
         "ext-ctype": "*",
         "ext-iconv": "*",
         "ext-pdo_sqlite": "*",
-        "doctrine/data-fixtures": "^1.7",
         "doctrine/mongodb-odm-bundle": "^5",
         "league/commonmark": "^2.1",
         "symfony/apache-pack": "^1.0",
@@ -45,6 +44,7 @@
         "twig/markdown-extra": "^3.3"
     },
     "require-dev": {
+        "doctrine/data-fixtures": "^1.7",
         "phpstan/extension-installer": "^1.2",
         "phpstan/phpstan": "^2.0",
         "phpstan/phpstan-doctrine": "^2.0",
