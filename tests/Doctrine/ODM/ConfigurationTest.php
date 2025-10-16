@@ -11,11 +11,13 @@
 
 namespace App\Tests\Doctrine\ORM;
 
-use Doctrine\ORM\Configuration;
+use App\Tests\ResetFixturesTrait;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class ConfigurationTest extends KernelTestCase
 {
+    use ResetFixturesTrait;
+
     private function getConfiguration(): Configuration
     {
         return static::getContainer()->get('doctrine.orm.default_configuration');

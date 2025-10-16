@@ -10,6 +10,7 @@
         "ext-ctype": "*",
         "ext-iconv": "*",
         "ext-pdo_sqlite": "*",
+        "ext-mongodb": "^1.21.2|^2.1",
         "doctrine/mongodb-odm-bundle": "^5",
         "league/commonmark": "^2.1",
         "symfony/apache-pack": "^1.0",

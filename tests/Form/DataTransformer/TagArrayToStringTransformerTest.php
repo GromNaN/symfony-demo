@@ -14,6 +14,7 @@ namespace App\Tests\Form\DataTransformer;
 use App\Document\Tag;
 use App\Form\DataTransformer\TagArrayToStringTransformer;
 use App\Repository\TagRepository;
+use App\Tests\ResetFixturesTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -23,6 +24,8 @@ use PHPUnit\Framework\TestCase;
  */
 final class TagArrayToStringTransformerTest extends TestCase
 {
+    use ResetFixturesTrait;
+
     /**
      * Ensures that tags are created correctly.
      */

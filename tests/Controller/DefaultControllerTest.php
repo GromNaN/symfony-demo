@@ -12,8 +12,10 @@
 namespace App\Tests\Controller;
 
 use App\Document\Post;
+use App\Tests\ResetFixturesTrait;
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -29,6 +31,8 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class DefaultControllerTest extends WebTestCase
 {
+    use ResetFixturesTrait;
+
     /**
      * PHPUnit's data providers allow to execute the same tests repeated times
      * using a different set of data each time.
@@ -58,11 +62,11 @@ final class DefaultControllerTest extends WebTestCase
         $client = static::createClient();
 
         // the service container is always available via the test client
-        /** @var Registry $registry */
-        $registry = $client->getContainer()->get('doctrine');
+        /** @var ManagerRegistry $registry */
+        $registry = $client->getContainer()->get('doctrine_mongodb');
 
         /** @var Post $blogPost */
-        $blogPost = $registry->getRepository(Post::class)->find(1);
+        $blogPost = $registry->getRepository(Post::class)->find('68f14cc10152bda8580dd701');
 
         $client->request('GET', \sprintf('/en/blog/posts/%s', $blogPost->getSlug()));
         $this->assertResponseIsSuccessful();
@@ -97,7 +101,7 @@ final class DefaultControllerTest extends WebTestCase
     {
         yield ['/en/admin/post/'];
         yield ['/en/admin/post/new'];
-        yield ['/en/admin/post/1'];
-        yield ['/en/admin/post/1/edit'];
+        yield ['/en/admin/post/68f14cc10152bda8580dd701'];
+        yield ['/en/admin/post/68f14cc10152bda8580dd701/edit'];
     }
 }
