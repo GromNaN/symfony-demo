@@ -9,18 +9,17 @@
  * file that was distributed with this source code.
  */
 
-namespace App\Entity;
+namespace App\Document;
 
 use App\Repository\PostRepository;
+use Doctrine\Bundle\MongoDBBundle\Validator\Constraints\Unique;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Defines the properties of the Post entity to represent the blog posts.
+ * Defines the properties of the Post document to represent the blog posts.
  *
  * See https://symfony.com/doc/current/doctrine.html#creating-an-entity-class
  *
@@ -28,54 +27,51 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @author Javier Eguiluz <javier.eguiluz@gmail.com>
  * @author Yonel Ceruto <yonelceruto@gmail.com>
  */
-#[ORM\Entity(repositoryClass: PostRepository::class)]
-#[ORM\Table(name: 'symfony_demo_post')]
-#[UniqueEntity(fields: ['slug'], errorPath: 'title', message: 'post.slug_unique')]
+#[ODM\Document(repositoryClass: PostRepository::class)]
+#[ODM\UniqueIndex(keys: ['slug' => 1], options: ['unique' => true])]
+#[ODM\Index(['order' => 'desc', 'tags.name' => 'asc'])]
+#[Unique(fields: ['slug'], message: 'post.slug_unique', errorPath: 'title')]
 class Post
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(type: Types::INTEGER)]
-    private ?int $id = null;
+    #[ODM\Id]
+    private ?string $id = null;
 
-    #[ORM\Column(type: Types::STRING)]
+    #[ODM\Field]
     #[Assert\NotBlank]
     private ?string $title = null;
 
-    #[ORM\Column(type: Types::STRING)]
+    #[ODM\Field]
     private ?string $slug = null;
 
-    #[ORM\Column(type: Types::STRING)]
+    #[ODM\Field]
     #[Assert\NotBlank(message: 'post.blank_summary')]
     #[Assert\Length(max: 255)]
     private ?string $summary = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ODM\Field]
     #[Assert\NotBlank(message: 'post.blank_content')]
     #[Assert\Length(min: 10, minMessage: 'post.too_short_content')]
     private ?string $content = null;
 
-    #[ORM\Column]
+    #[ODM\Field]
     private \DateTimeImmutable $publishedAt;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ODM\ReferenceOne(nullable: false, targetDocument: User::class)]
     private ?User $author = null;
 
     /**
      * @var Collection<int, Comment>
      */
-    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'post', orphanRemoval: true, cascade: ['persist'])]
-    #[ORM\OrderBy(['publishedAt' => 'DESC'])]
+    #[ODM\ReferenceMany(targetDocument: Comment::class)]
+    #[Assert\Type(type: Collection::class, message: 'post.invalid_tags')]
     private Collection $comments;
 
     /**
      * @var Collection<int, Tag>
      */
-    #[ORM\ManyToMany(targetEntity: Tag::class, cascade: ['persist'])]
-    #[ORM\JoinTable(name: 'symfony_demo_post_tag')]
-    #[ORM\OrderBy(['name' => 'ASC'])]
+    #[ODM\EmbedMany(targetDocument: Tag::class)]
     #[Assert\Count(max: 4, maxMessage: 'post.too_many_tags')]
+    #[Assert\Type(type: Collection::class, message: 'post.invalid_tags')]
     private Collection $tags;
 
     public function __construct()
@@ -85,7 +81,7 @@ class Post
         $this->tags = new ArrayCollection();
     }
 
-    public function getId(): ?int
+    public function getId(): ?string
     {
         return $this->id;
     }
@@ -120,13 +116,16 @@ class Post
         $this->content = $content;
     }
 
-    public function getPublishedAt(): \DateTimeImmutable
+    public function getPublishedAt(): \DateTimeInterface
     {
         return $this->publishedAt;
     }
 
-    public function setPublishedAt(\DateTimeImmutable $publishedAt): void
+    public function setPublishedAt(\DateTimeInterface $publishedAt): void
     {
+        if ($publishedAt instanceof \DateTime) {
+            $publishedAt = \DateTimeImmutable::createFromMutable($publishedAt);
+        }
         $this->publishedAt = $publishedAt;
     }
 

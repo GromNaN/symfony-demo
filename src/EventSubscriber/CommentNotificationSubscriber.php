@@ -11,8 +11,8 @@
 
 namespace App\EventSubscriber;
 
-use App\Entity\Post;
-use App\Entity\User;
+use App\Document\Post;
+use App\Document\User;
 use App\Event\CommentCreatedEvent;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;

@@ -11,9 +11,10 @@
 
 namespace App\Tests\Controller;
 
-use App\Entity\User;
+use App\Document\User;
 use App\Pagination\Paginator;
 use App\Repository\UserRepository;
+use App\Tests\ResetFixturesTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
@@ -28,6 +29,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
  */
 final class BlogControllerTest extends WebTestCase
 {
+    use ResetFixturesTrait;
     public function testIndex(): void
     {
         $client = static::createClient();

@@ -11,7 +11,7 @@
 
 namespace App\Command;
 
-use App\Entity\User;
+use App\Document\User;
 use App\Repository\UserRepository;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;

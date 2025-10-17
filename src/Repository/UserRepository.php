@@ -11,8 +11,8 @@
 
 namespace App\Repository;
 
-use App\Entity\User;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\Document\User;
+use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -25,15 +25,22 @@ use Doctrine\Persistence\ManagerRegistry;
  * @author Ryan Weaver <weaverryan@gmail.com>
  * @author Javier Eguiluz <javier.eguiluz@gmail.com>
  *
- * @method User|null findOneByUsername(string $username)
- * @method User|null findOneByEmail(string $email)
- *
- * @template-extends ServiceEntityRepository<User>
+ * @template-extends ServiceDocumentRepository<User>
  */
-class UserRepository extends ServiceEntityRepository
+class UserRepository extends ServiceDocumentRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, User::class);
+    }
+
+    public function findOneByUsername(string $username): ?User
+    {
+        return $this->findOneBy(['username' => $username]);
+    }
+
+    public function findOneByEmail(string $email): ?User
+    {
+        return $this->findOneBy(['email' => $email]);
     }
 }

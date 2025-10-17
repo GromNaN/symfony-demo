@@ -11,9 +11,9 @@
 
 namespace App\Pagination;
 
-use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
-use Doctrine\ORM\Tools\Pagination\CountWalker;
-use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
+use Doctrine\ODM\MongoDB\DocumentManager;
+use Doctrine\ODM\MongoDB\Query\Builder as DoctrineQueryBuilder;
+use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 
 /**
  * @author Javier Eguiluz <javier.eguiluz@gmail.com>
@@ -47,29 +47,17 @@ final class Paginator
         $this->currentPage = max(1, $page);
         $firstResult = ($this->currentPage - 1) * $this->pageSize;
 
-        $query = $this->queryBuilder
-            ->setFirstResult($firstResult)
-            ->setMaxResults($this->pageSize)
+        $countQuery = (clone $this->queryBuilder)
+            ->count()
             ->getQuery();
 
-        /** @var array<string, mixed> $joinDqlParts */
-        $joinDqlParts = $this->queryBuilder->getDQLPart('join');
+        $query = $this->queryBuilder
+            ->skip($firstResult)
+            ->limit($this->pageSize)
+            ->getQuery();
 
-        if (0 === \count($joinDqlParts)) {
-            $query->setHint(CountWalker::HINT_DISTINCT, false);
-        }
-
-        /** @var DoctrinePaginator<object> $paginator */
-        $paginator = new DoctrinePaginator($query, true);
-
-        /** @var array<string, mixed> $havingDqlParts */
-        $havingDqlParts = $this->queryBuilder->getDQLPart('having');
-
-        $useOutputWalkers = \count($havingDqlParts ?: []) > 0;
-        $paginator->setUseOutputWalkers($useOutputWalkers);
-
-        $this->results = $paginator->getIterator();
-        $this->numResults = $paginator->count();
+        $this->results = $query->execute();
+        $this->numResults = $countQuery->execute();
 
         return $this;
     }

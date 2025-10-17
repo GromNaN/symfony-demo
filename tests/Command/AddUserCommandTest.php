@@ -12,11 +12,14 @@
 namespace App\Tests\Command;
 
 use App\Repository\UserRepository;
+use App\Tests\ResetFixturesTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 final class AddUserCommandTest extends AbstractCommandTestCase
 {
+    use ResetFixturesTrait;
+
     /**
      * @var string[]
      */

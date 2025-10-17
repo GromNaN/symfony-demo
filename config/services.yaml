@@ -24,5 +24,13 @@ services:
     App\:
         resource: '../src/'
 
+    # Enable autowiring for MongoDB ODM Repositories
+    # This is incompatible with Doctrine ORM which also declare this alias
+    Doctrine\Persistence\ManagerRegistry: '@doctrine_mongodb'
+
+    # Necessary to resolve the documents in controller arguments
+    Symfony\Bridge\Doctrine\ArgumentResolver\EntityValueResolver:
+        tags: ['controller.argument_value_resolver']
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

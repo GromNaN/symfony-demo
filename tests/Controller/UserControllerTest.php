@@ -11,8 +11,9 @@
 
 namespace App\Tests\Controller;
 
-use App\Entity\User;
+use App\Document\User;
 use App\Repository\UserRepository;
+use App\Tests\ResetFixturesTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
@@ -34,6 +35,8 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class UserControllerTest extends WebTestCase
 {
+    use ResetFixturesTrait;
+    
     #[DataProvider('getUrlsForAnonymousUsers')]
     public function testAccessDeniedForAnonymousUsers(string $httpMethod, string $url): void
     {

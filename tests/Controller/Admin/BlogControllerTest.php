@@ -11,7 +11,7 @@
 
 namespace App\Tests\Controller\Admin;
 
-use App\Entity\User;
+use App\Document\User;
 use App\Repository\PostRepository;
 use App\Repository\UserRepository;
 use PHPUnit\Framework\Attributes\DataProvider;

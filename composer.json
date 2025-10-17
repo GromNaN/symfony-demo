@@ -10,10 +10,8 @@
         "ext-ctype": "*",
         "ext-iconv": "*",
         "ext-pdo_sqlite": "*",
-        "doctrine/dbal": "^4.0",
-        "doctrine/doctrine-bundle": "^2.16",
-        "doctrine/doctrine-migrations-bundle": "^3.3",
-        "doctrine/orm": "^3.5",
+        "ext-mongodb": "^1.21.2|^2.1",
+        "doctrine/mongodb-odm-bundle": "^5",
         "league/commonmark": "^2.1",
         "symfony/apache-pack": "^1.0",
         "symfony/asset": "^7",
@@ -47,8 +45,8 @@
         "twig/markdown-extra": "^3.3"
     },
     "require-dev": {
-        "dama/doctrine-test-bundle": "^8.0.2",
-        "doctrine/doctrine-fixtures-bundle": "^4.1",
+        "doctrine/data-fixtures": "^1.7",
+        "phpstan/extension-installer": "^1.2",
         "phpstan/phpstan": "^2.0",
         "phpstan/phpstan-doctrine": "^2.0",
         "phpstan/phpstan-symfony": "^2.0",
@@ -72,6 +70,7 @@
     },
     "config": {
         "allow-plugins": {
+            "phpstan/extension-installer": true,
             "symfony/flex": true,
             "symfony/runtime": true
         },

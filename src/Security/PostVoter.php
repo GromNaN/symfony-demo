@@ -11,8 +11,8 @@
 
 namespace App\Security;
 
-use App\Entity\Post;
-use App\Entity\User;
+use App\Document\Post;
+use App\Document\User;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -56,6 +56,8 @@ final class PostVoter extends Voter
         // the logic of this voter is pretty simple: if the logged-in user is the
         // author of the given blog post, grant permission; otherwise, deny it.
         // (the supports() method guarantees that $post is a Post object)
+        // We can compare objects identity because Doctrine ensure that documents
+        // with the same ID are the same instance
         return $user === $post->getAuthor();
     }
 }

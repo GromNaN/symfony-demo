@@ -11,11 +11,12 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Comment;
-use App\Entity\Post;
-use App\Entity\Tag;
-use App\Entity\User;
-use Doctrine\Bundle\FixturesBundle\Fixture;
+use App\Document\Comment;
+use App\Document\Post;
+use App\Document\Tag;
+use App\Document\User;
+use Doctrine\Bundle\MongoDBBundle\Fixture\Fixture;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\String\AbstractUnicodeString;
@@ -69,10 +70,12 @@ final class AppFixtures extends Fixture
         $manager->flush();
     }
 
-    private function loadPosts(ObjectManager $manager): void
+    private function loadPosts(DocumentManager $manager): void
     {
-        foreach ($this->getPostData() as [$title, $slug, $summary, $content, $publishedAt, $author, $tags]) {
+        foreach ($this->getPostData() as $i => [$title, $slug, $summary, $content, $publishedAt, $author, $tags]) {
             $post = new Post();
+            // Force the ID to have a predictable value to simplify tests
+            $manager->getClassMetadata(Post::class)->setFieldValue($post, 'id', sprintf('68f14cc10152bda8580dd7%02d', $i));
             $post->setTitle($title);
             $post->setSlug($slug);
             $post->setSummary($summary);
@@ -88,6 +91,7 @@ final class AppFixtures extends Fixture
                 $comment->setPublishedAt(new \DateTimeImmutable('now + '.$i.'seconds'));
 
                 $post->addComment($comment);
+                $manager->persist($comment);
             }
 
             $manager->persist($post);
