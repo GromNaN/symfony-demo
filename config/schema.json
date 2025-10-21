@@ -171,7 +171,6 @@
     },
     "$defs": {
         "framework": {
-            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
                 "secret": {
@@ -6217,7 +6216,6 @@
             "additionalProperties": false
         },
         "security": {
-            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
                 "access_denied_url": {
@@ -7255,7 +7253,6 @@
             "additionalProperties": false
         },
         "doctrine": {
-            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
                 "dbal": {
@@ -9353,7 +9350,6 @@
             "additionalProperties": false
         },
         "monolog": {
-            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
                 "use_microseconds": {
@@ -11078,7 +11074,6 @@
             "additionalProperties": false
         },
         "twig": {
-            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
                 "form_themes": {
@@ -11422,7 +11417,6 @@
             "additionalProperties": false
         },
         "debug": {
-            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
                 "max_items": {
@@ -11489,7 +11483,6 @@
             "additionalProperties": false
         },
         "web_profiler": {
-            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
                 "toolbar": {
@@ -11542,7 +11535,6 @@
             "additionalProperties": false
         },
         "dama_doctrine_test": {
-            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
                 "enable_static_connection": {
@@ -11587,7 +11579,6 @@
             }
         },
         "doctrine_migrations": {
-            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
                 "migrations_paths": {
@@ -11889,7 +11880,6 @@
             "additionalProperties": false
         },
         "maker": {
-            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
                 "root_namespace": {
@@ -11915,7 +11905,6 @@
             "additionalProperties": false
         },
         "twig_extra": {
-            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
                 "cache": {
@@ -12232,7 +12221,6 @@
             "additionalProperties": false
         },
         "twig_component": {
-            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
                 "defaults": {
@@ -12322,7 +12310,6 @@
             "additionalProperties": false
         },
         "live_component": {
-            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
                 "secret": {
@@ -12344,7 +12331,6 @@
             }
         },
         "symfonycasts_sass": {
-            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
                 "root_sass": {
@@ -12487,7 +12473,6 @@
             "additionalProperties": false
         },
         "ux_icons": {
-            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
                 "icon_dir": {

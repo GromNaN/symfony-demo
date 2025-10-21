@@ -41,7 +41,7 @@ foreach ($bundles as $class => $envs) {
 
             $name = $node->getName();
             $ref = ['$ref' => '#/$defs/'.$name];
-            $schema['$defs'][$name] = $jsonschemaGenerator->generate($node);
+            $schema['$defs'][$name] = $jsonschemaGenerator->generateNode($node);
 
             if ($envs === ['all' => true]) {
                 $schema['properties'][$name] = $ref;
@@ -58,4 +58,3 @@ foreach ($bundles as $class => $envs) {
 }
 
 file_put_contents(__DIR__.'/schema.json', json_encode($schema, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR));
-
