@@ -262,7 +262,10 @@
                     "description": "Defines the possible locales for the application. This list is used for generating translations files, but also to restrict which locales are allowed when it is set from Accept-Language header (using \"set_locale_from_accept_language\")."
                 },
                 "trusted_hosts": {
-                    "type": "array",
+                    "type": [
+                        "array",
+                        "string"
+                    ],
                     "items": {
                         "type": [
                             "array",
@@ -283,7 +286,10 @@
                     ]
                 },
                 "trusted_headers": {
-                    "type": "array",
+                    "type": [
+                        "array",
+                        "string"
+                    ],
                     "items": {
                         "type": [
                             "array",
@@ -315,7 +321,10 @@
                     "description": "HttpKernel will handle all kinds of \\Throwable."
                 },
                 "csrf_protection": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": [
@@ -376,7 +385,10 @@
                     }
                 },
                 "form": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -458,7 +470,10 @@
                     "description": "Form configuration"
                 },
                 "http_cache": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -471,7 +486,6 @@
                         "trace_level": {
                             "$anyOf": [
                                 {
-                                    "type": [],
                                     "enum": [
                                         "none",
                                         "short",
@@ -548,7 +562,10 @@
                     "description": "HTTP cache configuration"
                 },
                 "esi": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -562,7 +579,10 @@
                     "description": "ESI configuration"
                 },
                 "ssi": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -576,7 +596,10 @@
                     "description": "SSI configuration"
                 },
                 "fragments": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -614,7 +637,10 @@
                     "description": "Fragments configuration"
                 },
                 "profiler": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -674,7 +700,10 @@
                     "description": "Profiler configuration"
                 },
                 "workflows": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -686,7 +715,10 @@
                                 "type": "object",
                                 "properties": {
                                     "audit_trail": {
-                                        "type": "object",
+                                        "type": [
+                                            "object",
+                                            "boolean"
+                                        ],
                                         "properties": {
                                             "enabled": {
                                                 "type": "boolean",
@@ -701,7 +733,6 @@
                                     "type": {
                                         "$anyOf": [
                                             {
-                                                "type": [],
                                                 "enum": [
                                                     "workflow",
                                                     "state_machine"
@@ -719,7 +750,6 @@
                                             "type": {
                                                 "$anyOf": [
                                                     {
-                                                        "type": [],
                                                         "enum": [
                                                             "method"
                                                         ]
@@ -753,7 +783,10 @@
                                         "additionalProperties": false
                                     },
                                     "supports": {
-                                        "type": "array",
+                                        "type": [
+                                            "array",
+                                            "string"
+                                        ],
                                         "items": {
                                             "type": [
                                                 "array",
@@ -789,7 +822,10 @@
                                         ]
                                     },
                                     "initial_marking": {
-                                        "type": "array",
+                                        "type": [
+                                            "array",
+                                            "string"
+                                        ],
                                         "items": {
                                             "type": [
                                                 "array",
@@ -819,7 +855,11 @@
                                         ]
                                     },
                                     "places": {
-                                        "type": "array",
+                                        "type": [
+                                            "array",
+                                            "string",
+                                            "object"
+                                        ],
                                         "items": {
                                             "type": "object",
                                             "properties": {
@@ -851,7 +891,10 @@
                                         }
                                     },
                                     "transitions": {
-                                        "type": "array",
+                                        "type": [
+                                            "array",
+                                            "object"
+                                        ],
                                         "items": {
                                             "type": "object",
                                             "properties": {
@@ -866,7 +909,10 @@
                                                     ]
                                                 },
                                                 "from": {
-                                                    "type": "array",
+                                                    "type": [
+                                                        "array",
+                                                        "string"
+                                                    ],
                                                     "items": {
                                                         "type": "object",
                                                         "properties": {
@@ -886,7 +932,10 @@
                                                     }
                                                 },
                                                 "to": {
-                                                    "type": "array",
+                                                    "type": [
+                                                        "array",
+                                                        "string"
+                                                    ],
                                                     "items": {
                                                         "type": "object",
                                                         "properties": {
@@ -951,7 +1000,10 @@
                     }
                 },
                 "router": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -1057,7 +1109,10 @@
                     "description": "Router configuration"
                 },
                 "session": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -1128,7 +1183,6 @@
                         "cookie_secure": {
                             "$anyOf": [
                                 {
-                                    "type": [],
                                     "enum": [
                                         true,
                                         false,
@@ -1148,7 +1202,6 @@
                         "cookie_samesite": {
                             "$anyOf": [
                                 {
-                                    "type": [],
                                     "enum": [
                                         null,
                                         "lax",
@@ -1238,7 +1291,10 @@
                     "description": "Session configuration"
                 },
                 "request": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -1247,7 +1303,10 @@
                         "formats": {
                             "type": "object",
                             "additionalProperties": {
-                                "type": "array",
+                                "type": [
+                                    "array",
+                                    "string"
+                                ],
                                 "items": {
                                     "type": [
                                         "array",
@@ -1269,7 +1328,10 @@
                     "description": "Request configuration"
                 },
                 "assets": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -1336,7 +1398,10 @@
                             "default": ""
                         },
                         "base_urls": {
-                            "type": "array",
+                            "type": [
+                                "array",
+                                "string"
+                            ],
                             "items": {
                                 "type": [
                                     "array",
@@ -1413,7 +1478,10 @@
                                         "default": ""
                                     },
                                     "base_urls": {
-                                        "type": "array",
+                                        "type": [
+                                            "array",
+                                            "string"
+                                        ],
                                         "items": {
                                             "type": [
                                                 "array",
@@ -1445,7 +1513,10 @@
                     "description": "Assets configuration"
                 },
                 "asset_mapper": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -1509,7 +1580,6 @@
                         "missing_import_mode": {
                             "$anyOf": [
                                 {
-                                    "type": [],
                                     "enum": [
                                         "strict",
                                         "warn",
@@ -1586,7 +1656,10 @@
                             "description": "The directory to store JavaScript vendors."
                         },
                         "precompress": {
-                            "type": "object",
+                            "type": [
+                                "object",
+                                "boolean"
+                            ],
                             "properties": {
                                 "enabled": {
                                     "type": "boolean",
@@ -1711,14 +1784,20 @@
                     "description": "Asset Mapper configuration"
                 },
                 "translator": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
                             "default": true
                         },
                         "fallbacks": {
-                            "type": "array",
+                            "type": [
+                                "array",
+                                "string"
+                            ],
                             "items": {
                                 "type": [
                                     "array",
@@ -1783,7 +1862,10 @@
                             }
                         },
                         "pseudo_localization": {
-                            "type": "object",
+                            "type": [
+                                "object",
+                                "boolean"
+                            ],
                             "properties": {
                                 "enabled": {
                                     "type": "boolean",
@@ -1879,7 +1961,10 @@
                         "globals": {
                             "type": "object",
                             "additionalProperties": {
-                                "type": "object",
+                                "type": [
+                                    "object",
+                                    "string"
+                                ],
                                 "properties": {
                                     "value": {},
                                     "message": {
@@ -1929,7 +2014,10 @@
                     "description": "Translator configuration"
                 },
                 "validation": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -1952,7 +2040,10 @@
                             "default": true
                         },
                         "static_method": {
-                            "type": "array",
+                            "type": [
+                                "array",
+                                "string"
+                            ],
                             "items": {
                                 "type": [
                                     "array",
@@ -1981,7 +2072,6 @@
                         "email_validation_mode": {
                             "$anyOf": [
                                 {
-                                    "type": [],
                                     "enum": [
                                         "html5",
                                         "html5-allow-no-tld",
@@ -2018,7 +2108,10 @@
                             }
                         },
                         "not_compromised_password": {
-                            "type": "object",
+                            "type": [
+                                "object",
+                                "boolean"
+                            ],
                             "properties": {
                                 "enabled": {
                                     "type": "boolean",
@@ -2093,7 +2186,10 @@
                     "description": "Validation configuration"
                 },
                 "annotations": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -2106,7 +2202,10 @@
                     }
                 },
                 "serializer": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -2219,7 +2318,10 @@
                     "description": "Serializer configuration"
                 },
                 "property_access": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -2258,7 +2360,10 @@
                     "description": "Property access configuration"
                 },
                 "type_info": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -2286,7 +2391,10 @@
                     "description": "Type info configuration"
                 },
                 "property_info": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -2427,7 +2535,10 @@
                                 "type": "object",
                                 "properties": {
                                     "adapters": {
-                                        "type": "array",
+                                        "type": [
+                                            "array",
+                                            "string"
+                                        ],
                                         "items": {
                                             "type": [
                                                 "array",
@@ -2592,7 +2703,10 @@
                     }
                 },
                 "web_link": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -2606,7 +2720,11 @@
                     "description": "Web links configuration"
                 },
                 "lock": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "string",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -2615,7 +2733,10 @@
                         "resources": {
                             "type": "object",
                             "additionalProperties": {
-                                "type": "array",
+                                "type": [
+                                    "array",
+                                    "string"
+                                ],
                                 "items": {
                                     "type": [
                                         "array",
@@ -2641,7 +2762,11 @@
                     "description": "Lock configuration"
                 },
                 "semaphore": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "string",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -2669,7 +2794,10 @@
                     "description": "Semaphore configuration"
                 },
                 "messenger": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -2751,7 +2879,10 @@
                         "transports": {
                             "type": "object",
                             "additionalProperties": {
-                                "type": "object",
+                                "type": [
+                                    "object",
+                                    "string"
+                                ],
                                 "properties": {
                                     "dsn": {
                                         "type": [
@@ -2792,7 +2923,10 @@
                                         "description": "Transport name to send failed messages to (after all retries have failed)."
                                     },
                                     "retry_strategy": {
-                                        "type": "object",
+                                        "type": [
+                                            "object",
+                                            "string"
+                                        ],
                                         "properties": {
                                             "service": {
                                                 "type": [
@@ -2876,7 +3010,11 @@
                             "description": "Transport name to send failed messages to (after all retries have failed)."
                         },
                         "stop_worker_on_signals": {
-                            "type": "array",
+                            "type": [
+                                "array",
+                                "integer",
+                                "string"
+                            ],
                             "items": {
                                 "type": [
                                     "array",
@@ -2906,7 +3044,11 @@
                                 "type": "object",
                                 "properties": {
                                     "default_middleware": {
-                                        "type": "object",
+                                        "type": [
+                                            "object",
+                                            "string",
+                                            "boolean"
+                                        ],
                                         "properties": {
                                             "enabled": {
                                                 "type": "boolean",
@@ -2929,9 +3071,15 @@
                                         }
                                     },
                                     "middleware": {
-                                        "type": "array",
+                                        "type": [
+                                            "array",
+                                            "string"
+                                        ],
                                         "items": {
-                                            "type": "object",
+                                            "type": [
+                                                "object",
+                                                "string"
+                                            ],
                                             "properties": {
                                                 "id": {
                                                     "type": [
@@ -2996,7 +3144,10 @@
                     "description": "Messenger configuration"
                 },
                 "scheduler": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -3015,7 +3166,10 @@
                     "description": "Enabled by default when debug is enabled."
                 },
                 "http_client": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -3219,7 +3373,10 @@
                                     "description": "Rate limiter name to use for throttling requests."
                                 },
                                 "caching": {
-                                    "type": "object",
+                                    "type": [
+                                        "object",
+                                        "boolean"
+                                    ],
                                     "properties": {
                                         "enabled": {
                                             "type": "boolean",
@@ -3255,7 +3412,10 @@
                                     "description": "Caching configuration."
                                 },
                                 "retry_failed": {
-                                    "type": "object",
+                                    "type": [
+                                        "object",
+                                        "boolean"
+                                    ],
                                     "properties": {
                                         "enabled": {
                                             "type": "boolean",
@@ -3282,7 +3442,10 @@
                                                         "type": "integer"
                                                     },
                                                     "methods": {
-                                                        "type": "array",
+                                                        "type": [
+                                                            "array",
+                                                            "string"
+                                                        ],
                                                         "items": {
                                                             "type": "string"
                                                         },
@@ -3352,7 +3515,10 @@
                         "scoped_clients": {
                             "type": "object",
                             "additionalProperties": {
-                                "type": "object",
+                                "type": [
+                                    "object",
+                                    "string"
+                                ],
                                 "properties": {
                                     "scope": {
                                         "type": [
@@ -3608,7 +3774,10 @@
                                         "description": "Rate limiter name to use for throttling requests."
                                     },
                                     "caching": {
-                                        "type": "object",
+                                        "type": [
+                                            "object",
+                                            "boolean"
+                                        ],
                                         "properties": {
                                             "enabled": {
                                                 "type": "boolean",
@@ -3644,7 +3813,10 @@
                                         "description": "Caching configuration."
                                     },
                                     "retry_failed": {
-                                        "type": "object",
+                                        "type": [
+                                            "object",
+                                            "boolean"
+                                        ],
                                         "properties": {
                                             "enabled": {
                                                 "type": "boolean",
@@ -3671,7 +3843,10 @@
                                                             "type": "integer"
                                                         },
                                                         "methods": {
-                                                            "type": "array",
+                                                            "type": [
+                                                                "array",
+                                                                "string"
+                                                            ],
                                                             "items": {
                                                                 "type": "string"
                                                             },
@@ -3737,7 +3912,10 @@
                     "description": "HTTP Client configuration"
                 },
                 "mailer": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -3793,7 +3971,10 @@
                                     ]
                                 },
                                 "recipients": {
-                                    "type": "array",
+                                    "type": [
+                                        "array",
+                                        "string"
+                                    ],
                                     "items": {
                                         "type": [
                                             "array",
@@ -3806,7 +3987,10 @@
                                     }
                                 },
                                 "allowed_recipients": {
-                                    "type": "array",
+                                    "type": [
+                                        "array",
+                                        "string"
+                                    ],
                                     "items": {
                                         "type": [
                                             "array",
@@ -3831,7 +4015,10 @@
                         "headers": {
                             "type": "object",
                             "additionalProperties": {
-                                "type": "object",
+                                "type": [
+                                    "object",
+                                    "string"
+                                ],
                                 "properties": {
                                     "value": {}
                                 },
@@ -3839,7 +4026,10 @@
                             }
                         },
                         "dkim_signer": {
-                            "type": "object",
+                            "type": [
+                                "object",
+                                "boolean"
+                            ],
                             "properties": {
                                 "enabled": {
                                     "type": "boolean",
@@ -3908,7 +4098,10 @@
                             "description": "DKIM signer configuration"
                         },
                         "smime_signer": {
-                            "type": "object",
+                            "type": [
+                                "object",
+                                "boolean"
+                            ],
                             "properties": {
                                 "enabled": {
                                     "type": "boolean",
@@ -3981,7 +4174,10 @@
                             "description": "S/MIME signer configuration"
                         },
                         "smime_encrypter": {
-                            "type": "object",
+                            "type": [
+                                "object",
+                                "boolean"
+                            ],
                             "properties": {
                                 "enabled": {
                                     "type": "boolean",
@@ -4049,7 +4245,10 @@
                     "description": "Mailer configuration"
                 },
                 "secrets": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -4098,7 +4297,10 @@
                     }
                 },
                 "notifier": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -4149,7 +4351,10 @@
                         "channel_policy": {
                             "type": "object",
                             "additionalProperties": {
-                                "type": "array",
+                                "type": [
+                                    "array",
+                                    "string"
+                                ],
                                 "items": {
                                     "type": [
                                         "array",
@@ -4206,7 +4411,10 @@
                     "description": "Notifier configuration"
                 },
                 "rate_limiter": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -4256,7 +4464,6 @@
                                     "policy": {
                                         "$anyOf": [
                                             {
-                                                "type": [],
                                                 "enum": [
                                                     "fixed_window",
                                                     "token_bucket",
@@ -4272,7 +4479,10 @@
                                         "description": "The algorithm to be used by this limiter."
                                     },
                                     "limiters": {
-                                        "type": "array",
+                                        "type": [
+                                            "array",
+                                            "string"
+                                        ],
                                         "items": {
                                             "type": [
                                                 "array",
@@ -4339,7 +4549,10 @@
                     "description": "Rate limiter configuration"
                 },
                 "uid": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -4348,7 +4561,6 @@
                         "default_uuid_version": {
                             "$anyOf": [
                                 {
-                                    "type": [],
                                     "enum": [
                                         7,
                                         6,
@@ -4365,7 +4577,6 @@
                         "name_based_uuid_version": {
                             "$anyOf": [
                                 {
-                                    "type": [],
                                     "enum": [
                                         5,
                                         3
@@ -4390,7 +4601,6 @@
                         "time_based_uuid_version": {
                             "$anyOf": [
                                 {
-                                    "type": [],
                                     "enum": [
                                         7,
                                         6,
@@ -4424,7 +4634,10 @@
                     "description": "Uid configuration"
                 },
                 "html_sanitizer": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -4450,14 +4663,20 @@
                                         "additionalProperties": {}
                                     },
                                     "block_elements": {
-                                        "type": "array",
+                                        "type": [
+                                            "array",
+                                            "string"
+                                        ],
                                         "items": {
                                             "type": "string"
                                         },
                                         "description": "Configures elements as blocked. Blocked elements are elements the sanitizer should remove from the input, but retain their children."
                                     },
                                     "drop_elements": {
-                                        "type": "array",
+                                        "type": [
+                                            "array",
+                                            "string"
+                                        ],
                                         "items": {
                                             "type": "string"
                                         },
@@ -4486,7 +4705,10 @@
                                         "description": "Transforms URLs using the HTTP scheme to use the HTTPS scheme instead."
                                     },
                                     "allowed_link_schemes": {
-                                        "type": "array",
+                                        "type": [
+                                            "array",
+                                            "string"
+                                        ],
                                         "items": {
                                             "type": "string"
                                         },
@@ -4495,6 +4717,7 @@
                                     "allowed_link_hosts": {
                                         "type": [
                                             "array",
+                                            "string",
                                             "null"
                                         ],
                                         "items": {
@@ -4509,7 +4732,10 @@
                                         "description": "Allows relative URLs to be used in links href attributes."
                                     },
                                     "allowed_media_schemes": {
-                                        "type": "array",
+                                        "type": [
+                                            "array",
+                                            "string"
+                                        ],
                                         "items": {
                                             "type": "string"
                                         },
@@ -4518,6 +4744,7 @@
                                     "allowed_media_hosts": {
                                         "type": [
                                             "array",
+                                            "string",
                                             "null"
                                         ],
                                         "items": {
@@ -4532,14 +4759,20 @@
                                         "description": "Allows relative URLs to be used in media source attributes (img, audio, video, ...)."
                                     },
                                     "with_attribute_sanitizers": {
-                                        "type": "array",
+                                        "type": [
+                                            "array",
+                                            "string"
+                                        ],
                                         "items": {
                                             "type": "string"
                                         },
                                         "description": "Registers custom attribute sanitizers."
                                     },
                                     "without_attribute_sanitizers": {
-                                        "type": "array",
+                                        "type": [
+                                            "array",
+                                            "string"
+                                        ],
                                         "items": {
                                             "type": "string"
                                         },
@@ -4563,7 +4796,10 @@
                     "description": "HtmlSanitizer configuration"
                 },
                 "webhook": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -4624,7 +4860,10 @@
                     "description": "Webhook configuration"
                 },
                 "remote-event": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -4638,7 +4877,10 @@
                     "description": "RemoteEvent configuration"
                 },
                 "json_streamer": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -4675,7 +4917,6 @@
                 "session_fixation_strategy": {
                     "$anyOf": [
                         {
-                            "type": [],
                             "enum": [
                                 "none",
                                 "migrate",
@@ -4696,7 +4937,6 @@
                 "expose_security_errors": {
                     "$anyOf": [
                         {
-                            "type": [],
                             "enum": [
                                 "!php/enum Symfony\\Component\\Security\\Http\\Authentication\\ExposeSecurityLevel::None",
                                 "!php/enum Symfony\\Component\\Security\\Http\\Authentication\\ExposeSecurityLevel::AccountStatus",
@@ -4719,7 +4959,6 @@
                         "strategy": {
                             "$anyOf": [
                                 {
-                                    "type": [],
                                     "enum": [
                                         "affirmative",
                                         "consensus",
@@ -4770,7 +5009,10 @@
                 "password_hashers": {
                     "type": "object",
                     "additionalProperties": {
-                        "type": "object",
+                        "type": [
+                            "object",
+                            "string"
+                        ],
                         "properties": {
                             "algorithm": {
                                 "type": [
@@ -4783,7 +5025,10 @@
                                 ]
                             },
                             "migrate_from": {
-                                "type": "array",
+                                "type": [
+                                    "array",
+                                    "string"
+                                ],
                                 "items": {
                                     "type": [
                                         "array",
@@ -4901,7 +5146,10 @@
                                 "type": "object",
                                 "properties": {
                                     "providers": {
-                                        "type": "array",
+                                        "type": [
+                                            "array",
+                                            "string"
+                                        ],
                                         "items": {
                                             "type": [
                                                 "array",
@@ -4946,7 +5194,10 @@
                                 ]
                             },
                             "methods": {
-                                "type": "array",
+                                "type": [
+                                    "array",
+                                    "string"
+                                ],
                                 "items": {
                                     "type": [
                                         "array",
@@ -5112,11 +5363,13 @@
                                         "default": true
                                     },
                                     "clear_site_data": {
-                                        "type": "array",
+                                        "type": [
+                                            "array",
+                                            "string"
+                                        ],
                                         "items": {
                                             "$anyOf": [
                                                 {
-                                                    "type": [],
                                                     "enum": [
                                                         "*",
                                                         "cache",
@@ -5326,7 +5579,10 @@
                                 "default": null
                             },
                             "ips": {
-                                "type": "array",
+                                "type": [
+                                    "array",
+                                    "string"
+                                ],
                                 "items": {
                                     "type": [
                                         "array",
@@ -5363,7 +5619,10 @@
                                 "default": null
                             },
                             "methods": {
-                                "type": "array",
+                                "type": [
+                                    "array",
+                                    "string"
+                                ],
                                 "items": {
                                     "type": [
                                         "array",
@@ -5387,7 +5646,10 @@
                                 "default": null
                             },
                             "roles": {
-                                "type": "array",
+                                "type": [
+                                    "array",
+                                    "string"
+                                ],
                                 "items": {
                                     "type": [
                                         "array",
@@ -5406,7 +5668,10 @@
                 "role_hierarchy": {
                     "type": "object",
                     "additionalProperties": {
-                        "type": "array",
+                        "type": [
+                            "array",
+                            "string"
+                        ],
                         "items": {
                             "type": [
                                 "array",
@@ -5430,7 +5695,14 @@
             "type": "object",
             "properties": {
                 "dbal": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "string",
+                        "number",
+                        "boolean",
+                        "array",
+                        "null"
+                    ],
                     "properties": {
                         "default_connection": {
                             "type": [
@@ -5445,7 +5717,10 @@
                         "types": {
                             "type": "object",
                             "additionalProperties": {
-                                "type": "object",
+                                "type": [
+                                    "object",
+                                    "string"
+                                ],
                                 "properties": {
                                     "class": {
                                         "type": [
@@ -5485,7 +5760,14 @@
                         "connections": {
                             "type": "object",
                             "additionalProperties": {
-                                "type": "object",
+                                "type": [
+                                    "object",
+                                    "string",
+                                    "number",
+                                    "boolean",
+                                    "array",
+                                    "null"
+                                ],
                                 "properties": {
                                     "url": {
                                         "type": [
@@ -5917,7 +6199,14 @@
                                     "slaves": {
                                         "type": "object",
                                         "additionalProperties": {
-                                            "type": "object",
+                                            "type": [
+                                                "object",
+                                                "string",
+                                                "number",
+                                                "boolean",
+                                                "array",
+                                                "null"
+                                            ],
                                             "properties": {
                                                 "url": {
                                                     "type": [
@@ -6203,7 +6492,14 @@
                                     "replicas": {
                                         "type": "object",
                                         "additionalProperties": {
-                                            "type": "object",
+                                            "type": [
+                                                "object",
+                                                "string",
+                                                "number",
+                                                "boolean",
+                                                "array",
+                                                "null"
+                                            ],
                                             "properties": {
                                                 "url": {
                                                     "type": [
@@ -6494,7 +6790,14 @@
                     "additionalProperties": false
                 },
                 "orm": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "string",
+                        "number",
+                        "boolean",
+                        "array",
+                        "null"
+                    ],
                     "properties": {
                         "default_entity_manager": {
                             "type": [
@@ -6553,7 +6856,10 @@
                             "description": "Defines the root namespace for generated proxy classes when using non-native lazy objects, this option is ignored when the \"enable_native_lazy_objects\" option is true"
                         },
                         "controller_resolver": {
-                            "type": "object",
+                            "type": [
+                                "object",
+                                "boolean"
+                            ],
                             "properties": {
                                 "enabled": {
                                     "type": "boolean",
@@ -6586,7 +6892,10 @@
                                 "type": "object",
                                 "properties": {
                                     "query_cache_driver": {
-                                        "type": "object",
+                                        "type": [
+                                            "object",
+                                            "string"
+                                        ],
                                         "properties": {
                                             "type": {
                                                 "type": [
@@ -6626,7 +6935,10 @@
                                         }
                                     },
                                     "metadata_cache_driver": {
-                                        "type": "object",
+                                        "type": [
+                                            "object",
+                                            "string"
+                                        ],
                                         "properties": {
                                             "type": {
                                                 "type": [
@@ -6663,7 +6975,10 @@
                                         "additionalProperties": false
                                     },
                                     "result_cache_driver": {
-                                        "type": "object",
+                                        "type": [
+                                            "object",
+                                            "string"
+                                        ],
                                         "properties": {
                                             "type": {
                                                 "type": [
@@ -6703,7 +7018,14 @@
                                         }
                                     },
                                     "entity_listeners": {
-                                        "type": "object",
+                                        "type": [
+                                            "object",
+                                            "string",
+                                            "number",
+                                            "boolean",
+                                            "array",
+                                            "null"
+                                        ],
                                         "properties": {
                                             "entities": {
                                                 "type": "object",
@@ -6891,7 +7213,10 @@
                                         "type": "object",
                                         "properties": {
                                             "region_cache_driver": {
-                                                "type": "object",
+                                                "type": [
+                                                    "object",
+                                                    "string"
+                                                ],
                                                 "properties": {
                                                     "type": {
                                                         "type": [
@@ -6976,7 +7301,10 @@
                                                     "type": "object",
                                                     "properties": {
                                                         "cache_driver": {
-                                                            "type": "object",
+                                                            "type": [
+                                                                "object",
+                                                                "string"
+                                                            ],
                                                             "properties": {
                                                                 "type": {
                                                                     "type": [
@@ -7131,7 +7459,11 @@
                                     "mappings": {
                                         "type": "object",
                                         "additionalProperties": {
-                                            "type": "object",
+                                            "type": [
+                                                "object",
+                                                "string",
+                                                "boolean"
+                                            ],
                                             "properties": {
                                                 "mapping": {
                                                     "type": [
@@ -7239,7 +7571,14 @@
                                     "filters": {
                                         "type": "object",
                                         "additionalProperties": {
-                                            "type": "object",
+                                            "type": [
+                                                "object",
+                                                "string",
+                                                "number",
+                                                "boolean",
+                                                "array",
+                                                "null"
+                                            ],
                                             "properties": {
                                                 "class": {
                                                     "type": [
@@ -7356,7 +7695,14 @@
                 "handlers": {
                     "type": "object",
                     "additionalProperties": {
-                        "type": "object",
+                        "type": [
+                            "object",
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "null"
+                        ],
                         "properties": {
                             "type": {
                                 "type": [
@@ -7424,7 +7770,14 @@
                                 "default": false
                             },
                             "process_psr_3_messages": {
-                                "type": "object",
+                                "type": [
+                                    "object",
+                                    "string",
+                                    "number",
+                                    "boolean",
+                                    "array",
+                                    "null"
+                                ],
                                 "properties": {
                                     "enabled": {
                                         "type": [
@@ -7595,7 +7948,14 @@
                                 }
                             },
                             "excluded_http_codes": {
-                                "type": "array",
+                                "type": [
+                                    "array",
+                                    "string",
+                                    "number",
+                                    "boolean",
+                                    "object",
+                                    "null"
+                                ],
                                 "items": {
                                     "type": "object",
                                     "properties": {
@@ -8132,7 +8492,11 @@
                                 "default": 1
                             },
                             "tags": {
-                                "type": "array",
+                                "type": [
+                                    "array",
+                                    "string",
+                                    "object"
+                                ],
                                 "items": {
                                     "type": [
                                         "array",
@@ -8166,7 +8530,10 @@
                                 "default": false
                             },
                             "publisher": {
-                                "type": "object",
+                                "type": [
+                                    "object",
+                                    "string"
+                                ],
                                 "properties": {
                                     "id": {
                                         "type": [
@@ -8214,7 +8581,10 @@
                                 "additionalProperties": false
                             },
                             "mongo": {
-                                "type": "object",
+                                "type": [
+                                    "object",
+                                    "string"
+                                ],
                                 "properties": {
                                     "id": {
                                         "type": [
@@ -8293,7 +8663,10 @@
                                 "additionalProperties": false
                             },
                             "elasticsearch": {
-                                "type": "object",
+                                "type": [
+                                    "object",
+                                    "string"
+                                ],
                                 "properties": {
                                     "id": {
                                         "type": [
@@ -8396,7 +8769,10 @@
                                 "default": false
                             },
                             "redis": {
-                                "type": "object",
+                                "type": [
+                                    "object",
+                                    "string"
+                                ],
                                 "properties": {
                                     "id": {
                                         "type": [
@@ -8466,7 +8842,10 @@
                                 "additionalProperties": false
                             },
                             "predis": {
-                                "type": "object",
+                                "type": [
+                                    "object",
+                                    "string"
+                                ],
                                 "properties": {
                                     "id": {
                                         "type": [
@@ -8502,7 +8881,10 @@
                                 ]
                             },
                             "to_email": {
-                                "type": "array",
+                                "type": [
+                                    "array",
+                                    "string"
+                                ],
                                 "items": {
                                     "type": [
                                         "array",
@@ -8560,7 +8942,10 @@
                                 "default": null
                             },
                             "email_prototype": {
-                                "type": "object",
+                                "type": [
+                                    "object",
+                                    "string"
+                                ],
                                 "properties": {
                                     "id": {
                                         "type": [
@@ -8655,7 +9040,14 @@
                                 "additionalProperties": false
                             },
                             "channels": {
-                                "type": "object",
+                                "type": [
+                                    "object",
+                                    "string",
+                                    "number",
+                                    "boolean",
+                                    "array",
+                                    "null"
+                                ],
                                 "properties": {
                                     "type": {
                                         "type": [
@@ -8722,7 +9114,14 @@
                 "globals": {
                     "type": "object",
                     "additionalProperties": {
-                        "type": "object",
+                        "type": [
+                            "object",
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "null"
+                        ],
                         "properties": {
                             "id": {
                                 "type": [
@@ -8843,7 +9242,10 @@
                     "description": "The default path used to load templates."
                 },
                 "file_name_pattern": {
-                    "type": "array",
+                    "type": [
+                        "array",
+                        "string"
+                    ],
                     "items": {
                         "type": [
                             "array",
@@ -9008,7 +9410,6 @@
                 "theme": {
                     "$anyOf": [
                         {
-                            "type": [],
                             "enum": [
                                 "dark",
                                 "light"
@@ -9032,7 +9433,10 @@
             "type": "object",
             "properties": {
                 "toolbar": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -9074,6 +9478,7 @@
             "type": "object",
             "properties": {
                 "enable_static_connection": {
+                    "type": "boolean",
                     "default": true
                 },
                 "enable_static_meta_data_cache": {
@@ -9355,7 +9760,10 @@
             "type": "object",
             "properties": {
                 "cache": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -9368,7 +9776,10 @@
                     }
                 },
                 "html": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -9381,7 +9792,10 @@
                     }
                 },
                 "markdown": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -9394,7 +9808,10 @@
                     }
                 },
                 "intl": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -9407,7 +9824,10 @@
                     }
                 },
                 "cssinliner": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -9420,7 +9840,10 @@
                     }
                 },
                 "inky": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -9433,7 +9856,10 @@
                     }
                 },
                 "string": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -9488,7 +9914,6 @@
                         "html_input": {
                             "$anyOf": [
                                 {
-                                    "type": [],
                                     "enum": [
                                         "strip",
                                         "allow",
@@ -9580,7 +10005,10 @@
                 "defaults": {
                     "type": "object",
                     "additionalProperties": {
-                        "type": "object",
+                        "type": [
+                            "object",
+                            "string"
+                        ],
                         "properties": {
                             "template_directory": {
                                 "type": [
@@ -9667,7 +10095,14 @@
             "type": "object",
             "properties": {
                 "root_sass": {
-                    "type": "array",
+                    "type": [
+                        "array",
+                        "string",
+                        "number",
+                        "boolean",
+                        "object",
+                        "null"
+                    ],
                     "items": {
                         "type": [
                             "array",
@@ -9701,7 +10136,6 @@
                         "style": {
                             "$anyOf": [
                                 {
-                                    "type": [],
                                     "enum": [
                                         "compressed",
                                         "expanded"
@@ -9884,7 +10318,10 @@
                     ]
                 },
                 "iconify": {
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "boolean"
+                    ],
                     "properties": {
                         "enabled": {
                             "type": "boolean",
