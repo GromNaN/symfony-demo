@@ -6,7 +6,6 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Builder\JsonSchemaGenerator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\ConfigurationExtensionInterface;
-use Symfony\Component\HtmlSanitizer\Visitor\Node\NodeInterface;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
 class JsonSchemaTest extends TestCase
