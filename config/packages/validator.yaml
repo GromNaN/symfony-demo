@@ -1,3 +1,4 @@
+# $schema: ../schema.json
 framework:
     validation:
         enable_attributes: true

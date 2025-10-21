@@ -1,3 +1,4 @@
+# $schema: ../schema.json
 when@test:
     dama_doctrine_test:
         enable_static_connection: true
