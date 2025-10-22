@@ -1,0 +1,36 @@
+<?php
+
+namespace Symfony\Component\DependencyInjection\Loader\Configurator;
+
+// This file is the entry point to configure your own services.
+// Files in the packages/ subdirectory configure your dependencies.
+
+// Put parameters here that don't need to change on each machine where the app is deployed
+// https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+return App::config([
+    'parameters' => [
+        'app.locale' => 'en',
+        'app.notifications.email_sender' => 'anonymous@example.com',
+    ],
+    'services' => [
+        // default configuration for services in *this* file
+        '_defaults' => [
+            'autowire' => true,      // Automatically injects dependencies in your services.
+            'autoconfigure' => true, // Automatically registers your services as commands, event subscribers, etc.
+            'bind' => [
+                // this allows to define the scalar arguments once and apply them to any services
+                // defined/created in this file; if some argument is used rarely, instead of defining
+                // it here you can use the #[Autowire] attribute to inject it manually in the service constructor
+                'array $enabledLocales' => param('kernel.enabled_locales'),
+                'string $defaultLocale' => param('app.locale'),
+            ],
+        ],
+        // makes classes in src/ available to be used as services
+        // this creates a service per class whose id is the fully-qualified class name
+        'App\\' => [
+            'resource' => '../src/',
+        ],
+        // add more service definitions when explicit configuration is needed
+        // please note that last definitions always *replace* previous ones
+    ],
+]);

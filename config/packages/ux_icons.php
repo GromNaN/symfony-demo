@@ -1,0 +1,16 @@
+<?php
+
+namespace Symfony\Component\DependencyInjection\Loader\Configurator;
+
+return App::config([
+    'ux_icons' => [
+        'default_icon_attributes' => [
+            'width' => '1.2em',
+            'height' => '1.2em',
+            'style' => 'position: relative; top: -2px;',
+        ],
+        'aliases' => [
+            'tabler:save-changes' => 'tabler:device-floppy',
+        ],
+    ],
+]);
