@@ -1,0 +1,25 @@
+<?php
+
+namespace Symfony\Component\DependencyInjection\Loader\Configurator;
+
+return App::config([
+    'framework' => [
+        'validation' => [
+            'enable_attributes' => true,
+            'email_validation_mode' => 'html5',
+
+            // Enables validator auto-mapping support.
+            // For instance, basic validation constraints will be inferred from Doctrine's metadata.
+            'auto_mapping' => [
+                'App\\Entity\\' => [],
+            ],
+        ],
+    ],
+    'when@test' => [
+        'framework' => [
+            'validation' => [
+                'not_compromised_password' => false,
+            ],
+        ],
+    ],
+]);

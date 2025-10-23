@@ -1,0 +1,30 @@
+<?php
+
+namespace Symfony\Component\Routing\Loader\Configurator;
+
+// These lines define a route using YAML configuration. The controller used by
+// the route (FrameworkBundle:Template:template) is a convenient shortcut when
+// the template can be rendered without executing any logic in your own controller.
+// See https://symfony.com/doc/current/templates.html#rendering-a-template-directly-from-a-route
+
+return Routes::config([
+    'homepage' => [
+        'path' => '/{_locale}',
+        'controller' => 'Symfony\\Bundle\\FrameworkBundle\\Controller\\TemplateController::templateAction',
+        'defaults' => [
+            'template' => 'default/homepage.html.twig',
+            '_locale' => '%app.locale%',
+        ],
+    ],
+    'controllers' => [
+        'resource' => [
+            'path' => '../src/Controller/',
+            'namespace' => 'App\\Controller',
+        ],
+        'type' => 'attribute',
+        'prefix' => '/{_locale}',
+        'defaults' => [
+            '_locale' => '%app.locale%',
+        ],
+    ],
+]);

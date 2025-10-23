@@ -2,10 +2,76 @@
 
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
-return static function (ContainerConfigurator $container): void {
-    $container->extension('doctrine', [
+return App::config([
+    'doctrine' => [
+        'dbal' => [
+            'url' => env('DATABASE_URL')->resolve(),
+
+            // IMPORTANT: You MUST configure your server version,
+            // either here or in the DATABASE_URL env var (see .env file)
+            // 'server_version' => '16',
+
+            'profiling_collect_backtrace' => param('kernel.debug'),
+            'use_savepoints' => true,
+        ],
         'orm' => [
+            'auto_generate_proxy_classes' => true,
+            'report_fields_where_declared' => true,
+            'validate_xml_mapping' => true,
+            'naming_strategy' => 'doctrine.orm.naming_strategy.underscore_number_aware',
+            'identity_generation_preferences' => [
+                'Doctrine\\DBAL\\Platforms\\PostgreSQLPlatform' => 'identity',
+            ],
+            'auto_mapping' => true,
+            'mappings' => [
+                'App' => [
+                    'type' => 'attribute',
+                    'is_bundle' => false,
+                    'dir' => param('kernel.project_dir').'/src/Entity',
+                    'prefix' => 'App\\Entity',
+                    'alias' => 'App',
+                ],
+            ],
+            'controller_resolver' => [
+                'auto_mapping' => false,
+            ],
             'enable_native_lazy_objects' => \PHP_VERSION_ID >= 80400,
         ],
-    ]);
-};
+    ],
+    'when@test' => [
+        'doctrine' => [
+            'dbal' => [
+                // "TEST_TOKEN" is typically set by ParaTest
+                'dbname_suffix' => '_test'.env('TEST_TOKEN')->default(''),
+            ],
+        ],
+    ],
+    'when@prod' => [
+        'doctrine' => [
+            'orm' => [
+                'auto_generate_proxy_classes' => false,
+                'proxy_dir' => param('kernel.build_dir').'/doctrine/orm/Proxies',
+                'query_cache_driver' => [
+                    'type' => 'pool',
+                    'pool' => 'doctrine.system_cache_pool',
+                ],
+                'result_cache_driver' => [
+                    'type' => 'pool',
+                    'pool' => 'doctrine.result_cache_pool',
+                ],
+            ],
+        ],
+        'framework' => [
+            'cache' => [
+                'pools' => [
+                    'doctrine.result_cache_pool' => [
+                        'adapter' => 'cache.app',
+                    ],
+                    'doctrine.system_cache_pool' => [
+                        'adapter' => 'cache.system',
+                    ],
+                ],
+            ],
+        ],
+    ],
+]);
