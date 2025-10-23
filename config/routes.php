@@ -6,7 +6,6 @@ namespace Symfony\Component\Routing\Loader\Configurator;
 // the route (FrameworkBundle:Template:template) is a convenient shortcut when
 // the template can be rendered without executing any logic in your own controller.
 // See https://symfony.com/doc/current/templates.html#rendering-a-template-directly-from-a-route
-use function Symfony\Component\DependencyInjection\Loader\Configurator\param;
 
 return Routes::config([
     'homepage' => [
@@ -14,7 +13,7 @@ return Routes::config([
         'controller' => 'Symfony\\Bundle\\FrameworkBundle\\Controller\\TemplateController::templateAction',
         'defaults' => [
             'template' => 'default/homepage.html.twig',
-            '_locale' => param('app.locale'),
+            '_locale' => '%app.locale%',
         ],
     ],
     'controllers' => [
@@ -25,7 +24,7 @@ return Routes::config([
         'type' => 'attribute',
         'prefix' => '/{_locale}',
         'defaults' => [
-            '_locale' => param('app.locale'),
+            '_locale' => '%app.locale%',
         ],
     ],
 ]);
