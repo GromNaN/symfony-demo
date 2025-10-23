@@ -15,8 +15,6 @@ return App::config([
     'services' => [
         // default configuration for services in *this* file
         '_defaults' => [
-            'autowire' => true,      // Automatically injects dependencies in your services.
-            'autoconfigure' => true, // Automatically registers your services as commands, event subscribers, etc.
             'bind' => [
                 // this allows to define the scalar arguments once and apply them to any services
                 // defined/created in this file; if some argument is used rarely, instead of defining
