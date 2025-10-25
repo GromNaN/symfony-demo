@@ -1,3 +1,4 @@
+# $schema: ../schema.json
 # See https://symfony.com/doc/current/translation.html
 framework:
     default_locale: '%app.locale%'

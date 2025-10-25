@@ -1,3 +1,4 @@
+# $schema: ../schema.json
 ux_icons:
     default_icon_attributes:
         width: 1.2em

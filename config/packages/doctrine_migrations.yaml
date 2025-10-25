@@ -1,3 +1,4 @@
+# $schema: ../schema.json
 doctrine_migrations:
     migrations_paths:
         # namespace is arbitrary but should be different from App\Migrations

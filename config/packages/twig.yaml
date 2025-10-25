@@ -1,3 +1,4 @@
+# $schema: ../schema.json
 twig:
     file_name_pattern: '*.twig'
     form_themes:
