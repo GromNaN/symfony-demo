@@ -1,0 +1,23 @@
+{
+    "name": "gromnan/doctrine-encrypt",
+    "description": "Field Level Queryable encryption for Doctrine",
+    "type": "library",
+    "require": {
+        "doctrine/orm": "3.6"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^12.5"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Gromnan\\DoctrineEncrypt\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Jérôme Tamarelle",
+            "email": "jerome@tamarelle.net"
+        }
+    ]
+}
