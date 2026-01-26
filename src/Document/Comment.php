@@ -11,7 +11,7 @@
 
 namespace App\Document;
 
-use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
+use Doctrine\ODM\MongoDB\Mapping\Attribute as ODM;
 use Doctrine\ODM\MongoDB\Types\Type;
 use Symfony\Component\Validator\Constraints as Assert;
 

@@ -11,7 +11,7 @@
 
 namespace App\Document;
 
-use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
+use Doctrine\ODM\MongoDB\Mapping\Attribute as ODM;
 use Doctrine\ODM\MongoDB\Types\Type;
 /**
  * Defines the properties of the Tag document to represent the post tags.

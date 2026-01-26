@@ -15,7 +15,7 @@ use App\Repository\PostRepository;
 use Doctrine\Bundle\MongoDBBundle\Validator\Constraints\Unique;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
+use Doctrine\ODM\MongoDB\Mapping\Attribute as ODM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
