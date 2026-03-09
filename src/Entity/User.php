@@ -19,16 +19,19 @@ class User implements PasswordAuthenticatedUserInterface
     public ?int $id = null;
 
     // Deterministic encryption of the email enables unique indexing.
-    #[ORM\Column(length: 512, unique: true, type: Types::BINARY)]
+    #[ORM\Column(length: 512, unique: true)]
     public string $email;
 
     // Random encryption prevents correlating identical first names.
-    #[ORM\Column(length: 512, type: Types::BINARY)]
+    #[ORM\Column(length: 512)]
     public string $firstName;
 
     // Random encryption prevents correlating identical last names.
-    #[ORM\Column(length: 512, type: Types::BINARY)]
+    #[ORM\Column(length: 512)]
     public string $lastName;
+
+    #[ORM\Column]
+    public \DateTimeImmutable $birthday;
 
     // Password is hashed using Symfony's password hasher (bcrypt/argon2).
     #[ORM\Column]

@@ -29,7 +29,7 @@ final class UserTest extends TestCase
         );
         self::assertSame(
             'Sarah',
-            $encryptor->decrypt(base64_decode($user->firstName, true), $dek) // Fabien
+            $encryptor->decrypt(base64_decode($user->firstName, true), $dek)
         );
         self::assertSame(
             'Connor',
