@@ -1,0 +1,91 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Create User{% endblock %}
+
+{% block body %}
+    <h2>Create New User</h2>
+    <p style="margin: 20px 0; color: #666;">
+        All sensitive fields (email, name) are encrypted before storage.
+        <br>
+        <strong>Email</strong> is encrypted deterministically (supports unique indexing).
+        <br>
+        <strong>First & Last Name</strong> are encrypted randomly (prevents correlation).
+    </p>
+
+    {{ form_start(form) }}
+        <div class="form-group">
+            {{ form_label(form.email) }}
+            {{ form_widget(form.email) }}
+            {% if form.email.vars.help %}
+                <div class="form-help">{{ form.email.vars.help }}</div>
+            {% endif %}
+            {% if form.email.vars.errors %}
+                <div class="form-error">
+                    {% for error in form.email.vars.errors %}
+                        {{ error.message }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.firstName) }}
+            {{ form_widget(form.firstName) }}
+            {% if form.firstName.vars.help %}
+                <div class="form-help">{{ form.firstName.vars.help }}</div>
+            {% endif %}
+            {% if form.firstName.vars.errors %}
+                <div class="form-error">
+                    {% for error in form.firstName.vars.errors %}
+                        {{ error.message }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.lastName) }}
+            {{ form_widget(form.lastName) }}
+            {% if form.lastName.vars.help %}
+                <div class="form-help">{{ form.lastName.vars.help }}</div>
+            {% endif %}
+            {% if form.lastName.vars.errors %}
+                <div class="form-error">
+                    {% for error in form.lastName.vars.errors %}
+                        {{ error.message }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <div class="password-group">
+                <div>
+                    {{ form_label(form.plainPassword.first, 'Password') }}
+                    {{ form_widget(form.plainPassword.first) }}
+                    {% if form.plainPassword.first.vars.help %}
+                        <div class="form-help">{{ form.plainPassword.first.vars.help }}</div>
+                    {% endif %}
+                </div>
+                <div>
+                    {{ form_label(form.plainPassword.second, 'Repeat Password') }}
+                    {{ form_widget(form.plainPassword.second) }}
+                </div>
+            </div>
+            {% if form.plainPassword.vars.errors %}
+                <div class="form-error">
+                    {% for error in form.plainPassword.vars.errors %}
+                        {{ error.message }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Create User</button>
+            <a href="{{ path('user_list') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    {{ form_end(form) }}
+{% endblock %}
+

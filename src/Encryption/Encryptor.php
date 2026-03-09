@@ -37,7 +37,19 @@ class Encryptor
         $iv = substr($payload, 0, self::IV_LENGTH);
         $ciphertext = substr($payload, self::IV_LENGTH);
 
-        return openssl_decrypt($ciphertext, self::CIPHER_ALGO, $dek, \OPENSSL_RAW_DATA, $iv);
+        $plaintext = openssl_decrypt($ciphertext, self::CIPHER_ALGO, $dek, \OPENSSL_RAW_DATA, $iv);
+
+        if ($plaintext === false) {
+            /*dump([
+                'dek' => bin2hex($dek),
+                'payload' => bin2hex($payload),
+                'iv' => bin2hex($iv),
+                'ciphertext' => bin2hex($ciphertext),
+            ]);*/
+            throw new \RuntimeException(sprintf('Decryption failed: %s', openssl_error_string()));
+        }
+
+        return $plaintext;
     }
 }
 

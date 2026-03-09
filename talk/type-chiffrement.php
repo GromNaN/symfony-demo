@@ -62,6 +62,5 @@ echo "\nChiffrement déterministe : \n";
 display(deterministicEncrypt($plaintext, $dek));
 display(deterministicEncrypt($plaintext, $dek));
 
-
 assert($plaintext === decrypt(randomEncrypt($plaintext, $dek), $dek));
 assert($plaintext === decrypt(deterministicEncrypt($plaintext, $dek), $dek));
