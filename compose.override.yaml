@@ -1,0 +1,13 @@
+
+services:
+###> doctrine/mongodb-odm-bundle ###
+  mongodb:
+    ports:
+      - "27017"
+###< doctrine/mongodb-odm-bundle ###
+
+###> doctrine/doctrine-bundle ###
+  database:
+    ports:
+      - "5432"
+###< doctrine/doctrine-bundle ###
