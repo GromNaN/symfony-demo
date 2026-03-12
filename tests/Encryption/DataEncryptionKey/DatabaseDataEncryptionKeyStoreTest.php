@@ -34,7 +34,8 @@ final class DatabaseDataEncryptionKeyStoreTest extends TestCase
         $key = $store->getKey('key-1');
 
         self::assertInstanceOf(DataEncryptionKey::class, $key);
-        self::assertSame('master-1', $key->masterKeyId);
+        self::assertSame('key-1', $key->id);
+        self::assertSame('master-1', $key->getMasterKeyId());
     }
 
     public function testGetKeyThrowsWhenIdDoesNotExist(): void

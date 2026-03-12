@@ -17,6 +17,6 @@ class FileDataEncryptionKeyStore implements DataEncryptionKeyStore
 
         $key = json_decode(file_get_contents($filepath), true, 512, JSON_THROW_ON_ERROR);
 
-        return new DataEncryptionKey($key['masterKeyId'], $key['encryptedKey']);
+        return new DataEncryptionKey($id, $key['masterKeyId'], $key['encryptedKey']);
     }
 }

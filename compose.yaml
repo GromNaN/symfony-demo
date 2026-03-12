@@ -1,4 +1,3 @@
-
 services:
 ###> doctrine/mongodb-odm-bundle ###
   mongodb:
@@ -34,6 +33,19 @@ services:
       # - ./docker/db/data:/var/lib/postgresql/data:rw
 ###< doctrine/doctrine-bundle ###
 
+###> vault ###
+  vault:
+    image: hashicorp/vault:1.17
+    command: server -dev -dev-root-token-id=${VAULT_DEV_ROOT_TOKEN_ID:-root} -dev-listen-address=0.0.0.0:8200
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_DEV_ROOT_TOKEN_ID:-root}
+      VAULT_ADDR: http://0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - vault_data:/vault/file
+###< vault ###
+
 volumes:
 ###> doctrine/mongodb-odm-bundle ###
   mongodb_data:
@@ -42,3 +54,7 @@ volumes:
 ###> doctrine/doctrine-bundle ###
   database_data:
 ###< doctrine/doctrine-bundle ###
+
+###> vault ###
+  vault_data:
+###< vault ###

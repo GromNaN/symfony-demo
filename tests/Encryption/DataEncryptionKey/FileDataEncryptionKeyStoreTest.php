@@ -49,7 +49,8 @@ final class FileDataEncryptionKeyStoreTest extends TestCase
         $key = $store->getKey($id);
 
         self::assertInstanceOf(DataEncryptionKey::class, $key);
-        self::assertSame('master-1', $key->masterKeyId);
+        self::assertSame('key-1', $key->id);
+        self::assertSame('master-1', $key->getMasterKeyId());
     }
 
     public function testGetKeyThrowsWhenFileDoesNotExist(): void
@@ -73,4 +74,3 @@ final class FileDataEncryptionKeyStoreTest extends TestCase
         return $store;
     }
 }
-

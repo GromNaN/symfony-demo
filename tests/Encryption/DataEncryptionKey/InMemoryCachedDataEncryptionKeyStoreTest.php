@@ -22,7 +22,7 @@ final class InMemoryCachedDataEncryptionKeyStoreTest extends TestCase
             {
                 ++$this->calls;
 
-                return new DataEncryptionKey('master', 'encrypted-' . $id);
+                return new DataEncryptionKey($id, 'master', 'encrypted-' . $id);
             }
         };
 
@@ -44,7 +44,7 @@ final class InMemoryCachedDataEncryptionKeyStoreTest extends TestCase
             {
                 ++$this->calls;
 
-                return new DataEncryptionKey('master', 'encrypted-' . $id);
+                return new DataEncryptionKey($id, 'master', 'encrypted-' . $id);
             }
         };
 
@@ -57,4 +57,3 @@ final class InMemoryCachedDataEncryptionKeyStoreTest extends TestCase
         self::assertSame(2, $innerStore->calls);
     }
 }
-

@@ -33,6 +33,13 @@
 
 ## Implementation Guides
 
+### Vault KMS → [`docs/vault-agent-kms.md`](vault-agent-kms.md)
+**Run Vault in Docker and create transit master key**
+- Docker Compose startup
+- Transit key creation
+- Direct Vault API smoke tests
+- Symfony wiring example
+
 ### Templates Reference → [`docs/templates.md`](templates.md)
 **User interface documentation**
 - Template structure (base, list, new, edit)
@@ -309,4 +316,3 @@ Proprietary - See `LICENSE` file
 **Last Updated**: March 2026
 **Framework**: Symfony 8.0
 **PHP Version**: 8.4+
-

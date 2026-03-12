@@ -22,7 +22,7 @@ class DatabaseDataEncryptionKeyStore implements DataEncryptionKeyStore
             throw new \RuntimeException(sprintf('The data encryption key with id "%s" does not exist.', $id));
         }
 
-        return new DataEncryptionKey($key['masterKeyId'], $key['encryptedKey']);
+        return new DataEncryptionKey($id, $key['masterKeyId'], $key['encryptedKey']);
     }
 
     public function updateSchema(Schema $schema): void
