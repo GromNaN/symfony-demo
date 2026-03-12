@@ -25,15 +25,15 @@ final class UserTest extends TestCase
 
         self::assertSame(
             'sarah@example.test',
-            $encryptor->decrypt(base64_decode($user->email, true), $dek)
+            $encryptor->decrypt($user->email, $dek)
         );
         self::assertSame(
             'Sarah',
-            $encryptor->decrypt(base64_decode($user->firstName, true), $dek)
+            $encryptor->decrypt($user->firstName, $dek)
         );
         self::assertSame(
             'Connor',
-            $encryptor->decrypt(base64_decode($user->lastName, true), $dek)
+            $encryptor->decrypt($user->lastName, $dek)
         );
     }
 

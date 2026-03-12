@@ -7,6 +7,7 @@ namespace App\Encryption;
 class Encryptor
 {
     private const string CIPHER_ALGO = 'aes-256-cbc';
+    //private const string CIPHER_ALGO = 'aes-256-gcm';
     private const int IV_LENGTH = 16;
 
     public function encryptRandom(string $plaintext, string $dek): string
