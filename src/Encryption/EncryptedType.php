@@ -11,16 +11,12 @@ use Doctrine\DBAL\Types\Type;
 
 final class EncryptedType extends Type
 {
-    private readonly Encryptor $encryptor;
-    private readonly string $dek;
-
     public function __construct(
         private readonly Type $parentType,
-        string $dek,
+        private readonly DekEncryptionService $dekEncryptionService,
+        private readonly string $dekId,
         private readonly bool $deterministic,
     ) {
-        $this->encryptor = new Encryptor();
-        $this->dek = $this->normalizeDek($dek);
     }
 
     public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
@@ -49,11 +45,9 @@ final class EncryptedType extends Type
             ));
         }
 
-        $payload = $this->deterministic
-            ? $this->encryptor->encryptDeterministic($parentValue, $this->dek)
-            : $this->encryptor->encryptRandom($parentValue, $this->dek);
-
-        return $payload;
+        return $this->deterministic
+            ? $this->dekEncryptionService->encryptDeterministic($this->dekId, $parentValue)
+            : $this->dekEncryptionService->encryptRandom($this->dekId, $parentValue);
     }
 
     public function convertToPHPValue(mixed $value, AbstractPlatform $platform): mixed
@@ -70,16 +64,7 @@ final class EncryptedType extends Type
             ));
         }
 
-        $payload = $value;
-
-        if ($payload === false) {
-            throw new ConversionException(sprintf(
-                'Invalid encrypted payload for parent DBAL type %s: value is not valid base64.',
-                $this->parentType->getName()
-            ));
-        }
-
-        $plaintext = $this->encryptor->decrypt($payload, $this->dek);
+        $plaintext = $this->dekEncryptionService->decrypt($this->dekId, $value);
 
         return $this->parentType->convertToPHPValue($plaintext, $platform);
     }
@@ -97,22 +82,5 @@ final class EncryptedType extends Type
     public function isDeterministic(): bool
     {
         return $this->deterministic;
-    }
-
-    private function normalizeDek(string $dek): string
-    {
-        if (strlen($dek) === 64 && ctype_xdigit($dek)) {
-            $decoded = hex2bin($dek);
-
-            if ($decoded !== false) {
-                $dek = $decoded;
-            }
-        }
-
-        if (strlen($dek) !== 32) {
-            throw new \InvalidArgumentException('DEK must be 32 raw bytes or a 64-char hex string.');
-        }
-
-        return $dek;
     }
 }

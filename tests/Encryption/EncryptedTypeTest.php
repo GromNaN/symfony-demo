@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Encryption;
 
+use App\Encryption\DataEncryptionKey\DataEncryptionKey;
+use App\Encryption\DataEncryptionKey\DataEncryptionKeyStore;
+use App\Encryption\DekEncryptionService;
 use App\Encryption\EncryptedType;
+use App\Encryption\Encryptor;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Types\StringType;
-use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -23,7 +26,7 @@ final class EncryptedTypeTest extends TestCase
 
     public function testDeterministicRoundTrip(): void
     {
-        $type = new EncryptedType(new StringType(), random_bytes(32), true);
+        $type = new EncryptedType(new StringType(), $this->createDekService(random_bytes(32)), 'default', true);
 
         $databaseValue = $type->convertToDatabaseValue('john@example.test', $this->platform);
         $phpValue = $type->convertToPHPValue($databaseValue, $this->platform);
@@ -33,7 +36,7 @@ final class EncryptedTypeTest extends TestCase
 
     public function testRandomRoundTrip(): void
     {
-        $type = new EncryptedType(new StringType(), random_bytes(32), false);
+        $type = new EncryptedType(new StringType(), $this->createDekService(random_bytes(32)), 'default', false);
 
         $databaseValue = $type->convertToDatabaseValue('Jane', $this->platform);
         $phpValue = $type->convertToPHPValue($databaseValue, $this->platform);
@@ -44,7 +47,7 @@ final class EncryptedTypeTest extends TestCase
     public function testDeterministicProducesSameCiphertext(): void
     {
         $dek = random_bytes(32);
-        $type = new EncryptedType(new StringType(), $dek, true);
+        $type = new EncryptedType(new StringType(), $this->createDekService($dek), 'default', true);
 
         $first = $type->convertToDatabaseValue('same-value', $this->platform);
         $second = $type->convertToDatabaseValue('same-value', $this->platform);
@@ -55,7 +58,7 @@ final class EncryptedTypeTest extends TestCase
     public function testRandomProducesDifferentCiphertext(): void
     {
         $dek = random_bytes(32);
-        $type = new EncryptedType(new StringType(), $dek, false);
+        $type = new EncryptedType(new StringType(), $this->createDekService($dek), 'default', false);
 
         $first = $type->convertToDatabaseValue('same-value', $this->platform);
         $second = $type->convertToDatabaseValue('same-value', $this->platform);
@@ -63,21 +66,19 @@ final class EncryptedTypeTest extends TestCase
         self::assertNotSame($first, $second);
     }
 
-    public function testAcceptsHexDek(): void
+    private function createDekService(string $dek): DekEncryptionService
     {
-        $dekHex = bin2hex(random_bytes(32));
-        $type = new EncryptedType(new StringType(), $dekHex, true);
+        $store = new class($dek) implements DataEncryptionKeyStore {
+            public function __construct(private readonly string $dek)
+            {
+            }
 
-        $databaseValue = $type->convertToDatabaseValue('hello', $this->platform);
-        $phpValue = $type->convertToPHPValue($databaseValue, $this->platform);
+            public function getKey(string $id): DataEncryptionKey
+            {
+                return new DataEncryptionKey($id, null, null, $this->dek);
+            }
+        };
 
-        self::assertSame('hello', $phpValue);
-    }
-
-    public function testInvalidDekThrowsException(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        new EncryptedType(new StringType(), 'short-key', true);
+        return new DekEncryptionService($store, new Encryptor());
     }
 }
