@@ -33,6 +33,12 @@
 
 ## Implementation Guides
 
+### Local KMS → [`docs/local-kms.md`](local-kms.md)
+**Create local master key and configure MASTER_KEY_FILE**
+- Key generation command
+- Env variable setup
+- Validation test command
+
 ### Vault KMS → [`docs/vault-agent-kms.md`](vault-agent-kms.md)
 **Run Vault in Docker and create transit master key**
 - Docker Compose startup

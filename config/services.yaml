@@ -19,5 +19,16 @@ services:
     App\:
         resource: '../src/'
 
+    App\Encryption\DataEncryptionKey\DataEncryptionKeyStore: '@App\Encryption\DataEncryptionKey\EnvDataEncryptionKeyStore'
+
+    App\Encryption\KeyManagement\HashicorpVaultKms:
+        arguments:
+            $masterKeyId: 'talk-encryption-master'
+            $vaultBaseUrl: 'http://127.0.0.1:8200'
+            $vaultToken: 'root'
+
+    #App\Encryption\KeyManagement\KmsInterface: '@App\Encryption\KeyManagement\HashicorpVaultKms'
+    App\Encryption\KeyManagement\KmsInterface: '@App\Encryption\KeyManagement\LocalKms'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
