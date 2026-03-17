@@ -9,6 +9,9 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\ConversionException;
 use Doctrine\DBAL\Types\Type;
 
+/**
+ * EncryptedType is a Doctrine DBAL type wrapper for transparently encrypted fields.
+ */
 final class EncryptedType extends Type
 {
     public function __construct(

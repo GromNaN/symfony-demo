@@ -6,6 +6,9 @@ namespace App\Encryption\DataEncryptionKey;
 
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
+/**
+ * EnvDataEncryptionKeyStore serves a plain DEK sourced from environment configuration.
+ */
 final class EnvDataEncryptionKeyStore implements DataEncryptionKeyStore
 {
     public function __construct(
@@ -19,4 +22,3 @@ final class EnvDataEncryptionKeyStore implements DataEncryptionKeyStore
         return new DataEncryptionKey($id, null, null, $this->dek);
     }
 }
-

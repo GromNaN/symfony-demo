@@ -3,6 +3,8 @@ services:
   mongodb:
     # In production, you may want to use a managed database service
     image: mongodb/mongodb-atlas-local:latest
+    ports:
+      - "27017:27017"
     environment:
       - MONGODB_INITDB_DATABASE=${MONGODB_DB:-app}
       # You should definitely set a root username and password in production
@@ -17,6 +19,8 @@ services:
 ###> doctrine/doctrine-bundle ###
   database:
     image: postgres:${POSTGRES_VERSION:-16}-alpine
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-app}
       # You should definitely change the password in production
@@ -37,6 +41,8 @@ services:
   vault:
     image: hashicorp/vault:1.17
     command: server -dev -dev-root-token-id=${VAULT_DEV_ROOT_TOKEN_ID:-root} -dev-listen-address=0.0.0.0:8200
+    ports:
+      - "8200:8200"
     environment:
       VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_DEV_ROOT_TOKEN_ID:-root}
       VAULT_ADDR: http://0.0.0.0:8200

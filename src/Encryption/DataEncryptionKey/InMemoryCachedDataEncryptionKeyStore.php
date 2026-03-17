@@ -2,6 +2,9 @@
 
 namespace App\Encryption\DataEncryptionKey;
 
+/**
+ * InMemoryCachedDataEncryptionKeyStore caches DEKs in memory over an inner store.
+ */
 final class InMemoryCachedDataEncryptionKeyStore implements DataEncryptionKeyStore
 {
     /** @var array<string, DataEncryptionKey> */
@@ -28,4 +31,3 @@ final class InMemoryCachedDataEncryptionKeyStore implements DataEncryptionKeySto
         $this->cache = [];
     }
 }
-

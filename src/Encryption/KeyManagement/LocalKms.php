@@ -8,9 +8,7 @@ use App\Encryption\DataEncryptionKey\DataEncryptionKey;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
- * Local KMS implementation for development/testing.
- *
- * It wraps DEKs using OpenSSL (AES-256-GCM) with a key derived from MASTER_KEY_FILE.
+ * LocalKms wraps DEKs locally with OpenSSL and a master key sourced from a file.
  * Do not use in production.
  */
 final class LocalKms implements KmsInterface

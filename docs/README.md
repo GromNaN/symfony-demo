@@ -33,6 +33,12 @@
 
 ## Implementation Guides
 
+### Fixtures → [`docs/fixtures.md`](fixtures.md)
+**Load sample data for User and UserQe**
+- Dedicated fixture classes
+- QE subscriber behavior during flush
+- Commands for dev/test database setup
+
 ### Local KMS → [`docs/local-kms.md`](local-kms.md)
 **Create local master key and configure MASTER_KEY_FILE**
 - Key generation command

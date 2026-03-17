@@ -2,6 +2,9 @@
 
 namespace App\Encryption\DataEncryptionKey;
 
+/**
+ * DataEncryptionKey models a DEK in either encrypted or plaintext representation.
+ */
 final class DataEncryptionKey implements \Stringable
 {
     private ?string $masterKeyId;

@@ -9,6 +9,9 @@ use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
+/**
+ * HashicorpVaultKms wraps and unwraps DEKs through HashiCorp Vault Transit.
+ */
 class HashicorpVaultKms implements KmsInterface
 {
     private readonly HttpClientInterface $httpClient;

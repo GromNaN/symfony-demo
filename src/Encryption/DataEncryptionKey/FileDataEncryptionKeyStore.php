@@ -2,6 +2,9 @@
 
 namespace App\Encryption\DataEncryptionKey;
 
+/**
+ * FileDataEncryptionKeyStore loads DEKs from JSON files on disk.
+ */
 class FileDataEncryptionKeyStore implements DataEncryptionKeyStore
 {
     private function __construct(private string $dirname)

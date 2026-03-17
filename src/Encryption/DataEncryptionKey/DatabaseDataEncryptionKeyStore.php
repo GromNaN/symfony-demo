@@ -5,6 +5,9 @@ namespace App\Encryption\DataEncryptionKey;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Schema;
 
+/**
+ * DatabaseDataEncryptionKeyStore loads DEKs from a relational persistence table.
+ */
 class DatabaseDataEncryptionKeyStore implements DataEncryptionKeyStore
 {
     public function __construct(private Connection $conn, private string $tableName = 'data_encryption_keys')

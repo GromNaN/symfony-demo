@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Encryption;
 
+/**
+ * Encryptor provides low-level symmetric encryption and decryption primitives.
+ */
 class Encryptor
 {
     private const string CIPHER_ALGO = 'aes-256-cbc';
@@ -53,4 +56,3 @@ class Encryptor
         return $plaintext;
     }
 }
-

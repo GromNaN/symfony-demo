@@ -7,6 +7,9 @@ use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
+/**
+ * MetadataInjection rewrites Doctrine metadata to register encrypted DBAL types.
+ */
 #[Autoconfigure(public: true)]
 class MetadataInjection
 {

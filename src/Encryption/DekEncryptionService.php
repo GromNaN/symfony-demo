@@ -7,6 +7,9 @@ namespace App\Encryption;
 use App\Encryption\DataEncryptionKey\DataEncryptionKeyStore;
 use App\Encryption\KeyManagement\KmsInterface;
 
+/**
+ * DekEncryptionService resolves DEKs and delegates payload encryption operations.
+ */
 final class DekEncryptionService
 {
     public function __construct(
