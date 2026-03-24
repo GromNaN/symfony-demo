@@ -33,13 +33,13 @@
 <?php
 
 use App\Encryption\Encryptor;
-use App\Entity\User;
+use App\Entity\UserEncrypted;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 $encryptor = new Encryptor();
 $dek = random_bytes(32);
 
-$user = new User();
+$user = new UserEncrypted();
 $user->email = base64_encode($encryptor->encryptDeterministic('sarah@example.test', $dek));
 $user->firstName = base64_encode($encryptor->encryptRandom('Sarah', $dek));
 $user->lastName = base64_encode($encryptor->encryptRandom('Connor', $dek));
@@ -55,7 +55,7 @@ $user->password = $passwordHasher->hashPassword($user, 'PlainTextPassword123!');
 
 namespace App\Form;
 
-use App\Entity\User;
+use App\Entity\UserEncrypted;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -100,7 +100,7 @@ class UserType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => User::class,
+            'data_class' => UserEncrypted::class,
             'include_password' => true,
         ]);
     }

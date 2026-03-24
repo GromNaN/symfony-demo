@@ -14,11 +14,11 @@ The `UserType` form handles creating and editing users with encrypted fields. Al
 
 ```php
 use App\Form\UserType;
-use App\Entity\User;
+use App\Entity\UserEncrypted;
 
 public function new(Request $request): Response
 {
-    $user = new User();
+    $user = new UserEncrypted();
     $form = $this->createForm(UserType::class, $user);
     
     $form->handleRequest($request);

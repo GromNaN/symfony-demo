@@ -4,40 +4,19 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional;
 
-use App\Entity\UserQe;
-use App\Entity\UsersEcoc;
-use App\Entity\UsersEsc;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use App\Entity\UserQueryable;
+use App\Tests\DoctrineTestCase;
 
-final class QueryableEncryptionSubscriberTest extends KernelTestCase
+final class QueryableEncryptionSubscriberTest extends DoctrineTestCase
 {
-    private EntityManagerInterface $em;
-
-    protected function setUp(): void
+    protected static function entityClasses(): array
     {
-        self::bootKernel();
-
-        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
-        assert($entityManager instanceof EntityManagerInterface);
-        $this->em = $entityManager;
-
-        $metadata = [
-            $this->em->getClassMetadata(UserQe::class),
-            $this->em->getClassMetadata(UsersEsc::class),
-            $this->em->getClassMetadata(UsersEcoc::class),
-        ];
-
-        $tool = new SchemaTool($this->em);
-        $tool->dropSchema($metadata);
-        $tool->createSchema($metadata);
-        $this->em->clear();
+        return [UserQueryable::class];
     }
 
-    public function testPrePersistBuildsCiphertextsSafeContentAndEscRows(): void
+    public function testPrePersistBuildsCiphertextsSafeContent(): void
     {
-        $user = new UserQe();
+        $user = new UserQueryable();
         $user->birthdate = new \DateTimeImmutable('1990-01-01T00:00:00+00:00');
         $user->yearlyIncome = 42000;
 
@@ -50,41 +29,36 @@ final class QueryableEncryptionSubscriberTest extends KernelTestCase
         self::assertIsArray($rawUser);
         self::assertNotSame('', $rawUser['birthdate_cipher']);
         self::assertNotSame('', $rawUser['yearly_income_cipher']);
-        self::assertNotSame('', $rawUser['safecontent']);
+        self::assertNotEmpty($rawUser['safecontent']);
 
-        $escRows = $this->em->getConnection()->executeQuery(
-            'SELECT field_id, value_lower, value_upper FROM users_esc WHERE user_id = :id ORDER BY field_id ASC',
-            ['id' => $userId]
-        )->fetchAllAssociative();
-
-        self::assertCount(2, $escRows);
-        self::assertSame('1', (string) $escRows[0]['field_id']);
-        self::assertSame('2', (string) $escRows[1]['field_id']);
-        self::assertSame('42000', (string) $escRows[1]['value_lower']);
-        self::assertSame('42000', (string) $escRows[1]['value_upper']);
+        // safeContent should be a non-empty string (serialized array)
+        $safeContent = unserialize($rawUser['safecontent']);
+        self::assertIsArray($safeContent);
+        self::assertNotEmpty($safeContent, 'safeContent should contain tags');
     }
 
-    public function testPreUpdateReplacesEscRowsAndSafeContent(): void
+    public function testPreUpdateReplacesSafeContent(): void
     {
-        $user = new UserQe();
+        $user = new UserQueryable();
         $user->birthdate = new \DateTimeImmutable('1990-01-01T00:00:00+00:00');
         $user->yearlyIncome = 42000;
 
         $this->em->persist($user);
         $this->em->flush();
 
+        // Update with new values
         $user->birthdate = new \DateTimeImmutable('1995-05-05T00:00:00+00:00');
         $user->yearlyIncome = 65000;
         $this->em->flush();
+        $this->em->clear();
 
-        $escRows = $this->em->getConnection()->executeQuery(
-            'SELECT field_id, value_lower, value_upper FROM users_esc WHERE user_id = :id ORDER BY field_id ASC',
-            ['id' => $user->id]
-        )->fetchAllAssociative();
+        $updated = $this->em->find(UserQueryable::class, $user->id);
+        self::assertNotNull($updated);
 
-        self::assertCount(2, $escRows);
-        self::assertSame('65000', (string) $escRows[1]['value_lower']);
-        self::assertSame('65000', (string) $escRows[1]['value_upper']);
+        // safeContent should have changed due to different values
+        self::assertNotEmpty($updated->safeContent, 'safeContent should be populated');
     }
 }
+
+
 

@@ -33,6 +33,26 @@
 
 ## Implementation Guides
 
+### Queryable Encryption (Factory) → [`docs/queryable-encryption-factory.md`](queryable-encryption-factory.md)
+**RangeTagGeneratorFactory for centralized configuration**
+- Eliminate duplication in RangeTagGenerator creation
+- Pre-configured methods for standard fields (birthdate, income)
+- Custom field support via create() method
+- Easy configuration updates in one place
+
+### Queryable Encryption (Range Queries) → [`docs/queryable-encryption-range-query.md`](queryable-encryption-range-query.md)
+**Range queries using RangeTagGenerator**
+- UserQeRepository with findByIncomeRange() and findByExactIncome()
+- How tags are generated and matched
+- Complete usage examples
+- Security notes and limitations
+
+### Queryable Encryption (safeContent) → [`docs/queryable-encryption-safecontent.md`](queryable-encryption-safecontent.md)
+**RangeTagGenerator for searchable range queries**
+- Single safeContent JSON column (no ESC/ECOC tables)
+- Tag generation for equality and range queries
+- Query examples with SQL and PHP
+
 ### Fixtures → [`docs/fixtures.md`](fixtures.md)
 **Load sample data for User and UserQe**
 - Dedicated fixture classes

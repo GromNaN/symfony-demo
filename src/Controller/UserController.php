@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Encryption\Encryptor;
-use App\Entity\User;
+use App\Entity\UserEncrypted;
 use App\Form\UserType;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -57,7 +57,7 @@ class UserController extends AbstractController
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
-        $user = new User();
+        $user = new UserEncrypted();
         $form = $this->createForm(UserType::class, $user);
 
         $form->handleRequest($request);
@@ -97,7 +97,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, User $user): Response
+    public function edit(Request $request, UserEncrypted $user): Response
     {
         // Get the DEK from environment
         $dek = $this->getDek();
@@ -146,7 +146,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/{id}/delete', name: 'delete', methods: ['POST'])]
-    public function delete(Request $request, User $user): Response
+    public function delete(Request $request, UserEncrypted $user): Response
     {
         // Verify CSRF token if using forms
         $this->entityManager->remove($user);

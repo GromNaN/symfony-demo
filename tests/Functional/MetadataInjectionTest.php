@@ -6,7 +6,7 @@ namespace App\Tests\Functional;
 
 use App\Encryption\EncryptedType;
 use App\Encryption\MetadataInjection;
-use App\Entity\User;
+use App\Entity\UserEncrypted;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -20,19 +20,19 @@ final class MetadataInjectionTest extends KernelTestCase
         self::bootKernel();
 
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
-        $metadata = $entityManager->getClassMetadata(User::class);
+        $metadata = $entityManager->getClassMetadata(UserEncrypted::class);
 
         $emailMapping = $metadata->getFieldMapping('email');
-        self::assertSame('encrypted_App\Entity\User_email', $emailMapping['type']);
-        self::assertInstanceOf(EncryptedType::class, Type::getType('encrypted_App\Entity\User_email'));
+        self::assertSame('encrypted_App\Entity\UserEncrypted_email', $emailMapping['type']);
+        self::assertInstanceOf(EncryptedType::class, Type::getType('encrypted_App\Entity\UserEncrypted_email'));
 
         $firstNameMapping = $metadata->getFieldMapping('firstName');
-        self::assertSame('encrypted_App\Entity\User_firstName', $firstNameMapping['type']);
-        self::assertInstanceOf(EncryptedType::class, Type::getType('encrypted_App\Entity\User_firstName'));
+        self::assertSame('encrypted_App\Entity\UserEncrypted_firstName', $firstNameMapping['type']);
+        self::assertInstanceOf(EncryptedType::class, Type::getType('encrypted_App\Entity\UserEncrypted_firstName'));
 
         $lastNameMapping = $metadata->getFieldMapping('lastName');
-        self::assertSame('encrypted_App\Entity\User_lastName', $lastNameMapping['type']);
-        self::assertInstanceOf(EncryptedType::class, Type::getType('encrypted_App\Entity\User_lastName'));
+        self::assertSame('encrypted_App\Entity\UserEncrypted_lastName', $lastNameMapping['type']);
+        self::assertInstanceOf(EncryptedType::class, Type::getType('encrypted_App\Entity\UserEncrypted_lastName'));
     }
 }
 

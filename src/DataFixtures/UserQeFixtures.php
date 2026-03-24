@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\DataFixtures;
 
-use App\Entity\UserQe;
+use App\Entity\UserQueryable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
@@ -19,11 +19,11 @@ final class UserQeFixtures extends Fixture
         ];
 
         foreach ($rows as [$birthdate, $yearlyIncome]) {
-            $user = new UserQe();
+            $user = new UserQueryable();
             $user->birthdate = $birthdate;
             $user->yearlyIncome = $yearlyIncome;
 
-            // QueryableEncryptionSubscriber fills ciphertext, safeContent and ESC rows.
+            // QueryableEncryptionSubscriber fills ciphertext and safeContent tags.
             $manager->persist($user);
         }
 

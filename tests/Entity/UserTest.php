@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\Entity;
 
 use App\Encryption\Encryptor;
-use App\Entity\User;
+use App\Entity\UserEncrypted;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory;
 
-#[CoversClass(User::class)]
+#[CoversClass(UserEncrypted::class)]
 final class UserTest extends TestCase
 {
     public function testEncryptedFieldsRoundTrip(): void
@@ -18,7 +18,7 @@ final class UserTest extends TestCase
         $encryptor = new Encryptor();
         $dek = random_bytes(32);
 
-        $user = new User();
+        $user = new UserEncrypted();
         $user->email = $encryptor->encryptDeterministic('sarah@example.test', $dek);
         $user->firstName = $encryptor->encryptRandom('Sarah', $dek);
         $user->lastName = $encryptor->encryptRandom('Connor', $dek);
@@ -42,8 +42,8 @@ final class UserTest extends TestCase
         $encryptor = new Encryptor();
         $dek = random_bytes(32);
 
-        $userA = new User();
-        $userB = new User();
+        $userA = new UserEncrypted();
+        $userB = new UserEncrypted();
 
         $userA->email = base64_encode($encryptor->encryptDeterministic('sarah@example.test', $dek));
         $userB->email = base64_encode($encryptor->encryptDeterministic('sarah@example.test', $dek));
@@ -56,8 +56,8 @@ final class UserTest extends TestCase
         $encryptor = new Encryptor();
         $dek = random_bytes(32);
 
-        $userA = new User();
-        $userB = new User();
+        $userA = new UserEncrypted();
+        $userB = new UserEncrypted();
 
         $userA->firstName = base64_encode($encryptor->encryptRandom('Sarah', $dek));
         $userB->firstName = base64_encode($encryptor->encryptRandom('Sarah', $dek));
@@ -72,7 +72,7 @@ final class UserTest extends TestCase
         ]);
         $hasher = $factory->getPasswordHasher('common');
 
-        $user = new User();
+        $user = new UserEncrypted();
         $plainPassword = 'MySecurePassword123!';
         $user->password = $hasher->hash($plainPassword);
 

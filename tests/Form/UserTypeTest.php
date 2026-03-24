@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Form;
 
-use App\Entity\User;
+use App\Entity\UserEncrypted;
 use App\Form\UserType;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Symfony\Component\Form\Test\TypeTestCase;
 
+#[AllowMockObjectsWithoutExpectations]
 class UserTypeTest extends TypeTestCase
 {
     public function testSubmitValidData(): void
@@ -22,7 +24,7 @@ class UserTypeTest extends TypeTestCase
             ],
         ];
 
-        $user = new User();
+        $user = new UserEncrypted();
         $form = $this->factory->create(UserType::class, $user);
 
         // Submit the data to the form directly
@@ -51,7 +53,7 @@ class UserTypeTest extends TypeTestCase
             'lastName' => 'Doe',
         ];
 
-        $user = new User();
+        $user = new UserEncrypted();
         $form = $this->factory->create(UserType::class, $user, [
             'include_password' => false,
         ]);

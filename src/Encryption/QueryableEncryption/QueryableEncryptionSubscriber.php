@@ -4,21 +4,19 @@ declare(strict_types=1);
 
 namespace App\Encryption\QueryableEncryption;
 
-use App\Entity\UserQe;
-use App\Entity\UsersEsc;
+use App\Entity\UserQueryable;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Events;
 
 /**
- * QueryableEncryptionSubscriber populates QE ciphertext, safe content and ESC rows before flush.
+ * QueryableEncryptionSubscriber populates QE ciphertext and safeContent tags before flush.
  */
 #[AsDoctrineListener(event: Events::preFlush)]
 final class QueryableEncryptionSubscriber
 {
     public function __construct(
-        private readonly RangeQueryableEncryptionService $qe,
+        private readonly RangeTagGeneratorFactory $generatorFactory,
     ) {
     }
 
@@ -28,58 +26,37 @@ final class QueryableEncryptionSubscriber
         $processed = [];
 
         foreach ($em->getUnitOfWork()->getScheduledEntityInsertions() as $entity) {
-            if ($entity instanceof UserQe) {
+            if ($entity instanceof UserQueryable) {
                 $processed[spl_object_id($entity)] = $entity;
             }
         }
 
-        foreach ($em->getUnitOfWork()->getIdentityMap()[UserQe::class] ?? [] as $entity) {
-            if ($entity instanceof UserQe) {
+        foreach ($em->getUnitOfWork()->getIdentityMap()[UserQueryable::class] ?? [] as $entity) {
+            if ($entity instanceof UserQueryable) {
                 $processed[spl_object_id($entity)] = $entity;
             }
         }
 
         foreach ($processed as $user) {
-            $this->encryptUser($user, $em);
+            $this->encryptUser($user);
         }
     }
 
-    private function encryptUser(UserQe $user, EntityManagerInterface $em): void
+    private function encryptUser(UserQueryable $user): void
     {
         $safeContent = [];
 
         if ($user->birthdate !== null) {
-            $payload = $this->qe->encryptBirthdate($user->birthdate);
-            $user->birthdateCipher = $payload->ciphertext;
-            $safeContent = array_merge($safeContent, $payload->safeContentTags);
-
-            foreach ($user->clearEscEntriesForField(UsersEsc::FIELD_BIRTHDATE) as $oldEsc) {
-                $em->remove($oldEsc);
-            }
-
-            foreach ($payload->escRows as $row) {
-                $esc = new UsersEsc();
-                $esc->setFromDescriptor($row);
-                $user->addEscEntry($esc);
-                $em->persist($esc);
-            }
+            $generator = $this->generatorFactory->forBirthdate();
+            $epochDays = (int) floor($user->birthdate->getTimestamp() / 86400);
+            $tags = $generator->generateValueTags((float) $epochDays);
+            $safeContent = array_merge($safeContent, array_map(fn($t) => base64_encode($t), $tags));
         }
 
         if ($user->yearlyIncome !== null) {
-            $payload = $this->qe->encryptYearlyIncome($user->yearlyIncome);
-            $user->yearlyIncomeCipher = $payload->ciphertext;
-            $safeContent = array_merge($safeContent, $payload->safeContentTags);
-
-            foreach ($user->clearEscEntriesForField(UsersEsc::FIELD_YEARLY_INCOME) as $oldEsc) {
-                $em->remove($oldEsc);
-            }
-
-            foreach ($payload->escRows as $row) {
-                $esc = new UsersEsc();
-                $esc->setFromDescriptor($row);
-                $user->addEscEntry($esc);
-                $em->persist($esc);
-            }
+            $generator = $this->generatorFactory->forYearlyIncome();
+            $tags = $generator->generateValueTags((float) $user->yearlyIncome);
+            $safeContent = array_merge($safeContent, array_map(fn($t) => base64_encode($t), $tags));
         }
 
         if ($safeContent !== []) {

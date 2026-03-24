@@ -2,7 +2,7 @@
 
 namespace App\Encryption;
 
-use App\Entity\User;
+use App\Entity\UserEncrypted;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
@@ -50,7 +50,7 @@ class MetadataInjection
     private function getColumns(): array
     {
         return [
-            User::class => [
+            UserEncrypted::class => [
                 'email' => [
                     'deterministic' => true,
                 ],

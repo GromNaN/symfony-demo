@@ -29,7 +29,8 @@ final class EncryptedType extends Type
 
     public function getBindingType(): ParameterType
     {
-        return ParameterType::BINARY;
+        return ParameterType::STRING;
+        //return ParameterType::BINARY;
     }
 
     public function convertToDatabaseValue(mixed $value, AbstractPlatform $platform): mixed
@@ -48,9 +49,11 @@ final class EncryptedType extends Type
             ));
         }
 
-        return $this->deterministic
+        $cyphertext = $this->deterministic
             ? $this->dekEncryptionService->encryptDeterministic($this->dekId, $parentValue)
             : $this->dekEncryptionService->encryptRandom($this->dekId, $parentValue);
+
+        return base64_encode($cyphertext);
     }
 
     public function convertToPHPValue(mixed $value, AbstractPlatform $platform): mixed
@@ -59,14 +62,20 @@ final class EncryptedType extends Type
             return $this->parentType->convertToPHPValue(null, $platform);
         }
 
+        // Some drivers (e.g. pdo_mysql) return encrypted binary data as a stream resource, so we need to read it before decryption.
+        if (is_resource($value)) {
+            $value = stream_get_contents($value);
+        }
+
         if (!is_string($value)) {
             throw new ConversionException(sprintf(
                 'Cannot decrypt value of type %s for parent DBAL type %s. Expected string or null.',
                 get_debug_type($value),
-                $this->parentType->getName()
+                get_debug_type($this->parentType)
             ));
         }
 
+        $value = base64_decode($value);
         $plaintext = $this->dekEncryptionService->decrypt($this->dekId, $value);
 
         return $this->parentType->convertToPHPValue($plaintext, $platform);

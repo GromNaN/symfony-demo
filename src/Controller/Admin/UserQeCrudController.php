@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
-use App\Entity\UserQe;
+use App\Entity\UserQueryable;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
@@ -16,7 +16,7 @@ final class UserQeCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
     {
-        return UserQe::class;
+        return UserQueryable::class;
     }
 
     public function configureFields(string $pageName): iterable
