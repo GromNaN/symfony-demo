@@ -17,7 +17,7 @@
 </head>
 <body>
 <h1>EasyAdminBundle knowledge base search</h1>
-<p>Semantic search over issues, pull requests, comments, documentation and source code — powered by MongoDB Atlas automated embedding.</p>
+<p>Semantic vector search vs. classic Lucene full-text search, on the same MongoDB Atlas corpus.</p>
 
 <form method="get" action="{{ path('search') }}">
     <input type="text" name="q" value="{{ query }}" placeholder="e.g. how to hide a field conditionally" autofocus>
@@ -27,7 +27,11 @@
             <option value="{{ type.value }}" {{ type.value == sourceType ? 'selected' : '' }}>{{ type.value }}</option>
         {% endfor %}
     </select>
-    <select name="model">
+    <select name="system">
+        <option value="vector" {{ system == 'vector' ? 'selected' : '' }}>Vector Search (autoEmbed)</option>
+        <option value="lucene" {{ system == 'lucene' ? 'selected' : '' }}>Lucene full-text (classic)</option>
+    </select>
+    <select name="model" {{ system == 'lucene' ? 'disabled' : '' }}>
         <option value="voyage-4-lite" {{ model == 'voyage-4-lite' ? 'selected' : '' }}>voyage-4-lite (query default)</option>
         <option value="voyage-4" {{ model == 'voyage-4' ? 'selected' : '' }}>voyage-4 (same as index)</option>
     </select>
@@ -35,7 +39,7 @@
 </form>
 
 {% if query %}
-    <p>{{ results|length }} result(s) for "<strong>{{ query }}</strong>" (model: {{ model }})</p>
+    <p>{{ results|length }} result(s) for "<strong>{{ query }}</strong>" via {{ system == 'lucene' ? 'Lucene full-text' : 'Vector Search (' ~ model ~ ')' }}</p>
 
     {% for result in results %}
         <div class="result">

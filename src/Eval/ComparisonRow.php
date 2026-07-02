@@ -16,9 +16,11 @@ final class ComparisonRow
         public readonly string $query,
         public readonly string $kind,
         public readonly ?SearchResult $vectorTop,
+        public readonly ?SearchResult $lexicalTop,
         public readonly ?array $githubIssueTop,
         public readonly ?array $githubCodeTop,
         public readonly float $vectorLatencyMs,
+        public readonly float $lexicalLatencyMs,
         public readonly float $githubLatencyMs,
     ) {
     }

@@ -206,3 +206,51 @@ d'échec plutôt qu'un résultat vide silencieux. **Point d'article important** 
 de deux moteurs de recherche suppose d'abord de vérifier qu'aucun des deux n'est en train d'échouer
 silencieusement à cause d'un rate-limit — un biais facile à ne pas remarquer si le format de sortie
 ("aucun résultat") est indiscernable d'un vrai résultat vide.
+
+## 2026-07-02 21:56 — Ajout d'un index Lucene classique pour une comparaison à armes égales
+
+Demande de Jérôme : comparer aussi à un index Atlas Search classique (Lucene), sur le **même**
+corpus MongoDB — plus rigoureux que la comparaison à GitHub Search, qui reposait sur un tout autre
+moteur, un tout autre découpage du contenu, et une infrastructure hors de notre contrôle.
+
+- Ajout d'un second attribut `#[SearchIndex(name: 'chunks_lucene_idx', fields: [...])]` sur `Chunk`,
+  à côté de `#[VectorSearchIndex]` — les deux coexistent sans conflit (ce sont deux index distincts,
+  pas un mélange de types `vector`/`autoEmbed` dans le même index, ce qui aurait été refusé).
+  `content` en `type: string` (texte analysé), `sourceType`/`parentId` en `type: token` (égalité
+  exacte, pour le filtrage). **Bonne surprise** : `app:index:create` n'a nécessité aucune
+  modification — `SchemaManager::createDocumentSearchIndexes()` récupère et crée déjà tous les index
+  de recherche définis sur la classe (vector *et* classique) en une seule fois, confirmé en lisant
+  `ClassMetadata::getSearchIndexes()`/`prepareSearchIndexes()`.
+- `LexicalSearchService` interroge ce nouvel index via le stage d'agrégation `$search` + opérateur
+  `text()` (ou `compound()` avec `must()->text()` + `filter()->equals()` quand un `sourceType` est
+  précisé). API découverte par lecture directe du SDK (`Aggregation/Stage/Search.php` et
+  `Search/SupportsAllSearchOperatorsTrait.php`) plutôt que devinée.
+- Page de recherche web : sélecteur "Vector Search / Lucene full-text" ajouté, le champ modèle Voyage
+  se désactive automatiquement en mode Lucene.
+
+### Résultat le plus intéressant : Lucene ne gagne pas toujours sur les requêtes "contrôle"
+
+Intuition de départ : sur une requête à mot-clé exact (`AbstractCrudController`, `hideOnForm`,
+`BatchActionDto`...), un index plein-texte classique devrait trivialement gagner. **Ce n'est pas ce
+qu'on observe.** Sur ces 5 requêtes contrôle, Lucene ne retrouve le fichier de code qui définit
+réellement le symbole dans **aucun** cas en premier résultat — il remonte systématiquement un
+commentaire ou une issue qui mentionne le terme, alors que Vector Search trouve le bon fichier ou une
+pull request très pertinente 3 fois sur 5. Explication la plus probable : notre index Lucene porte
+sur un unique champ `content` mélangeant tous les types de chunks (issues, commentaires, PR, doc,
+code) sans pondération par type ni par nombre d'occurrences relatives — un nom de classe très discuté
+dans des dizaines d'issues/commentaires génère plus de correspondances "en fréquence" que la poignée
+de chunks de code qui le définissent réellement, et le score `searchScore` de MongoDB (BM25-like)
+récompense la fréquence du terme dans le corpus, pas le fait d'être la source canonique. **Ce n'est
+pas un bug, c'est un choix de modélisation** (un seul champ texte, pas de pondération par
+`sourceType`) qui mérite d'être documenté comme limite plutôt que comme échec.
+
+Sur les requêtes reformulées/conceptuelles (sans le vocabulaire exact), Lucene échoue au moins aussi
+souvent que GitHub Search à trouver un résultat pertinent — confirme sur la même infrastructure ce
+qu'on avait déjà vu face à GitHub, en éliminant cette fois l'hypothèse "peut-être que l'algorithme de
+GitHub est juste différent/moins bon".
+
+**Latence, en revanche, nettement à l'avantage de Lucene** : 30-160 ms contre 270-860 ms pour Vector
+Search sur les mêmes requêtes (mesuré via `microtime()` dans `app:eval:compare`). Point à mettre en
+avant dans l'article : la recherche vectorielle n'est pas gratuite en latence, et une architecture de
+recherche hybride (Lucene en pré-filtre rapide + rerank vectoriel, ou l'inverse) serait la suite
+logique — hors du périmètre de cette démo, mais une piste concrète à mentionner en conclusion.

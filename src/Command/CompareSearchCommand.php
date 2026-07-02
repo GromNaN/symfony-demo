@@ -7,6 +7,7 @@ namespace App\Command;
 use App\Eval\ComparisonReportExporter;
 use App\Eval\ComparisonRow;
 use App\Search\GitHubSearchService;
+use App\Search\LexicalSearchService;
 use App\Search\VectorSearchService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -16,11 +17,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Yaml\Yaml;
 
-#[AsCommand(name: 'app:eval:compare', description: 'Compare MongoDB Vector Search vs GitHub Search relevance on a fixed query set.')]
+#[AsCommand(name: 'app:eval:compare', description: 'Compare MongoDB Vector Search, classic Lucene search and GitHub Search relevance on a fixed query set.')]
 final class CompareSearchCommand extends Command
 {
     public function __construct(
         private readonly VectorSearchService $vectorSearch,
+        private readonly LexicalSearchService $lexicalSearch,
         private readonly GitHubSearchService $githubSearch,
     ) {
         parent::__construct();
@@ -49,6 +51,10 @@ final class CompareSearchCommand extends Command
             $vectorResults = $this->vectorSearch->search($query, limit: 5);
             $vectorLatencyMs = (microtime(true) - $vectorStart) * 1000;
 
+            $lexicalStart = microtime(true);
+            $lexicalResults = $this->lexicalSearch->search($query, limit: 5);
+            $lexicalLatencyMs = (microtime(true) - $lexicalStart) * 1000;
+
             $githubStart = microtime(true);
             $issueResults = $this->githubSearch->searchIssues($query, 5);
             $codeResults = $this->githubSearch->searchCode($query, 5);
@@ -58,9 +64,11 @@ final class CompareSearchCommand extends Command
                 query: $query,
                 kind: $kind,
                 vectorTop: $vectorResults[0] ?? null,
+                lexicalTop: $lexicalResults[0] ?? null,
                 githubIssueTop: $issueResults[0] ?? null,
                 githubCodeTop: $codeResults[0] ?? null,
                 vectorLatencyMs: $vectorLatencyMs,
+                lexicalLatencyMs: $lexicalLatencyMs,
                 githubLatencyMs: $githubLatencyMs,
             );
         }

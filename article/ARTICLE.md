@@ -4,7 +4,7 @@ Il y a deux choses qui reviennent systématiquement quand on parle de recherche 
 
 MongoDB Atlas Vector Search propose depuis peu de faire disparaître cette étape : l'**automated embedding** (`autoEmbed`) laisse Atlas générer et maintenir les vecteurs à votre place, à l'indexation comme à la requête. Sur le papier c'est séduisant. En pratique ? Le seul moyen de savoir, c'est de brancher ça sur un vrai projet, avec du vrai contenu, et de voir ce qui casse.
 
-Le projet : ingérer les issues, pull requests, commentaires, documentation et code source d'[EasyAdminBundle](https://github.com/EasyCorp/EasyAdminBundle) dans MongoDB, indexer le tout avec `autoEmbed`, exposer une recherche sémantique en Symfony (via [Doctrine MongoDB ODM](https://github.com/doctrine/mongodb-odm), sur la base d'une PR encore non mergée) et un serveur MCP, puis comparer les résultats à la recherche GitHub classique. Voici ce que ça a donné — y compris les deux bugs qu'on a fini par signaler en amont.
+Le projet : ingérer les issues, pull requests, commentaires, documentation et code source d'[EasyAdminBundle](https://github.com/EasyCorp/EasyAdminBundle) dans MongoDB, indexer le tout avec `autoEmbed`, exposer une recherche sémantique en Symfony (via [Doctrine MongoDB ODM](https://github.com/doctrine/mongodb-odm), sur la base d'une PR encore non mergée) et un serveur MCP, puis comparer les résultats à un index Atlas Search classique (Lucene) sur le même corpus et à la recherche GitHub. Voici ce que ça a donné — y compris les deux bugs qu'on a fini par signaler en amont.
 
 ## Le terrain de jeu
 
@@ -94,30 +94,37 @@ Résultat n°1 de la recherche vectorielle : la pull request [**"hideWhenCreatin
 
 Pour objectiver un peu plus, la page de recherche interroge l'index avec `voyage-4-lite` alors que l'indexation a été faite avec `voyage-4` — exactement le couple utilisé dans l'exemple de la PR Doctrine ODM. Rien ne garantit *a priori* que deux modèles Voyage différents produisent des vecteurs comparables (dimensions et distributions distinctes selon le modèle). Sur nos tests, le mélange fonctionne : les résultats en tête restent pertinents. Prendre ça comme une validation empirique limitée à ce couple de modèles précis, pas comme une garantie générale — c'est le genre de détail à revérifier soi-même avant de le reproduire en production.
 
-## Vector Search vs GitHub Search, sur 17 requêtes
+Même requête, index Atlas Search classique (Lucene) cette fois, sur le même champ `content` et le même corpus : premier résultat, une issue intitulée *"CollectionField bug with useEntryCrudFrom??"* — liée au même sujet en surface (elle parle bien de champs qui se comportent différemment en création et en édition), mais ce n'est pas la bonne issue, et le nom exact de la méthode en cause (`hideWhenCreating`) n'apparaît nulle part dans ce résultat. Le score Lucene (12.8, basé sur la fréquence des mots comme « creating », « editing », « field ») a favorisé un texte qui répète ces mots courants, pas celui qui répond réellement à la question.
 
-Trois catégories de requêtes ont été testées : des **reformulations** sans le vocabulaire exact du code, des questions **conceptuelles** transversales (censées faire remonter à la fois de la doc, du code et des issues), et des requêtes **contrôle** utilisant un nom de symbole exact — le terrain où la recherche par mot-clé est censée exceller.
+## Vector Search vs Lucene vs GitHub Search, sur 17 requêtes
 
-| Requête (extrait) | Type | Top-1 Vector Search | Top-1 GitHub Issues |
-|---|---|---|---|
-| *hide a field only when creating* | reformulation | PR exacte sur le sujet | Question tangentielle |
-| *conditionally show a field based on another* | reformulation | Discussion exacte sur les champs conditionnels | Aucun résultat |
-| *upload and preview an image in the edit form* | reformulation | PR exacte "Add image preview" | PR tangentielle |
-| *localizing labels and translations* | conceptuelle | PR exacte sur le domaine de traduction | Aucun résultat |
-| `AbstractCrudController` | contrôle | Trouve la classe | Trouve la classe |
-| `hideOnForm` | contrôle | Trouve la méthode exacte | Trouve le fichier exact |
+Trois catégories de requêtes ont été testées : des **reformulations** sans le vocabulaire exact du code, des questions **conceptuelles** transversales (censées faire remonter à la fois de la doc, du code et des issues), et des requêtes **contrôle** utilisant un nom de symbole exact — le terrain où la recherche par mot-clé est censée exceller. Le comparatif inclut maintenant trois systèmes : la recherche vectorielle (`autoEmbed`), un index Atlas Search classique posé sur le même champ `content` de la même collection (pour comparer à armes égales, sans confondre "moteur différent" et "corpus différent"), et GitHub Search comme référence externe.
+
+| Requête (extrait) | Type | Top-1 Vector Search | Top-1 Lucene | Top-1 GitHub Issues |
+|---|---|---|---|---|
+| *hide a field only when creating* | reformulation | PR exacte sur le sujet | Issue liée mais différente | Question tangentielle |
+| *conditionally show a field based on another* | reformulation | Discussion exacte sur les champs conditionnels | Discussion tangentielle | Aucun résultat |
+| `AbstractCrudController` | contrôle | Mentionne la classe | Commentaire tangentiel | Trouve la classe |
+| `hideOnForm` | contrôle | Trouve la méthode exacte | Issue sans rapport | Trouve le fichier exact |
+| `BatchActionDto` | contrôle | PR sur la classe | Commentaire tangentiel | Trouve le fichier exact |
 
 (Table complète avec 17 requêtes, latences et liens dans `comparison.md` — générée par `app:eval:compare`, rejouable à volonté.)
 
-Le motif qui se dégage est net : sur les requêtes reformulées ou conceptuelles, la recherche vectorielle renvoie systématiquement un résultat topiquement pertinent en première position, quand GitHub Search renvoie fréquemment un résultat hors-sujet ou rien du tout. Sur les requêtes contrôle (nom de classe ou de méthode exact), les deux systèmes s'en sortent bien — logique, puisque c'est le terrain de jeu naturel d'une recherche par mot-clé.
+Le résultat le plus contre-intuitif de ce comparatif ne concerne pas les requêtes reformulées — sur celles-là, la recherche vectorielle confirme son avance, Lucene se comportant en gros comme GitHub Search (des résultats corrects quand le vocabulaire correspond, à côté de la plaque sinon). Ce qui surprend, c'est le comportement de **Lucene sur les requêtes contrôle** : sur les cinq requêtes à nom de symbole exact (`AbstractCrudController`, `hideOnForm`, `BatchActionDto`, `configureFilters`, `isSetOnEditPageMethod`), notre index Lucene ne retrouve **le fichier de code qui définit réellement le symbole en premier résultat dans aucun des cinq cas** — il remonte systématiquement une issue ou un commentaire qui mentionne le terme au passage. Vector Search, lui, retrouve le bon fichier ou une pull request très pertinente dans trois cas sur cinq.
 
-Une différence structurelle mérite d'être soulignée au-delà des scores : la recherche vectorielle mélange nativement issues, pull requests, documentation et code dans un seul jeu de résultats classés par pertinence. Reproduire ça côté GitHub demande d'interroger deux endpoints séparés (`/search/issues`, `/search/code` — sans compter que GitHub ne propose même pas d'endpoint de recherche pour le contenu des wikis) et de fusionner les résultats à la main, sans notion de score commun entre les deux.
+Ce n'est pas un bug, c'est une conséquence directe d'un choix de modélisation qu'on a fait sans trop y réfléchir au départ : un seul champ `content` mélangeant issues, commentaires, pull requests, doc et code, sans pondération par type de source. `AbstractCrudController` apparaît une fois dans le fichier qui le définit, mais des dizaines de fois dispersées dans des centaines de commentaires qui en parlent — et le score de pertinence d'un index plein-texte classique (une variante de BM25) récompense la fréquence du terme dans le corpus, pas le fait d'être *la* source qui fait autorité. La recherche vectorielle, elle, capture une notion de proximité sémantique globale du chunk à la requête, moins sensible à ce biais de volume.
+
+Sur la latence, en revanche, Lucene écrase largement Vector Search : entre 30 et 160 ms de moyenne contre 270 à 860 ms pour la recherche vectorielle sur les mêmes requêtes. Ce n'est pas gratuit d'aller chercher un sens plutôt que des mots.
+
+Une différence structurelle mérite enfin d'être soulignée au-delà des scores et des temps de réponse : la recherche vectorielle (comme Lucene, d'ailleurs, puisque c'est le même principe d'index Atlas Search) mélange nativement issues, pull requests, documentation et code dans un seul jeu de résultats classés par pertinence. Reproduire ça côté GitHub demande d'interroger deux endpoints séparés (`/search/issues`, `/search/code` — sans compter que GitHub ne propose même pas d'endpoint de recherche pour le contenu des wikis) et de fusionner les résultats à la main, sans notion de score commun entre les deux.
 
 ## Ce qu'on en retient
 
 L'auto-embedding tient sa promesse : le code applicatif n'a jamais eu à appeler une API d'embedding, ni à gérer une clé Voyage AI, ni à se soucier de resynchroniser quoi que ce soit — un champ `autoEmbed` dans la définition de l'index, et Atlas s'occupe du reste, aussi bien à l'écriture qu'à la lecture. Ce qui reste entièrement à la charge du développeur, et que la fonctionnalité ne prétend pas résoudre, c'est tout ce qui touche à la *forme* du contenu avant qu'il n'arrive dans le champ embarqué : la stratégie de découpage, le modèle de données qui en découle (un chunk = un document, pas un tableau), et la discipline d'idempotence pour ne pas payer deux fois le même embedding.
 
 Deux issues ouvertes en cours de route ([#3025](https://github.com/doctrine/mongodb-odm/issues/3025) sur `schema:drop`, [#3026](https://github.com/doctrine/mongodb-odm/issues/3026) sur l'attente d'un index prêt) montrent aussi que l'outillage autour de cette fonctionnalité encore jeune a de la marge de progression — rien de bloquant, mais de quoi affiner l'expérience des prochains qui s'y frotteront.
+
+Le comparatif à trois — vectoriel, Lucene, GitHub — suggère aussi une évidence qu'on oublie facilement en testant un seul système à la fois : vectoriel et lexical ne sont pas deux candidats pour la même place, ce sont deux outils complémentaires. Lucene est nettement plus rapide et reste imbattable quand l'utilisateur connaît déjà le terme exact qu'il cherche *et* que ce terme est rare dans le corpus ; la recherche vectorielle gagne dès que la formulation s'éloigne du vocabulaire du code, mais paie ça en latence et peut se faire distancer par Lucene même sur du contrôle si le mot cherché est très fréquent ailleurs dans le corpus (notre cas `AbstractCrudController`). La suite logique — hors périmètre de cette démo, mais la piste la plus évidente — serait une recherche hybride : un filtre Lucene rapide en amont, ou une fusion pondérée des deux scores, plutôt que de choisir l'un contre l'autre.
 
 ---
 

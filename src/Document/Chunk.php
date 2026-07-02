@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
+use Doctrine\ODM\MongoDB\Mapping\Attribute\SearchIndex;
 use Doctrine\ODM\MongoDB\Mapping\Attribute\VectorSearchIndex;
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
 
@@ -13,6 +14,10 @@ use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
  * Comment, DocPage or CodeFile. This is the only document carrying the autoEmbed field:
  * MongoDB Atlas does not support arrays of embeddings, so "one chunk = one document"
  * (referencing its parent via $parentId) rather than an embedded array on the parent.
+ *
+ * Carries two independent indexes on the same "content" field: the autoEmbed vector
+ * index (semantic search) and a classic Lucene full-text index (lexical search), so the
+ * two can be compared on the exact same corpus rather than against GitHub Search.
  */
 #[ODM\Document(collection: 'chunks')]
 #[VectorSearchIndex(
@@ -27,6 +32,14 @@ use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
         ],
         ['type' => 'filter', 'path' => 'sourceType'],
         ['type' => 'filter', 'path' => 'parentId'],
+    ],
+)]
+#[SearchIndex(
+    name: 'chunks_lucene_idx',
+    fields: [
+        'content' => ['type' => 'string'],
+        'sourceType' => ['type' => 'token'],
+        'parentId' => ['type' => 'token'],
     ],
 )]
 class Chunk
