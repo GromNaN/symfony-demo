@@ -87,6 +87,18 @@ final class GitHubSearchService
                 continue;
             }
 
+            // 422 means GitHub's query parser rejected the search string itself — a real
+            // possibility once queries come from an LLM instead of being hand-written. Treat it
+            // as "no results" rather than aborting the whole comparison run over one bad query.
+            if ($status === 422) {
+                $this->logger->warning('GitHub rejected search query on {endpoint}: {message}', [
+                    'endpoint' => $endpoint,
+                    'message' => $data['message'] ?? 'unknown error',
+                ]);
+
+                return [];
+            }
+
             throw new \RuntimeException(\sprintf('GitHub search request to %s failed (HTTP %d): %s', $endpoint, $status, $data['message'] ?? 'unknown error'));
         }
 

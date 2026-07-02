@@ -13,6 +13,16 @@ framework:
                     Accept: 'application/vnd.github+json'
                     Authorization: 'Bearer %env(GITHUB_TOKEN)%'
                     X-GitHub-Api-Version: '2022-11-28'
+            grove.client:
+                # Trailing slash matters: a request path with NO leading slash (see
+                # HaikuSearchEvaluator) resolves relative to this full path per RFC 3986;
+                # a leading slash in the request path would instead resolve from the origin
+                # and silently drop the "/anthropic" segment (hit this exact bug once).
+                base_uri: '%env(GROVE_API_URL)%/anthropic/'
+                headers:
+                    Content-Type: 'application/json'
+                    anthropic-version: '2023-06-01'
+                    api-key: '%env(GROVE_API_KEY)%'
 
     #esi: true
     #fragments: true

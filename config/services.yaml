@@ -16,6 +16,7 @@ services:
         bind:
             $githubClient: '@github.client'
             $githubRepo: '%env(GITHUB_REPO)%'
+            $groveClient: '@grove.client'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name

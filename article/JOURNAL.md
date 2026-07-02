@@ -266,3 +266,91 @@ timestamp absolu, mais ne devrait jamais servir à calculer un `$fin - $début`.
 
 Deux usages corrigés : le throttle de `GitHubSearchService` (intervalle minimum entre appels,
 désormais en nanosecondes) et les mesures de latence de `app:eval:compare` (Vector/Lucene/GitHub).
+
+## 2026-07-02 22:25 — Un LLM dans la boucle (Claude Haiku via Grove)
+
+Demande de Jérôme : introduire un modèle simple (Haiku) qui reformule la question pour chaque moteur,
+exécute la vraie recherche, puis répond en ne s'appuyant que sur les résultats — plus proche d'un
+usage RAG réel qu'un simple relevé de Top-1. Avec un garde-fou explicite : vérifier si le modèle
+connaît déjà la réponse sans aucun contexte, ce qui rendrait la comparaison RAG peu concluante pour
+cette requête précise.
+
+- **Rejet du plan initial** : j'avais prévu d'utiliser le bridge `symfony/ai-anthropic-platform`
+  (cohérent avec l'usage de `symfony/ai-store` plus tôt). Jérôme a corrigé : il dispose d'un proxy
+  interne "Grove" (`GROVE_API_KEY`/`GROVE_API_URL`, déjà dans `.env.local`) exposant une API
+  compatible Anthropic Messages, avec un header `api-key` (pas `x-api-key`). Test demandé et fait
+  avant d'écrire du code : script PHP jetable chargeant `.env.local` via le `Dotenv` de Symfony,
+  deux appels curl équivalents. Résultat : `api-key` → HTTP 200 (réponse Anthropic normale,
+  `claude-haiku-4-5-20251001`) ; `x-api-key` → HTTP 401 "missing subscription key" (signature typique
+  d'une gateway Azure API Management). Le bridge officiel, qui code en dur `x-api-key`, n'aurait donc
+  pas fonctionné contre Grove — **vérifié avant d'écrire le code, pas supposé après coup**. Décision :
+  appel HTTP direct via `symfony/http-client` (`grove.client`, même pattern que `github.client`), pas
+  de nouvelle dépendance Composer.
+- **Piège de résolution d'URL** : `base_uri: '%env(GROVE_API_URL)%/anthropic'` + requête sur
+  `/v1/messages` (slash initial) a silencieusement perdu le segment `/anthropic` — la requête réelle
+  est partie sur `https://grove-gateway-prod.azure-api.net/v1/messages` (404). Cause : la résolution
+  d'URL RFC 3986 traite un chemin de requête commençant par `/` comme *absolu depuis l'origine*
+  (schéma + hôte), pas relatif au chemin du `base_uri`. Correctif : `base_uri` avec slash final
+  (`.../anthropic/`) et chemin de requête **sans** slash initial (`v1/messages`) pour une résolution
+  relative correcte. **Point d'article** : avec les clients HTTP scopés Symfony, un `base_uri` qui
+  contient lui-même un chemin (pas juste un host) est fragile si on ne fait pas attention au slash
+  initial des requêtes — ça marche silencieusement mal (404, pas d'erreur de config) plutôt que
+  d'échouer bruyamment.
+- **Résultat qualitatif immédiat, sur la toute première requête testée** ("how to hide a field only
+  when creating...") : la réponse à froid de Haiku (sans aucun contexte) cite déjà `hideWhenCreating()`
+  par son nom exact et donne un exemple de code correct. Le modèle connaît vraisemblablement déjà ce
+  bout de documentation/code EasyAdminBundle par pré-entraînement. Fait intéressant : dans les 3
+  réponses "avec contexte" (Vector/Lucene/GitHub), le modèle ne réutilise **pas** cette connaissance
+  a priori et répond honnêtement "je ne trouve pas cette information dans les résultats fournis" —
+  aucun des trois moteurs n'a remonté `hideWhenCreating()` dans le top-3 avec la requête reformulée
+  par Haiku (différente de la requête littérale utilisée dans les tests manuels précédents).
+  **Deux enseignements en un** : (1) le garde-fou "connaît-il déjà la réponse" est loin d'être
+  anecdotique — sur au moins cette requête, tester le RAG en aveugle aurait pu laisser croire que
+  "aucun moteur ne trouve la bonne réponse" alors que le modèle la connaissait très bien par ailleurs;
+  (2) la reformulation de la requête par le modèle n'est pas toujours un gain : une requête
+  reformulée en mots-clés génériques ("field visibility", "conditional field") peut être moins
+  efficace que la question originale en langage naturel, y compris pour la recherche vectorielle.
+
+## 2026-07-02 22:39 — Résultats de la comparaison LLM sur les 17 requêtes
+
+Rapport complet dans `article/llm-comparison.md`. Lecture des 17 blocs, enseignements principaux :
+
+- **Le garde-fou "connaît-il déjà la réponse" était loin d'être anecdotique.** Sur les requêtes
+  "contrôle" portant sur des symboles peu documentés publiquement (`isSetOnEditPageMethod`,
+  `configureFilters`, `hideOnForm`, `BatchActionDto`), Haiku répond honnêtement "je ne suis pas sûr,
+  peux-tu préciser ?" en réponse à froid — pas de connaissance a priori. Mais sur `AbstractCrudController`
+  (classe très documentée/discutée) et sur la requête `hideWhenCreating`, la réponse à froid est
+  confiante et globalement correcte. Le modèle sait distinguer ce qu'il sait de ce qu'il ne sait pas,
+  ce qui valide la méthodologie plutôt que de la fragiliser.
+- **Aucun système ne gagne systématiquement sur les requêtes "contrôle"** — nuance par rapport à la
+  comparaison brute (Top-1) faite précédemment. Exemple `hideOnForm` : le contexte trouvé par Lucene
+  (des issues qui *utilisent* la méthode dans du code cité) a permis à Haiku de produire une réponse
+  précise avec exemples de code corrects ; le contexte trouvé par Vector Search (une discussion sur
+  les conventions de nommage) a produit une réponse vague, à côté du sujet. Sur `configureFilters` en
+  revanche, Vector Search a trouvé directement les deux signatures de méthode (dans
+  `AbstractDashboardController` et `AbstractCrudController`) et a produit la meilleure réponse des
+  trois systèmes. **Ce n'est pas la source qui compte le plus, c'est ce que le chunk retrouvé permet
+  concrètement de dire.**
+- **Meilleur exemple de valeur ajoutée nette du RAG** : "customize the text shown on the save button".
+  Seul Vector Search a retrouvé le contexte permettant à Haiku de répondre avec précision : le bouton
+  "Save" est *volontairement non personnalisable* (hardcodé), une PR proposant cette fonctionnalité a
+  été fermée en "won't merge" pour éviter un cas spécial dans la codebase. Lucene et GitHub Search
+  n'ont rien trouvé d'utile sur cette même requête — leurs réponses se limitent à "je ne sais pas".
+  Un exemple concret où retrouver la bonne discussion (même vieille, même en commentaire) change
+  complètement la qualité de la réponse.
+- **La reformulation par le modèle n'est pas toujours un service rendu, surtout pour GitHub.** Sur
+  plusieurs requêtes contrôle, Haiku invente une syntaxe de recherche GitHub plausible mais fausse
+  (`hideOnForm is:form`, `class:BatchActionDto`, `isSetOnEditPageMethod` seul) qui renvoie zéro
+  résultat, alors qu'une requête mot-clé simple aurait probablement mieux fonctionné. Une reformulation
+  "trop maligne" peut nuire à la recherche autant qu'elle peut l'aider — vrai aussi une fois pour
+  Vector Search sur la toute première requête testée (cf. entrée précédente).
+- **Discipline de grounding respectée dans tous les cas observés** : même quand la réponse à froid
+  contenait déjà la bonne information, aucune des 3 réponses "avec contexte" ne l'a réutilisée en
+  douce si elle n'apparaissait pas dans les résultats fournis — le modèle dit explicitement "je ne
+  trouve pas cette information dans les résultats" plutôt que de mélanger connaissance a priori et
+  contexte récupéré. Comportement rassurant pour un usage RAG réel, où on veut justement que la
+  réponse soit traçable aux sources citées.
+
+Cases "Pertinent ?" et "connaissait-il déjà ?" du rapport laissées vides pour jugement par Jérôme —
+17 requêtes × 3 systèmes + 17 réponses à froid, volume trop important pour une évaluation automatique
+fiable sans vérité terrain.
