@@ -352,7 +352,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         enabled?: bool|Param, // Default: false
  *     },
  *     serializer?: bool|array{ // Serializer configuration
- *         enabled?: bool|Param, // Default: false
+ *         enabled?: bool|Param, // Default: true
  *         enable_attributes?: bool|Param, // Default: true
  *         name_converter?: scalar|Param|null,
  *         circular_reference_handler?: scalar|Param|null,
@@ -369,7 +369,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         }>,
  *     },
  *     property_access?: bool|array{ // Property access configuration
- *         enabled?: bool|Param, // Default: false
+ *         enabled?: bool|Param, // Default: true
  *         magic_call?: bool|Param, // Default: false
  *         magic_get?: bool|Param, // Default: true
  *         magic_set?: bool|Param, // Default: true
@@ -377,11 +377,11 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         throw_exception_on_invalid_property_path?: bool|Param, // Default: true
  *     },
  *     type_info?: bool|array{ // Type info configuration
- *         enabled?: bool|Param, // Default: false
+ *         enabled?: bool|Param, // Default: true
  *         aliases?: array<string, scalar|Param|null>,
  *     },
  *     property_info?: bool|array{ // Property info configuration
- *         enabled?: bool|Param, // Default: false
+ *         enabled?: bool|Param, // Default: true
  *         with_constructor_extractor?: bool|Param, // Registers the constructor extractor.
  *     },
  *     cache?: array{ // Cache configuration
@@ -472,7 +472,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     },
  *     disallow_search_engine_index?: bool|Param, // Enabled by default when debug is enabled. // Default: true
  *     http_client?: bool|array{ // HTTP Client configuration
- *         enabled?: bool|Param, // Default: false
+ *         enabled?: bool|Param, // Default: true
  *         max_host_connections?: int|Param, // The maximum number of connections to a single host.
  *         default_options?: array{
  *             headers?: array<string, mixed>,
@@ -645,7 +645,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         }>,
  *     },
  *     uid?: bool|array{ // Uid configuration
- *         enabled?: bool|Param, // Default: false
+ *         enabled?: bool|Param, // Default: true
  *         default_uuid_version?: 7|6|4|1|Param, // Default: 7
  *         name_based_uuid_version?: 5|3|Param, // Default: 5
  *         name_based_uuid_namespace?: scalar|Param|null,
@@ -690,28 +690,262 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         enabled?: bool|Param, // Default: false
  *     },
  * }
+ * @psalm-type DoctrineMongodbConfig = array{
+ *     document_managers?: array<string, array{ // Default: []
+ *         connection?: scalar|Param|null,
+ *         database?: scalar|Param|null,
+ *         logging?: bool|Param, // Default: "%kernel.debug%"
+ *         profiler?: bool|array{
+ *             enabled?: bool|Param, // Default: "%kernel.debug%"
+ *             pretty?: bool|Param, // Default: "%kernel.debug%"
+ *         },
+ *         default_document_repository_class?: scalar|Param|null, // Default: "Doctrine\\ODM\\MongoDB\\Repository\\DocumentRepository"
+ *         default_gridfs_repository_class?: scalar|Param|null, // Default: "Doctrine\\ODM\\MongoDB\\Repository\\DefaultGridFSRepository"
+ *         repository_factory?: scalar|Param|null, // Default: "doctrine_mongodb.odm.container_repository_factory"
+ *         persistent_collection_factory?: scalar|Param|null, // Default: null
+ *         auto_mapping?: bool|Param, // Default: false
+ *         filters?: array<string, string|array{ // Default: []
+ *             class?: scalar|Param|null,
+ *             enabled?: bool|Param, // Default: false
+ *             parameters?: array<string, mixed>,
+ *         }>,
+ *         metadata_cache_driver?: string|array{
+ *             type?: scalar|Param|null, // Default: "array"
+ *             class?: scalar|Param|null,
+ *             host?: scalar|Param|null,
+ *             port?: int|Param,
+ *             instance_class?: scalar|Param|null,
+ *             id?: scalar|Param|null,
+ *             namespace?: scalar|Param|null,
+ *         },
+ *         use_transactional_flush?: bool|Param, // Default: false
+ *         mappings?: array<string, bool|string|array{ // Default: []
+ *             mapping?: scalar|Param|null, // Default: true
+ *             type?: scalar|Param|null,
+ *             dir?: scalar|Param|null,
+ *             prefix?: scalar|Param|null,
+ *             alias?: scalar|Param|null,
+ *             is_bundle?: bool|Param,
+ *         }>,
+ *     }>,
+ *     connections?: array<string, array{ // Default: []
+ *         server?: scalar|Param|null,
+ *         options?: array{
+ *             authMechanism?: "SCRAM-SHA-1"|"SCRAM-SHA-256"|"MONGODB-CR"|"MONGODB-X509"|"PLAIN"|"GSSAPI"|Param,
+ *             connectTimeoutMS?: int|Param,
+ *             db?: scalar|Param|null,
+ *             authSource?: scalar|Param|null,
+ *             journal?: bool|Param,
+ *             password?: scalar|Param|null,
+ *             readPreference?: "primary"|"primaryPreferred"|"secondary"|"secondaryPreferred"|"nearest"|Param,
+ *             readPreferenceTags?: list<array<string, scalar|Param|null>>,
+ *             replicaSet?: scalar|Param|null,
+ *             socketTimeoutMS?: int|Param,
+ *             ssl?: bool|Param,
+ *             tls?: bool|Param,
+ *             tlsAllowInvalidCertificates?: bool|Param,
+ *             tlsAllowInvalidHostnames?: bool|Param,
+ *             tlsCAFile?: scalar|Param|null,
+ *             tlsCertificateKeyFile?: scalar|Param|null,
+ *             tlsCertificateKeyFilePassword?: scalar|Param|null,
+ *             tlsDisableCertificateRevocationCheck?: bool|Param,
+ *             tlsDisableOCSPEndpointCheck?: bool|Param,
+ *             tlsInsecure?: bool|Param,
+ *             username?: scalar|Param|null,
+ *             retryReads?: bool|Param,
+ *             retryWrites?: bool|Param,
+ *             w?: scalar|Param|null,
+ *             wTimeoutMS?: int|Param,
+ *         },
+ *         driver_options?: array{
+ *             context?: scalar|Param|null, // Deprecated: The "context" driver option is deprecated and will be removed in 3.0. This option is ignored by the MongoDB driver version 2. // Default: null
+ *         },
+ *         autoEncryption?: array{
+ *             bypassAutoEncryption?: bool|Param,
+ *             keyVaultClient?: scalar|Param|null,
+ *             keyVaultNamespace?: scalar|Param|null,
+ *             masterKey?: list<mixed>,
+ *             kmsProvider?: array{
+ *                 type?: scalar|Param|null,
+ *                 accessKeyId?: scalar|Param|null,
+ *                 secretAccessKey?: scalar|Param|null,
+ *                 sessionToken?: scalar|Param|null,
+ *                 tenantId?: scalar|Param|null,
+ *                 clientId?: scalar|Param|null,
+ *                 clientSecret?: scalar|Param|null,
+ *                 keyVaultEndpoint?: scalar|Param|null,
+ *                 identityPlatformEndpoint?: scalar|Param|null,
+ *                 keyName?: scalar|Param|null,
+ *                 keyVersion?: scalar|Param|null,
+ *                 email?: scalar|Param|null,
+ *                 privateKey?: scalar|Param|null,
+ *                 endpoint?: scalar|Param|null,
+ *                 projectId?: scalar|Param|null,
+ *                 location?: scalar|Param|null,
+ *                 keyRing?: scalar|Param|null,
+ *                 key?: scalar|Param|null,
+ *             },
+ *             schemaMap?: list<mixed>,
+ *             encryptedFieldsMap?: array<string, array{ // Default: []
+ *                 fields?: list<array{ // Default: []
+ *                     path?: scalar|Param|null,
+ *                     bsonType?: scalar|Param|null,
+ *                     keyId?: mixed,
+ *                     queries?: array{
+ *                         queryType?: scalar|Param|null,
+ *                         min?: mixed,
+ *                         max?: mixed,
+ *                         sparsity?: int|Param,
+ *                         precision?: int|Param,
+ *                         trimFactor?: int|Param,
+ *                         contention?: int|Param,
+ *                     },
+ *                 }>,
+ *             }>,
+ *             extraOptions?: array{
+ *                 mongocryptdURI?: scalar|Param|null,
+ *                 mongocryptdBypassSpawn?: bool|Param,
+ *                 mongocryptdSpawnPath?: scalar|Param|null,
+ *                 mongocryptdSpawnArgs?: string|list<scalar|Param|null>,
+ *                 cryptSharedLibPath?: scalar|Param|null,
+ *                 cryptSharedLibRequired?: bool|Param,
+ *             },
+ *             bypassQueryAnalysis?: bool|Param,
+ *             tlsOptions?: array{
+ *                 tlsCAFile?: scalar|Param|null,
+ *                 tlsCertificateKeyFile?: scalar|Param|null,
+ *                 tlsCertificateKeyFilePassword?: scalar|Param|null,
+ *                 tlsDisableOCSPEndpointCheck?: bool|Param,
+ *             },
+ *         },
+ *     }>,
+ *     resolve_target_documents?: array<string, scalar|Param|null>,
+ *     types?: array<string, string|array{ // Default: []
+ *         class?: scalar|Param|null,
+ *     }>,
+ *     proxy_namespace?: scalar|Param|null, // Default: "MongoDBODMProxies"
+ *     proxy_dir?: scalar|Param|null, // Default: "%kernel.cache_dir%/doctrine/odm/mongodb/Proxies"
+ *     enable_native_lazy_objects?: bool|Param, // Deprecated: The "enable_native_lazy_objects" option is deprecated and will be removed in 6.0. Native Lazy Objects are enable by default when using PHP 8.4+ and doctrine/mongodb-odm 2.14+. // Requires PHP 8.4+ and doctrine/mongodb-odm 2.14+ // Default: true
+ *     enable_lazy_ghost_objects?: bool|Param, // Deprecated: The "enable_lazy_ghost_objects" option is deprecated and will be removed in 6.0. Symfony Lazy Ghost Objects are enabled by default with doctrine/mongodb-odm 2.10+. // Requires doctrine/mongodb-odm 2.10+ // Default: true
+ *     auto_generate_proxy_classes?: scalar|Param|null, // Default: 3
+ *     hydrator_namespace?: scalar|Param|null, // Default: "Hydrators"
+ *     hydrator_dir?: scalar|Param|null, // Default: "%kernel.cache_dir%/doctrine/odm/mongodb/Hydrators"
+ *     auto_generate_hydrator_classes?: scalar|Param|null, // Default: 0
+ *     persistent_collection_namespace?: scalar|Param|null, // Default: "PersistentCollections"
+ *     persistent_collection_dir?: scalar|Param|null, // Default: "%kernel.cache_dir%/doctrine/odm/mongodb/PersistentCollections"
+ *     auto_generate_persistent_collection_classes?: scalar|Param|null, // Default: 0
+ *     default_document_manager?: scalar|Param|null,
+ *     default_connection?: scalar|Param|null,
+ *     default_database?: scalar|Param|null, // Default: "default"
+ *     default_commit_options?: array{
+ *         j?: bool|Param,
+ *         timeout?: int|Param,
+ *         w?: scalar|Param|null,
+ *         wtimeout?: int|Param,
+ *     },
+ *     controller_resolver?: bool|array{
+ *         enabled?: bool|Param, // Default: true
+ *         auto_mapping?: bool|Param, // Set to false to disable using route placeholders as lookup criteria when the object id doesn't match the argument name // Default: true
+ *     },
+ * }
+ * @psalm-type McpConfig = array{
+ *     app?: scalar|Param|null, // Default: "app"
+ *     version?: scalar|Param|null, // Default: "0.0.1"
+ *     description?: scalar|Param|null, // Default: null
+ *     icons?: list<array{ // Default: []
+ *         src?: scalar|Param|null,
+ *         mime_type?: scalar|Param|null, // Default: null
+ *         sizes?: list<scalar|Param|null>,
+ *     }>,
+ *     website_url?: scalar|Param|null, // Default: null
+ *     pagination_limit?: int|Param, // Default: 50
+ *     instructions?: scalar|Param|null, // Default: null
+ *     client_transports?: array{
+ *         stdio?: bool|Param, // Default: false
+ *         http?: bool|Param, // Default: false
+ *     },
+ *     discovery?: array{
+ *         scan_dirs?: list<scalar|Param|null>,
+ *         exclude_dirs?: list<scalar|Param|null>,
+ *     },
+ *     http?: array{
+ *         path?: scalar|Param|null, // Default: "/_mcp"
+ *         session?: array{
+ *             store?: "file"|"memory"|"cache"|"framework"|Param, // Default: "file"
+ *             directory?: scalar|Param|null, // Default: "%kernel.cache_dir%/mcp-sessions"
+ *             cache_pool?: scalar|Param|null, // Default: "cache.mcp.sessions"
+ *             prefix?: scalar|Param|null, // Default: "mcp-"
+ *             ttl?: int|Param, // Default: 3600
+ *         },
+ *     },
+ * }
+ * @psalm-type TwigConfig = array{
+ *     form_themes?: list<scalar|Param|null>,
+ *     globals?: array<string, array{ // Default: []
+ *         id?: scalar|Param|null,
+ *         type?: scalar|Param|null,
+ *         value?: mixed,
+ *     }>,
+ *     autoescape_service?: scalar|Param|null, // Default: null
+ *     autoescape_service_method?: scalar|Param|null, // Default: null
+ *     base_template_class?: scalar|Param|null, // Deprecated: The child node "base_template_class" at path "twig.base_template_class" is deprecated.
+ *     cache?: scalar|Param|null, // Default: true
+ *     charset?: scalar|Param|null, // Default: "%kernel.charset%"
+ *     debug?: bool|Param, // Default: "%kernel.debug%"
+ *     strict_variables?: bool|Param, // Default: "%kernel.debug%"
+ *     auto_reload?: scalar|Param|null,
+ *     optimizations?: int|Param,
+ *     default_path?: scalar|Param|null, // The default path used to load templates. // Default: "%kernel.project_dir%/templates"
+ *     file_name_pattern?: string|list<scalar|Param|null>,
+ *     paths?: array<string, mixed>,
+ *     date?: array{ // The default format options used by the date filter.
+ *         format?: scalar|Param|null, // Default: "F j, Y H:i"
+ *         interval_format?: scalar|Param|null, // Default: "%d days"
+ *         timezone?: scalar|Param|null, // The timezone used when formatting dates, when set to null, the timezone returned by date_default_timezone_get() is used. // Default: null
+ *     },
+ *     number_format?: array{ // The default format options for the number_format filter.
+ *         decimals?: int|Param, // Default: 0
+ *         decimal_point?: scalar|Param|null, // Default: "."
+ *         thousands_separator?: scalar|Param|null, // Default: ","
+ *     },
+ *     mailer?: array{
+ *         html_to_text_converter?: scalar|Param|null, // A service implementing the "Symfony\Component\Mime\HtmlToTextConverter\HtmlToTextConverterInterface". // Default: null
+ *     },
+ * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
  *     services?: ServicesConfig,
  *     framework?: FrameworkConfig,
+ *     doctrine_mongodb?: DoctrineMongodbConfig,
+ *     mcp?: McpConfig,
+ *     twig?: TwigConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
  *         services?: ServicesConfig,
  *         framework?: FrameworkConfig,
+ *         doctrine_mongodb?: DoctrineMongodbConfig,
+ *         mcp?: McpConfig,
+ *         twig?: TwigConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
  *         services?: ServicesConfig,
  *         framework?: FrameworkConfig,
+ *         doctrine_mongodb?: DoctrineMongodbConfig,
+ *         mcp?: McpConfig,
+ *         twig?: TwigConfig,
  *     },
  *     "when@test"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
  *         services?: ServicesConfig,
  *         framework?: FrameworkConfig,
+ *         doctrine_mongodb?: DoctrineMongodbConfig,
+ *         mcp?: McpConfig,
+ *         twig?: TwigConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,

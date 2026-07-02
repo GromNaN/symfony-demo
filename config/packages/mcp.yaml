@@ -1,0 +1,7 @@
+mcp:
+    app: 'easyadmin-knowledge-base'
+    version: '1.0.0'
+    description: 'Semantic knowledge base over EasyAdminBundle issues, pull requests, comments, documentation and source code, powered by MongoDB Atlas automated embedding.'
+    client_transports:
+        stdio: true
+        http: true

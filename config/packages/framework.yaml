@@ -5,6 +5,15 @@ framework:
     # Note that the session will be started ONLY if you read or write from it.
     session: true
 
+    http_client:
+        scoped_clients:
+            github.client:
+                base_uri: 'https://api.github.com'
+                headers:
+                    Accept: 'application/vnd.github+json'
+                    Authorization: 'Bearer %env(GITHUB_TOKEN)%'
+                    X-GitHub-Api-Version: '2022-11-28'
+
     #esi: true
     #fragments: true
 

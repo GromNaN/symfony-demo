@@ -1,0 +1,40 @@
+# Query set for comparing MongoDB Vector Search vs GitHub Search relevance.
+# "kind" is informational only (used to group results when writing the article):
+#   - paraphrase: rewords a concept without using the exact vocabulary of the codebase
+#   - conceptual: cross-cutting question that should surface doc + code + issues together
+#   - control: uses an exact keyword/symbol that GitHub's keyword search should already find easily
+
+- query: "how to hide a field only when creating a new entity, not when editing it"
+  kind: paraphrase
+- query: "conditionally show a form field based on another field's value"
+  kind: paraphrase
+- query: "make a column not sortable in the list view"
+  kind: paraphrase
+- query: "prevent users from deleting certain rows"
+  kind: paraphrase
+- query: "customize the text shown on the save button"
+  kind: paraphrase
+- query: "upload and preview an image in the edit form"
+  kind: paraphrase
+- query: "add a custom action button to the detail page"
+  kind: conceptual
+- query: "how does the dashboard menu get built"
+  kind: conceptual
+- query: "what happens when a CRUD controller action is not implemented"
+  kind: conceptual
+- query: "how are filters applied to a list query"
+  kind: conceptual
+- query: "why would batch actions be disabled"
+  kind: conceptual
+- query: "localizing labels and translations in the admin panel"
+  kind: conceptual
+- query: "isSetOnEditPageMethod"
+  kind: control
+- query: "AbstractCrudController"
+  kind: control
+- query: "configureFilters"
+  kind: control
+- query: "hideOnForm"
+  kind: control
+- query: "BatchActionDto"
+  kind: control

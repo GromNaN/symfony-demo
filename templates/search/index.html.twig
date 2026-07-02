@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EasyAdminBundle knowledge base search</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; }
+        form { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        input[type=text] { flex: 1; padding: 0.5rem; font-size: 1rem; min-width: 200px; }
+        select, button { padding: 0.5rem; font-size: 1rem; }
+        .result { border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
+        .result-meta { font-size: 0.85rem; color: #666; margin-bottom: 0.5rem; }
+        .badge { display: inline-block; background: #eef; border-radius: 4px; padding: 0.1rem 0.5rem; margin-right: 0.5rem; font-size: 0.8rem; }
+        pre { white-space: pre-wrap; word-break: break-word; background: #f7f7f7; padding: 0.75rem; border-radius: 4px; }
+        .score { float: right; color: #888; }
+    </style>
+</head>
+<body>
+<h1>EasyAdminBundle knowledge base search</h1>
+<p>Semantic search over issues, pull requests, comments, documentation and source code — powered by MongoDB Atlas automated embedding.</p>
+
+<form method="get" action="{{ path('search') }}">
+    <input type="text" name="q" value="{{ query }}" placeholder="e.g. how to hide a field conditionally" autofocus>
+    <select name="type">
+        <option value="">All sources</option>
+        {% for type in sourceTypes %}
+            <option value="{{ type.value }}" {{ type.value == sourceType ? 'selected' : '' }}>{{ type.value }}</option>
+        {% endfor %}
+    </select>
+    <select name="model">
+        <option value="voyage-4-lite" {{ model == 'voyage-4-lite' ? 'selected' : '' }}>voyage-4-lite (query default)</option>
+        <option value="voyage-4" {{ model == 'voyage-4' ? 'selected' : '' }}>voyage-4 (same as index)</option>
+    </select>
+    <button type="submit">Search</button>
+</form>
+
+{% if query %}
+    <p>{{ results|length }} result(s) for "<strong>{{ query }}</strong>" (model: {{ model }})</p>
+
+    {% for result in results %}
+        <div class="result">
+            <div class="result-meta">
+                <span class="badge">{{ result.sourceType.value }}</span>
+                {{ result.metadata.title ?? result.metadata.symbolName ?? result.metadata.path ?? result.parentId }}
+                <span class="score">score: {{ result.score|number_format(4) }}</span>
+            </div>
+            {% if result.metadata.url is defined %}
+                <p><a href="{{ result.metadata.url }}" target="_blank" rel="noopener">{{ result.metadata.url }}</a></p>
+            {% endif %}
+            <pre>{{ result.content|length > 800 ? result.content|slice(0, 800) ~ '…' : result.content }}</pre>
+        </div>
+    {% else %}
+        <p>No results.</p>
+    {% endfor %}
+{% endif %}
+</body>
+</html>
