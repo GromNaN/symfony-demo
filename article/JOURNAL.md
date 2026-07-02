@@ -254,3 +254,15 @@ Search sur les mêmes requêtes (mesuré via `microtime()` dans `app:eval:compar
 avant dans l'article : la recherche vectorielle n'est pas gratuite en latence, et une architecture de
 recherche hybride (Lucene en pré-filtre rapide + rerank vectoriel, ou l'inverse) serait la suite
 logique — hors du périmètre de cette démo, mais une piste concrète à mentionner en conclusion.
+
+## 2026-07-02 22:05 — microtime() remplacé par hrtime()
+
+Demande de Jérôme : toujours utiliser `hrtime(true)` plutôt que `microtime(true)` pour mesurer des
+durées. Raison implicite (non précisée mais logique) : `hrtime()` s'appuie sur une horloge monotone
+(`CLOCK_MONOTONIC`), insensible aux ajustements de l'horloge système (NTP, changement d'heure), et
+retourne un entier en nanosecondes plutôt qu'un flottant en secondes — plus précis et sans les pièges
+d'arithmétique flottante sur des mesures de latence. `microtime(true)` reste correct pour un
+timestamp absolu, mais ne devrait jamais servir à calculer un `$fin - $début`.
+
+Deux usages corrigés : le throttle de `GitHubSearchService` (intervalle minimum entre appels,
+désormais en nanosecondes) et les mesures de latence de `app:eval:compare` (Vector/Lucene/GitHub).

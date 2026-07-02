@@ -47,18 +47,18 @@ final class CompareSearchCommand extends Command
             $kind = (string) ($entry['kind'] ?? 'unknown');
             $io->writeln("Comparing: <info>{$query}</info>");
 
-            $vectorStart = microtime(true);
+            $vectorStart = hrtime(true);
             $vectorResults = $this->vectorSearch->search($query, limit: 5);
-            $vectorLatencyMs = (microtime(true) - $vectorStart) * 1000;
+            $vectorLatencyMs = (hrtime(true) - $vectorStart) / 1_000_000;
 
-            $lexicalStart = microtime(true);
+            $lexicalStart = hrtime(true);
             $lexicalResults = $this->lexicalSearch->search($query, limit: 5);
-            $lexicalLatencyMs = (microtime(true) - $lexicalStart) * 1000;
+            $lexicalLatencyMs = (hrtime(true) - $lexicalStart) / 1_000_000;
 
-            $githubStart = microtime(true);
+            $githubStart = hrtime(true);
             $issueResults = $this->githubSearch->searchIssues($query, 5);
             $codeResults = $this->githubSearch->searchCode($query, 5);
-            $githubLatencyMs = (microtime(true) - $githubStart) * 1000;
+            $githubLatencyMs = (hrtime(true) - $githubStart) / 1_000_000;
 
             $rows[] = new ComparisonRow(
                 query: $query,

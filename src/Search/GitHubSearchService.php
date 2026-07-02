@@ -22,11 +22,11 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 final class GitHubSearchService
 {
-    private const MIN_INTERVAL_SECONDS = 3.0;
+    private const MIN_INTERVAL_NANOS = 3_000_000_000;
     private const MAX_RETRIES = 3;
     private const RETRY_BACKOFF_SECONDS = 30;
 
-    private float $lastRequestAt = 0.0;
+    private int $lastRequestAt = 0;
 
     public function __construct(
         private readonly HttpClientInterface $githubClient,
@@ -95,11 +95,11 @@ final class GitHubSearchService
 
     private function throttle(): void
     {
-        $elapsed = microtime(true) - $this->lastRequestAt;
-        if ($elapsed < self::MIN_INTERVAL_SECONDS) {
-            usleep((int) ((self::MIN_INTERVAL_SECONDS - $elapsed) * 1_000_000));
+        $elapsedNanos = hrtime(true) - $this->lastRequestAt;
+        if ($elapsedNanos < self::MIN_INTERVAL_NANOS) {
+            usleep((int) ((self::MIN_INTERVAL_NANOS - $elapsedNanos) / 1_000));
         }
 
-        $this->lastRequestAt = microtime(true);
+        $this->lastRequestAt = hrtime(true);
     }
 }
