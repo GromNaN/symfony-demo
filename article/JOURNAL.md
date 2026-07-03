@@ -354,3 +354,29 @@ Rapport complet dans `article/llm-comparison.md`. Lecture des 17 blocs, enseigne
 Cases "Pertinent ?" et "connaissait-il déjà ?" du rapport laissées vides pour jugement par Jérôme —
 17 requêtes × 3 systèmes + 17 réponses à froid, volume trop important pour une évaluation automatique
 fiable sans vérité terrain.
+
+## 2026-07-03 15:52 — PR #3024 mergée, deux PR de correctifs ouvertes
+
+- [doctrine/mongodb-odm#3024](https://github.com/doctrine/mongodb-odm/pull/3024) (support `autoEmbed`)
+  a été mergée dans la branche `2.17.x` (commit `2800819`). Plus besoin du fork
+  `GromNaN/mongodb-odm` : `composer.json` mis à jour pour requérir directement
+  `doctrine/mongodb-odm: 2.17.x-dev` depuis le dépôt officiel, `repositories` (VCS) supprimé.
+  **Piège composer noté au passage** : pour une branche nommée `2.17.x` (motif de version), la
+  contrainte à utiliser est `2.17.x-dev`, pas `dev-2.17.x` — cette dernière syntaxe échoue
+  ("does not match the constraint") car composer a déjà calculé l'alias de version de la branche
+  à partir de son nom.
+- Les deux issues remontées pendant cette démo ont chacune leur PR de correctif, ouvertes par
+  Jérôme :
+  - [#3025](https://github.com/doctrine/mongodb-odm/issues/3025) (schema:drop supprime toute la
+    base) → corrigée par [#3027](https://github.com/doctrine/mongodb-odm/pull/3027) : `--class`
+    exclut désormais l'étape `DB` de l'ordre de suppression par défaut ; il faut passer `--db`
+    explicitement pour supprimer la base entière.
+  - [#3026](https://github.com/doctrine/mongodb-odm/issues/3026) (pas d'attente possible sur
+    `schema:create`) → corrigée par [#3028](https://github.com/doctrine/mongodb-odm/pull/3028) :
+    ajout d'une option `--wait` (avec valeur optionnelle en durée `strtotime()` ou millisecondes) sur
+    `odm:schema:create` et `odm:schema:update`, branchée sur `SchemaManager::waitForSearchIndexes()`.
+    Une fois cette PR mergée, `CreateVectorIndexCommand` de ce projet devient un simple wrapper
+    redondant avec `doctrine:mongodb:schema:create --search-index --wait=...` — à retirer à ce
+    moment-là plutôt que maintenu en double.
+- `bin/console doctrine:mongodb:mapping:info` toujours vert après la mise à jour ; pas de changement
+  d'API entre la branche du fork et la version mergée (attribut `#[VectorSearchIndex]` identique).

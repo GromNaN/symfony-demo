@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ec9948dfdd251a9d2599af3abe96f4de",
+    "content-hash": "1f1ad63d1fa2681d1c58f367cd2b09b5",
     "packages": [
         {
             "name": "doctrine/collections",
@@ -302,16 +302,16 @@
         },
         {
             "name": "doctrine/mongodb-odm",
-            "version": "dev-autoembedding",
+            "version": "2.17.x-dev",
             "source": {
                 "type": "git",
-                "url": "https://github.com/GromNaN/mongodb-odm.git",
-                "reference": "6288704106c5b9de426f5f63d11eadf6aea0822b"
+                "url": "https://github.com/doctrine/mongodb-odm.git",
+                "reference": "28008197b6e5b603b230e6219a1fb2047e271351"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/GromNaN/mongodb-odm/zipball/6288704106c5b9de426f5f63d11eadf6aea0822b",
-                "reference": "6288704106c5b9de426f5f63d11eadf6aea0822b",
+                "url": "https://api.github.com/repos/doctrine/mongodb-odm/zipball/28008197b6e5b603b230e6219a1fb2047e271351",
+                "reference": "28008197b6e5b603b230e6219a1fb2047e271351",
                 "shasum": ""
             },
             "require": {
@@ -357,28 +357,14 @@
                 "doctrine/annotations": "For annotation mapping support",
                 "ext-bcmath": "Decimal128 type support"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
                     "Doctrine\\ODM\\MongoDB\\": "src"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Doctrine\\ODM\\MongoDB\\Benchmark\\": "benchmark",
-                    "Doctrine\\ODM\\MongoDB\\Tests\\": "tests/Tests",
-                    "Documentation\\": "tests/Documentation",
-                    "Documents\\": "tests/Documents",
-                    "Documents84\\": "tests/Documents84",
-                    "Stubs\\": "tests/Stubs",
-                    "TestDocuments\\": "tests/Tests/Mapping/Driver/fixtures"
-                }
-            },
-            "scripts": {
-                "docs": [
-                    "composer update -d docs && ./docs/vendor/bin/build-docs.sh @additional_args"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -416,23 +402,24 @@
                 "php"
             ],
             "support": {
-                "source": "https://github.com/GromNaN/mongodb-odm/tree/autoembedding"
+                "issues": "https://github.com/doctrine/mongodb-odm/issues",
+                "source": "https://github.com/doctrine/mongodb-odm/tree/2.17.x"
             },
             "funding": [
                 {
-                    "type": "patreon",
-                    "url": "https://www.patreon.com/phpdoctrine"
+                    "url": "https://www.doctrine-project.org/sponsorship.html",
+                    "type": "custom"
                 },
                 {
-                    "type": "tidelift",
-                    "url": "https://tidelift.com/funding/github/packagist/doctrine%2Fmongodb-odm"
+                    "url": "https://www.patreon.com/phpdoctrine",
+                    "type": "patreon"
                 },
                 {
-                    "type": "custom",
-                    "url": "https://www.doctrine-project.org/sponsorship.html"
+                    "url": "https://tidelift.com/funding/github/packagist/doctrine%2Fmongodb-odm",
+                    "type": "tidelift"
                 }
             ],
-            "time": "2026-07-02T13:38:30+00:00"
+            "time": "2026-07-03T12:29:08+00:00"
         },
         {
             "name": "doctrine/mongodb-odm-bundle",
@@ -6495,14 +6482,7 @@
         }
     ],
     "packages-dev": [],
-    "aliases": [
-        {
-            "package": "doctrine/mongodb-odm",
-            "version": "dev-autoembedding",
-            "alias": "2.17.x-dev",
-            "alias_normalized": "2.17.9999999.9999999-dev"
-        }
-    ],
+    "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
         "doctrine/mongodb-odm": 20
