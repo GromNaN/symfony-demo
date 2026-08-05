@@ -25,7 +25,7 @@ final class EncryptedEmailTypeTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->type     = new EncryptedEmailType(bin2hex(random_bytes(32)));
+        $this->type = new EncryptedEmailType(bin2hex(random_bytes(32)));
         $this->platform = $this->createMock(AbstractPlatform::class);
     }
 
@@ -49,7 +49,7 @@ final class EncryptedEmailTypeTest extends TestCase
     {
         $email = 'user@example.com';
 
-        $first  = $this->type->convertToDatabaseValue($email, $this->platform);
+        $first = $this->type->convertToDatabaseValue($email, $this->platform);
         $second = $this->type->convertToDatabaseValue($email, $this->platform);
 
         self::assertSame($first, $second);
@@ -57,7 +57,7 @@ final class EncryptedEmailTypeTest extends TestCase
 
     public function testDifferentEmailsProduceDifferentCiphertexts(): void
     {
-        $first  = $this->type->convertToDatabaseValue('alice@example.com', $this->platform);
+        $first = $this->type->convertToDatabaseValue('alice@example.com', $this->platform);
         $second = $this->type->convertToDatabaseValue('bob@example.com', $this->platform);
 
         self::assertNotSame($first, $second);
@@ -68,7 +68,7 @@ final class EncryptedEmailTypeTest extends TestCase
         $email = 'user@example.com';
         $other = new EncryptedEmailType(bin2hex(random_bytes(32)));
 
-        $first  = $this->type->convertToDatabaseValue($email, $this->platform);
+        $first = $this->type->convertToDatabaseValue($email, $this->platform);
         $second = $other->convertToDatabaseValue($email, $this->platform);
 
         self::assertNotSame($first, $second);

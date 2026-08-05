@@ -1,5 +1,8 @@
 <?php
 
+
+declare(strict_types=1);
+
 /*
  * This file is part of the Symfony package.
  *
@@ -8,8 +11,6 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
-declare(strict_types=1);
 
 namespace App\Tests\Doctrine;
 
@@ -30,8 +31,8 @@ final class EncryptedEmailStorageTest extends KernelTestCase
     protected function setUp(): void
     {
         self::bootKernel();
-        $container        = static::getContainer();
-        $this->em         = $container->get(EntityManagerInterface::class);
+        $container = static::getContainer();
+        $this->em = $container->get(EntityManagerInterface::class);
         $this->repository = $container->get(UserRepository::class);
     }
 

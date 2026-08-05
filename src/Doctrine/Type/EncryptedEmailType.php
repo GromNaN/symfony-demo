@@ -11,16 +11,23 @@
 
 namespace App\Doctrine\Type;
 
-use Doctrine\Bundle\DoctrineBundle\Attribute\AsDatabaseType;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDbalType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-#[AsDatabaseType(name: EncryptedEmailType::NAME)]
+/**
+ * Stores email addresses encrypted using deterministic AES-256-GCM.
+ *
+ * This type is provided for demonstration purposes only. It illustrates how a DBAL type
+ * can be registered as a Symfony service with the #[AsDbalType] attribute and receive its
+ * dependencies (here the encryption key) through dependency injection. Production-grade
+ * field encryption needs proper key management (rotation, envelope encryption, HSM/KMS),
+ * which is intentionally out of scope here.
+ */
+#[AsDbalType]
 final class EncryptedEmailType extends Type
 {
-    public const string NAME = 'encrypted_email';
-
     private string $key;
 
     public function __construct(
@@ -45,7 +52,7 @@ final class EncryptedEmailType extends Type
 
         $nonce = substr(hash_hmac('sha256', $value, $this->key, true), 0, 12);
         $tag = '';
-        $ciphertext = openssl_encrypt($value, 'aes-256-gcm', $this->key, OPENSSL_RAW_DATA, $nonce, $tag, '', 16);
+        $ciphertext = openssl_encrypt($value, 'aes-256-gcm', $this->key, \OPENSSL_RAW_DATA, $nonce, $tag, '', 16);
 
         return base64_encode($nonce.$tag.$ciphertext);
     }
@@ -65,7 +72,7 @@ final class EncryptedEmailType extends Type
         $tag = substr($raw, 12, 16);
         $ciphertext = substr($raw, 28);
 
-        $plaintext = openssl_decrypt($ciphertext, 'aes-256-gcm', $this->key, OPENSSL_RAW_DATA, $nonce, $tag);
+        $plaintext = openssl_decrypt($ciphertext, 'aes-256-gcm', $this->key, \OPENSSL_RAW_DATA, $nonce, $tag);
 
         return false !== $plaintext ? $plaintext : null;
     }
