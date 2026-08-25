@@ -31,7 +31,7 @@ use Symfony\Component\Form\FormView;
 final class TagsInputType extends AbstractType
 {
     public function __construct(
-        private readonly PostRepository $postRepository
+        private readonly PostRepository $postRepository,
     ) {
     }
 

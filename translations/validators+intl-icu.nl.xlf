@@ -2,6 +2,10 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="nl" datatype="plaintext" original="file.ext">
         <body>
+            <trans-unit id="post.slug_unique">
+                <source>post.slug_unique</source>
+                <target>De titel wordt al gebruikt in een andere blog post, maar de titel moet uniek zijn.</target>
+            </trans-unit>
             <trans-unit id="post.blank_summary">
                 <source>post.blank_summary</source>
                 <target>Geef uw bericht een samenvatting.</target>
@@ -13,6 +17,10 @@
             <trans-unit id="post.too_short_content">
                 <source>post.too_short_content</source>
                 <target>Bericht inhoud is te kort (minimaal { limit } karakters)</target>
+            </trans-unit>
+            <trans-unit id="post.too_many_tags">
+                <source>post.too_many_tags</source>
+                <target>Te veel tags toegevoegd (gebruik maximaal { limit } tags)</target>
             </trans-unit>
             <trans-unit id="comment.blank">
                 <source>comment.blank</source>

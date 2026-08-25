@@ -18,10 +18,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: "Checkout code"
-              uses: actions/checkout@v5
+              uses: actions/checkout@v6
 
             - name: PHP-CS-Fixer
-              uses: docker://ghcr.io/php-cs-fixer/php-cs-fixer:3-php8.2
+              uses: docker://ghcr.io/php-cs-fixer/php-cs-fixer:3-php8.4
               with:
                   args: check --diff --using-cache=no
 
@@ -30,11 +30,11 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                php-version: ['8.2']
+                php-version: ['8.4']
 
         steps:
             - name: "Checkout code"
-              uses: actions/checkout@v5
+              uses: actions/checkout@v6
 
             - name: "Install PHP with extensions"
               uses: shivammathur/setup-php@v2
@@ -85,13 +85,13 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v5
+              uses: actions/checkout@v6
 
             - name: Setup PHP
               uses: shivammathur/setup-php@v2
               with:
                   coverage: none
-                  php-version: '8.3'
+                  php-version: '8.4'
 
             - name: Install dependencies
               run: composer install --ansi --no-interaction --no-progress

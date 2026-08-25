@@ -30,6 +30,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 final class BlogControllerTest extends WebTestCase
 {
     use ResetFixturesTrait;
+
     public function testIndex(): void
     {
         $client = static::createClient();

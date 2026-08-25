@@ -13,7 +13,6 @@ namespace App\Tests\Controller;
 
 use App\Document\Post;
 use App\Tests\ResetFixturesTrait;
-use Doctrine\Bundle\DoctrineBundle\Registry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;

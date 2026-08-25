@@ -70,7 +70,7 @@ final readonly class CommentNotificationSubscriber implements EventSubscriberInt
         ]);
 
         // See https://symfony.com/doc/current/mailer.html
-        $email = (new Email())
+        $email = new Email()
             ->from($this->sender)
             ->to($emailAddress)
             ->subject($subject)

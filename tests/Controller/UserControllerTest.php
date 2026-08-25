@@ -36,7 +36,7 @@ use Symfony\Component\HttpFoundation\Response;
 final class UserControllerTest extends WebTestCase
 {
     use ResetFixturesTrait;
-    
+
     #[DataProvider('getUrlsForAnonymousUsers')]
     public function testAccessDeniedForAnonymousUsers(string $httpMethod, string $url): void
     {

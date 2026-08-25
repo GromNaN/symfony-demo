@@ -13,10 +13,9 @@ namespace App\Twig;
 
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\ErrorHandler\ErrorRenderer\FileLinkFormatter;
+use Twig\Attribute\AsTwigFunction;
 use Twig\Environment;
-use Twig\Extension\AbstractExtension;
 use Twig\TemplateWrapper;
-use Twig\TwigFunction;
 
 use function Symfony\Component\String\u;
 
@@ -29,7 +28,7 @@ use function Symfony\Component\String\u;
  * @author Ryan Weaver <weaverryan@gmail.com>
  * @author Javier Eguiluz <javier.eguiluz@gmail.com>
  */
-final class SourceCodeExtension extends AbstractExtension
+final class SourceCodeExtension
 {
     /**
      * @var callable|null
@@ -49,17 +48,10 @@ final class SourceCodeExtension extends AbstractExtension
         $this->controller = $controller;
     }
 
-    public function getFunctions(): array
-    {
-        return [
-            new TwigFunction('link_source_file', $this->linkSourceFile(...), ['is_safe' => ['html'], 'needs_environment' => true]),
-            new TwigFunction('show_source_code', $this->showSourceCode(...), ['is_safe' => ['html'], 'needs_environment' => true]),
-        ];
-    }
-
     /**
      * Render a link to a source file.
      */
+    #[AsTwigFunction('link_source_file', isSafe: ['html'])]
     public function linkSourceFile(Environment $twig, string $file, int $line): string
     {
         $text = str_replace('\\', '/', $file);
@@ -79,6 +71,7 @@ final class SourceCodeExtension extends AbstractExtension
         );
     }
 
+    #[AsTwigFunction('show_source_code', isSafe: ['html'])]
     public function showSourceCode(Environment $twig, string|TemplateWrapper $template): string
     {
         return $twig->render('debug/source_code.html.twig', [
@@ -174,16 +167,12 @@ final class SourceCodeExtension extends AbstractExtension
     {
         $codeLines = u($code)->split("\n");
 
-        $indentedOrBlankLines = array_filter($codeLines, static function ($lineOfCode) {
-            return u($lineOfCode)->isEmpty() || u($lineOfCode)->startsWith('    ');
-        });
+        $indentedOrBlankLines = array_filter($codeLines, static fn ($lineOfCode) => u($lineOfCode)->isEmpty() || u($lineOfCode)->startsWith('    '));
 
         $codeIsIndented = \count($indentedOrBlankLines) === \count($codeLines);
 
         if ($codeIsIndented) {
-            $unindentedLines = array_map(static function ($lineOfCode) {
-                return u($lineOfCode)->after('    ');
-            }, $codeLines);
+            $unindentedLines = array_map(static fn ($lineOfCode) => u($lineOfCode)->after('    '), $codeLines);
             $code = u("\n")->join($unindentedLines)->toString();
         }
 

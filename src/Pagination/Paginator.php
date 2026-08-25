@@ -11,9 +11,7 @@
 
 namespace App\Pagination;
 
-use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Query\Builder as DoctrineQueryBuilder;
-use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 
 /**
  * @author Javier Eguiluz <javier.eguiluz@gmail.com>

@@ -12,12 +12,9 @@
 namespace App\Repository;
 
 use App\Document\Post;
-use App\Document\Tag;
 use App\Pagination\Paginator;
 use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\Persistence\ManagerRegistry;
-
-use function Symfony\Component\String\u;
 
 /**
  * This custom Doctrine repository contains some methods which are useful when
@@ -46,7 +43,7 @@ class PostRepository extends ServiceDocumentRepository
             $qb->field('tags.name')->equals($tag);
         }
 
-        return (new Paginator($qb))->paginate($page);
+        return new Paginator($qb)->paginate($page);
     }
 
     /**

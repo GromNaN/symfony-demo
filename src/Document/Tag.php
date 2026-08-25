@@ -13,16 +13,17 @@ namespace App\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Attribute as ODM;
 use Doctrine\ODM\MongoDB\Types\Type;
+
 /**
  * Defines the properties of the Tag document to represent the post tags.
  */
 #[ODM\EmbeddedDocument]
-class Tag implements \JsonSerializable
+class Tag implements \Stringable, \JsonSerializable
 {
     #[ODM\Field(type: Type::STRING)]
     // With embedded documents, we don't need the unique index because the data
     // is duplicated in each document
-    //#[ODM\UniqueIndex(keys: ['name' => 'asc'], options: ['unique' => true])]
+    // #[ODM\UniqueIndex(keys: ['name' => 'asc'], options: ['unique' => true])]
     private readonly string $name;
 
     public function __construct(string $name)

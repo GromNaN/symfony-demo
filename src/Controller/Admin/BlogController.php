@@ -42,8 +42,6 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted(User::ROLE_ADMIN)]
 final class BlogController extends AbstractController
 {
-    private const MONGODB_OBJECTID = '[0-9a-f]{24}';
-
     /**
      * Lists all Post entities.
      *
@@ -121,7 +119,7 @@ final class BlogController extends AbstractController
     /**
      * Finds and displays a Post entity.
      */
-    #[Route('/{id}', name: 'admin_post_show', requirements: ['id' => self::MONGODB_OBJECTID], methods: ['GET'])]
+    #[Route('/{id}', name: 'admin_post_show', requirements: ['id' => Requirement::MONGODB_ID], methods: ['GET'])]
     public function show(Post $post): Response
     {
         // This security check can also be performed
@@ -136,7 +134,7 @@ final class BlogController extends AbstractController
     /**
      * Displays a form to edit an existing Post entity.
      */
-    #[Route('/{id}/edit', name: 'admin_post_edit', requirements: ['id' => self::MONGODB_OBJECTID], methods: ['GET', 'POST'])]
+    #[Route('/{id}/edit', name: 'admin_post_edit', requirements: ['id' => Requirement::MONGODB_ID], methods: ['GET', 'POST'])]
     #[IsGranted('edit', subject: 'post', message: 'Posts can only be edited by their authors.')]
     public function edit(Request $request, Post $post, DocumentManager $documentManager): Response
     {
@@ -159,7 +157,7 @@ final class BlogController extends AbstractController
     /**
      * Deletes a Post entity.
      */
-    #[Route('/{id}/delete', name: 'admin_post_delete', requirements: ['id' => self::MONGODB_OBJECTID], methods: ['POST'])]
+    #[Route('/{id}/delete', name: 'admin_post_delete', requirements: ['id' => Requirement::MONGODB_ID], methods: ['POST'])]
     #[IsGranted('delete', subject: 'post')]
     public function delete(Request $request, Post $post, DocumentManager $documentManager): Response
     {

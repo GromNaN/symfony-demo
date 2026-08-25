@@ -86,15 +86,13 @@ final class ListUsersCommand
         // Use ->findBy() instead of ->findAll() to allow result sorting and limiting
         $allUsers = $this->users->findBy([], ['id' => 'DESC'], $maxResults);
 
-        $createUserArray = static function (User $user): array {
-            return [
-                $user->getId(),
-                $user->getFullName(),
-                $user->getUsername(),
-                $user->getEmail(),
-                implode(', ', $user->getRoles()),
-            ];
-        };
+        $createUserArray = static fn (User $user): array => [
+            $user->getId(),
+            $user->getFullName(),
+            $user->getUsername(),
+            $user->getEmail(),
+            implode(', ', $user->getRoles()),
+        ];
 
         // Doctrine query returns an array of objects, and we need an array of plain arrays
         $usersAsPlainArrays = array_map($createUserArray, $allUsers);
@@ -127,7 +125,7 @@ final class ListUsersCommand
      */
     private function sendReport(string $contents, string $recipient): void
     {
-        $email = (new Email())
+        $email = new Email()
             ->from($this->emailSender)
             ->to($recipient)
             ->subject(\sprintf('app:list-users report (%s)', date('Y-m-d H:i:s')))

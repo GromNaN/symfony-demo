@@ -12,11 +12,11 @@
 namespace App\Document;
 
 use App\Repository\UserRepository;
+use Doctrine\ODM\MongoDB\Mapping\Attribute as ODM;
+use Doctrine\ODM\MongoDB\Types\Type;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
-use Doctrine\ODM\MongoDB\Mapping\Attribute as ODM;
-use Doctrine\ODM\MongoDB\Types\Type;
 
 /**
  * Defines the properties of the User document to represent the application users.

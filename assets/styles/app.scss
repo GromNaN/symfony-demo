@@ -1,4 +1,6 @@
+// Add your SASS styles in this file
 @import "variables";
+@import "./bootswatch/variables";
 
 @import "../../vendor/twbs/bootstrap/scss/bootstrap.scss";
 @import "./bootswatch/bootswatch";
