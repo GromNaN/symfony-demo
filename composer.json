@@ -10,9 +10,9 @@
         "ext-ctype": "*",
         "ext-iconv": "*",
         "ext-pdo_sqlite": "*",
-        "doctrine/dbal": "^4.0",
-        "doctrine/doctrine-bundle": "^3.0",
-        "doctrine/orm": "^3.5",
+        "ext-mongodb": "^1.21.2|^2.1",
+        "doctrine/mongodb-odm-bundle": "^5.6@dev",
+        "doctrine/mongodb-odm": "^2.16@dev",
         "league/commonmark": "^2.1",
         "symfony/apache-pack": "^1.0",
         "symfony/asset": "^8",
@@ -46,8 +46,7 @@
         "twig/markdown-extra": "^3.3"
     },
     "require-dev": {
-        "dama/doctrine-test-bundle": "^8.0.2",
-        "doctrine/doctrine-fixtures-bundle": "^4.1",
+        "doctrine/data-fixtures": "^1.7",
         "friendsofphp/php-cs-fixer": "^3.92",
         "phpstan/phpstan": "^2.0",
         "phpstan/phpstan-doctrine": "^2.0",

@@ -11,7 +11,7 @@
 
 namespace App\Form;
 
-use App\Entity\Post;
+use App\Document\Post;
 use App\Form\Type\DateTimePickerType;
 use App\Form\Type\TagsInputType;
 use Symfony\Component\Form\AbstractType;

@@ -11,12 +11,15 @@
 
 namespace App\Tests\Command;
 
+use App\Tests\ResetFixturesTrait;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
 abstract class AbstractCommandTestCase extends KernelTestCase
 {
+    use ResetFixturesTrait;
+
     /**
      * This helper method abstracts the boilerplate code needed to test the
      * execution of a command.

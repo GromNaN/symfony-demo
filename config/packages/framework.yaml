@@ -7,7 +7,10 @@ framework:
     enabled_locales: ['ar', 'bg', 'bn', 'bs', 'ca', 'cs', 'de', 'en', 'es', 'eu', 'fr', 'hr', 'id', 'it', 'ja', 'lt', 'ne', 'nl', 'pl', 'pt_BR', 'ro', 'ru', 'sl', 'sq', 'sr_Cyrl', 'sr_Latn', 'tr', 'uk', 'vi', 'zh_CN']
 
     # Note that the session will be started ONLY if you read or write from it.
-    session: true
+    session:
+        handler_id: session.handler.mongodb
+        cookie_secure: auto
+        cookie_samesite: lax
 
     # When using the HTTP Cache, ESI allows to render page fragments separately
     # and with different cache configurations for each fragment
@@ -23,3 +26,12 @@ when@test:
         test: true
         session:
             storage_factory_id: session.storage.factory.mock_file
+
+services:
+    session.handler.mongodb:
+        class: Symfony\Component\HttpFoundation\Session\Storage\Handler\MongoDbSessionHandler
+        arguments:
+            $mongo: '@doctrine_mongodb.odm.default_connection'
+            $options:
+                database: '%env(MONGODB_DB)%'
+                collection: 'sessions'

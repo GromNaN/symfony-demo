@@ -11,10 +11,13 @@
 
 namespace App\Tests\Command;
 
+use App\Tests\ResetFixturesTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 final class ListUsersCommandTest extends AbstractCommandTestCase
 {
+    use ResetFixturesTrait;
+
     /**
      * This test verifies the amount of data is right according to the given parameter max results.
      */
