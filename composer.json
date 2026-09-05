@@ -3,15 +3,32 @@
     "description": "Field Level Queryable encryption for Doctrine",
     "type": "library",
     "require": {
-        "doctrine/orm": "3.6"
+        "php": ">=8.4",
+        "ext-openssl": "*",
+        "doctrine/orm": "3.6",
+        "doctrine/dbal": "^4.0",
+        "symfony/cache": "^8.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^12.5"
+        "phpunit/phpunit": "^12.5",
+        "async-aws/kms": "*",
+        "google/cloud-kms": "*",
+        "microsoft/azure-storage-blob": "^1.5"
+    },
+    "suggest": {
+        "async-aws/kms": "For AWS KMS integration",
+        "google/cloud-kms": "For Google Cloud KMS integration",
+        "microsoft/azure-storage-blob": "For Azure Key Vault integration"
     },
     "license": "MIT",
     "autoload": {
         "psr-4": {
             "Gromnan\\DoctrineEncrypt\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Gromnan\\DoctrineEncrypt\\Tests\\": "tests/"
         }
     },
     "authors": [
