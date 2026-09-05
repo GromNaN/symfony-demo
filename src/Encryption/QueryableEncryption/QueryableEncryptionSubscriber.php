@@ -59,8 +59,6 @@ final class QueryableEncryptionSubscriber
             $safeContent = array_merge($safeContent, array_map(fn($t) => base64_encode($t), $tags));
         }
 
-        if ($safeContent !== []) {
-            $user->safeContent = $safeContent;
-        }
+        $user->safeContent = $safeContent;
     }
 }

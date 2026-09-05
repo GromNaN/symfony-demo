@@ -6,6 +6,7 @@ namespace App\Tests\Encryption\DataEncryptionKey;
 
 use App\Encryption\DataEncryptionKey\DataEncryptionKey;
 use App\Encryption\DataEncryptionKey\DatabaseDataEncryptionKeyStore;
+use App\Encryption\KeyManagement\LocalKms;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Schema\Schema;
@@ -52,6 +53,40 @@ final class DatabaseDataEncryptionKeyStoreTest extends TestCase
         $this->expectExceptionMessage('does not exist');
 
         $store->getKey('missing-key');
+    }
+
+    public function testRotateKeyDecryptsWithCurrentMasterKeyAndReEncryptsWithNewMasterKey(): void
+    {
+        $connection = DriverManager::getConnection([
+            'driver' => 'pdo_sqlite',
+            'memory' => true,
+        ]);
+
+        $store = new DatabaseDataEncryptionKeyStore($connection, 'data_encryption_keys');
+        $this->createSchemaFromStore($store, $connection);
+
+        $plainDek = random_bytes(32);
+        $currentKms = new LocalKms('master-key-v1-material', 'master-key-v1');
+        $newKms = new LocalKms('master-key-v2-material', 'master-key-v2');
+
+        $originalKey = new DataEncryptionKey('key-rotate', null, null, $plainDek);
+        $currentKms->encrypt($originalKey);
+
+        $connection->insert('data_encryption_keys', [
+            'id' => 'key-rotate',
+            'masterKeyId' => $originalKey->getMasterKeyId(),
+            'encryptedKey' => $originalKey->getEncryptedDek(),
+        ]);
+
+        $rotatedKey = $store->rotateKey('key-rotate', $currentKms, $newKms);
+        $persistedKey = $store->getKey('key-rotate');
+        $newKms->decrypt($persistedKey);
+
+        self::assertSame('master-key-v2', $rotatedKey->getMasterKeyId());
+        self::assertNotSame($originalKey->getEncryptedDek(), $rotatedKey->getEncryptedDek());
+        self::assertSame('master-key-v2', $persistedKey->getMasterKeyId());
+        self::assertSame($rotatedKey->getEncryptedDek(), $persistedKey->getEncryptedDek());
+        self::assertSame($plainDek, $persistedKey->getPlainDek());
     }
 
     public function testUpdateSchemaCreatesExpectedTable(): void

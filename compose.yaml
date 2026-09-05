@@ -5,11 +5,11 @@ services:
     image: mongodb/mongodb-atlas-local:latest
     ports:
       - "27017:27017"
-    environment:
-      - MONGODB_INITDB_DATABASE=${MONGODB_DB:-app}
+    #environment:
+      #- MONGODB_INITDB_DATABASE=${MONGODB_DB:-app}
       # You should definitely set a root username and password in production
-      - MONGODB_INITDB_ROOT_USERNAME=${MONGODB_USERNAME:-}
-      - MONGODB_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD:-}
+      #- MONGODB_INITDB_ROOT_USERNAME=${MONGODB_USERNAME:-}
+      #- MONGODB_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD:-}
     volumes:
       - mongodb_data:/data/db:rw
       # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!

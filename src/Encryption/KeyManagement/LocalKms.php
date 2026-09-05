@@ -13,7 +13,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  */
 final class LocalKms implements KmsInterface
 {
-    private const MASTER_KEY_ID = 'local-master-key';
+    private const DEFAULT_MASTER_KEY_ID = 'local-master-key';
     private const CIPHER_ALGO = 'aes-256-gcm';
     private const IV_LENGTH = 12;
     private const TAG_LENGTH = 16;
@@ -23,9 +23,14 @@ final class LocalKms implements KmsInterface
     public function __construct(
         #[Autowire(env: 'file:MASTER_KEY_FILE')]
         private readonly string $masterKey,
+        private readonly string $masterKeyId = self::DEFAULT_MASTER_KEY_ID,
     ) {
         if ($this->masterKey === '') {
             throw new \InvalidArgumentException('Master key file is empty.');
+        }
+
+        if ($this->masterKeyId === '') {
+            throw new \InvalidArgumentException('Master key ID cannot be empty.');
         }
 
         // Normalize any master key content to a 32-byte key for AES-256.
@@ -54,13 +59,21 @@ final class LocalKms implements KmsInterface
         }
 
         // Payload format: IV + TAG + CIPHERTEXT
-        $key->encrypt(self::MASTER_KEY_ID, $iv . $tag . $ciphertext);
+        $key->encrypt($this->masterKeyId, $iv . $tag . $ciphertext);
 
         return $key;
     }
 
     public function decrypt(DataEncryptionKey $key): DataEncryptionKey
     {
+        if ($key->getMasterKeyId() !== $this->masterKeyId) {
+            throw new \RuntimeException(sprintf(
+                'The DEK is encrypted with master key "%s", but this KMS is configured for "%s".',
+                $key->getMasterKeyId(),
+                $this->masterKeyId
+            ));
+        }
+
         $payload = $key->getEncryptedDek();
 
         if (strlen($payload) <= self::IV_LENGTH + self::TAG_LENGTH) {

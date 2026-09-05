@@ -131,6 +131,8 @@ class UserController extends AbstractController
             $user->lastName = base64_encode(
                 $this->encryptor->encryptRandom($form->get('lastName')->getData(), $dek)
             );
+            $user->emailDomainHash = hash('sha256', explode('@', $form->get('email')->getData())[1]);
+            $user->emailHash = hash('sha256', $form->get('email')->getData());
 
             $this->entityManager->flush();
 

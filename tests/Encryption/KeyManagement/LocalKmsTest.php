@@ -32,13 +32,29 @@ final class LocalKmsTest extends TestCase
 
     public function testDecryptFailsOnMasterKeyMismatch(): void
     {
-        $kmsEncrypt = new LocalKms('key-a');
-        $kmsDecrypt = new LocalKms('key-b');
+        $kmsEncrypt = new LocalKms('key-a', 'master-key-a');
+        $kmsDecrypt = new LocalKms('key-a', 'master-key-b');
 
         $toEncrypt = new DataEncryptionKey('dek-1', null, null, 'plain-dek');
         $kmsEncrypt->encrypt($toEncrypt);
 
-        $toDecrypt = new DataEncryptionKey('dek-2', 'local-master-key', $toEncrypt->getEncryptedDek());
+        $toDecrypt = new DataEncryptionKey('dek-2', 'master-key-a', $toEncrypt->getEncryptedDek());
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('The DEK is encrypted with master key "master-key-a", but this KMS is configured for "master-key-b".');
+
+        $kmsDecrypt->decrypt($toDecrypt);
+    }
+
+    public function testDecryptFailsWhenKeyMaterialDoesNotMatch(): void
+    {
+        $kmsEncrypt = new LocalKms('key-a', 'master-key-a');
+        $kmsDecrypt = new LocalKms('key-b', 'master-key-a');
+
+        $toEncrypt = new DataEncryptionKey('dek-1', null, null, 'plain-dek');
+        $kmsEncrypt->encrypt($toEncrypt);
+
+        $toDecrypt = new DataEncryptionKey('dek-2', 'master-key-a', $toEncrypt->getEncryptedDek());
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Failed to decrypt DEK payload with local master key.');

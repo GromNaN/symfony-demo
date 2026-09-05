@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Range Queryable Encryption — Illustration Interactive</title>
+  <style>
+    :root {
+      --left: 0%;
+      --width: 0%;
+      --overlay-bottom: 0px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 16px 24px 28px;
+    }
+
+    /* ── Slide card ── */
+    .slide {
+      width: 980px;
+      max-width: 100%;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 20px;
+      padding: 32px 44px 28px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+    }
+
+    /* ── Step pills ── */
+    .step-pills {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+
+    .step-pill {
+      padding: 4px 18px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.25s;
+      border: 1px solid #30363d;
+      color: #6e7681;
+      background: transparent;
+    }
+    .step-pill:hover { border-color: #58a6ff; color: #58a6ff; }
+    .step-pill.active { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+
+    /* ── Title ── */
+    h1 {
+      text-align: center;
+      font-size: 1.5em;
+      font-weight: 700;
+      color: #f0f6fc;
+      margin-bottom: 5px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #7d8590;
+      font-size: 0.82em;
+      margin-bottom: 10px;
+    }
+    .phase-bar {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+    .phase-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid #30363d;
+      background: #0d1117;
+      color: #c9d1d9;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+    .phase-chip.warn {
+      border-color: #d29922;
+      color: #e3b341;
+      background: rgba(39,29,4,0.9);
+    }
+    .phase-chip.good {
+      border-color: #238636;
+      color: #3fb950;
+      background: rgba(10,54,34,0.9);
+    }
+
+    /* ── Visualization ── */
+    .viz-wrapper {
+      display: flex;
+      align-items: stretch;
+    }
+
+    /* Labels column */
+    .labels-col {
+      width: 44px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .row-label {
+      height: 36px;
+      margin: 6px 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #484f58;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .row-label.muted {
+      color: #30363d;
+    }
+    .axis-label-spacer {
+      height: 28px;
+      margin-top: 10px;
+    }
+
+    /* Data column */
+    .data-col {
+      flex: 1;
+      position: relative;
+      overflow: visible;
+    }
+
+    /* ── Overlays ── */
+    .query-overlay {
+      position: absolute;
+      top: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: rgba(210,153,34,0.05);
+      border-left: 2px dashed rgba(210,153,34,0.7);
+      border-right: 2px dashed rgba(210,153,34,0.7);
+    }
+    .query-overlay-pos {
+      left: var(--left);
+      width: var(--width);
+      top: 0;
+      bottom: var(--overlay-bottom);
+      position: absolute;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .query-badge {
+      position: absolute;
+      top: -28px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #d29922;
+      color: #0d1117;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 12px;
+      white-space: nowrap;
+    }
+
+    .value-overlay {
+      position: absolute;
+      top: 0;
+      width: 2px;
+      z-index: 1;
+      pointer-events: none;
+      background: linear-gradient(to bottom, #ff7b72cc, #ff7b7233);
+    }
+    .value-overlay-pos {
+      left: var(--left);
+      top: 0;
+      bottom: var(--overlay-bottom);
+      position: absolute;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .value-badge {
+      position: absolute;
+      top: -28px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ff7b72;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 12px;
+      white-space: nowrap;
+    }
+
+    /* ── Level rows ── */
+    .level-row {
+      position: relative;
+      height: 36px;
+      margin: 6px 0;
+      z-index: 2;
+      overflow: visible;
+    }
+    .row-note {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px dashed #30363d;
+      background: rgba(22,27,34,0.92);
+      color: #6e7681;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      z-index: 4;
+    }
+
+    /* ── Segments ── */
+    .seg {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      overflow: visible;
+      white-space: nowrap;
+      transition: all 0.35s ease;
+    }
+    .seg-pos {
+      left: calc(var(--left) + 1px);
+      width: calc(var(--width) - 2px);
+    }
+
+    .seg-default {
+      background: #1c2128;
+      border: 1px solid #2d333b;
+      color: #3d444d;
+    }
+    .seg-overview {
+      /* Higher contrast for step 1 (tree structure overview). */
+      background: #2b3139;
+      border: 1px solid #6e7681;
+      color: #d0d7de;
+    }
+    .seg-storage {
+      background: #0a3622;
+      border: 2px solid #238636;
+      color: #3fb950;
+      box-shadow: 0 0 14px rgba(35,134,54,0.3);
+    }
+    .seg-query {
+      background: #271d04;
+      border: 2px solid #d29922;
+      color: #e3b341;
+      box-shadow: 0 0 14px rgba(210,153,34,0.3);
+    }
+    .seg-dim {
+      opacity: 0.1;
+      transition: all 0.35s ease;
+    }
+    .seg-faded {
+      opacity: 0.3;
+      transition: all 0.35s ease;
+    }
+    .seg-match {
+      background: #0c2d4a;
+      border: 2px solid #79c0ff;
+      color: #cae8ff;
+      box-shadow: 0 0 18px rgba(121,192,255,0.5), 0 0 40px rgba(121,192,255,0.15);
+      animation: pulse-match 1.6s ease-in-out infinite;
+      z-index: 5;
+    }
+    @keyframes pulse-match {
+      0%, 100% { box-shadow: 0 0 14px rgba(121,192,255,0.4); }
+      50%       { box-shadow: 0 0 32px rgba(121,192,255,0.9), 0 0 60px rgba(121,192,255,0.3); }
+    }
+
+    /* Match result badge */
+    .match-result-badge {
+      position: absolute;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .match-result-pos {
+      left: var(--left);
+      bottom: calc(100% + 10px);
+      transform: translateX(-50%);
+      position: absolute;
+    }
+    .match-result-pill {
+      background: linear-gradient(135deg, #1f6feb, #58a6ff);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 5px 14px;
+      border-radius: 14px;
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+      box-shadow: 0 4px 16px rgba(31,111,235,0.5);
+    }
+    .match-result-line {
+      width: 2px;
+      height: 14px;
+      background: linear-gradient(to bottom, #58a6ff, transparent);
+    }
+
+    /* Label above (for N2) */
+    .seg-above-label {
+      position: absolute;
+      bottom: calc(100% + 5px);
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 9px;
+      font-weight: 700;
+      white-space: nowrap;
+      padding: 2px 5px;
+      border-radius: 4px;
+      line-height: 1.2;
+      pointer-events: none;
+    }
+    .seg-above-label.storage-lbl {
+      color: #3fb950;
+      background: rgba(10,54,34,0.9);
+      border: 1px solid #238636;
+    }
+    .seg-above-label.query-lbl {
+      color: #e3b341;
+      background: rgba(39,29,4,0.9);
+      border: 1px solid #d29922;
+    }
+    .seg-above-label.match-lbl {
+      color: #cae8ff;
+      background: rgba(12,45,74,0.95);
+      border: 1px solid #79c0ff;
+    }
+
+    /* ── Axis ── */
+    .axis-row {
+      position: relative;
+      height: 28px;
+      margin-top: 10px;
+      z-index: 2;
+    }
+    .axis-line {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: #2d333b;
+    }
+    .tick {
+      position: absolute;
+      top: 0;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .tick-pos { left: var(--left); }
+    .tick-mark { width: 1px; height: 5px; background: #484f58; }
+    .tick-num  { font-size: 10px; color: #6e7681; margin-top: 2px; }
+
+    /* ── Info box ── */
+    .info-box {
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-top: 18px;
+      font-size: 12.5px;
+      line-height: 1.85;
+      color: #c9d1d9;
+      min-height: 90px;
+    }
+    .info-box .g  { color: #3fb950; font-weight: 700; }
+    .info-box .o  { color: #e3b341; font-weight: 700; }
+    .info-box .b  { color: #58a6ff; font-weight: 700; }
+    .info-box .r  { color: #ff7b72; font-weight: 700; }
+    .info-box .em { font-style: italic; color: #adbac7; }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #6e7681;
+    }
+    .legend-swatch {
+      width: 22px; height: 10px;
+      border-radius: 3px;
+      border: 1px solid;
+    }
+
+    .metrics {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .metric-pill {
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 11px;
+      color: #8b949e;
+    }
+    .metric-pill strong {
+      color: #f0f6fc;
+      margin-left: 4px;
+    }
+    .metric-pill.good strong { color: #3fb950; }
+    .metric-pill.warn strong { color: #e3b341; }
+    .metric-pill.info strong { color: #79c0ff; }
+
+    .sql-card {
+      margin-top: 14px;
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .sql-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-bottom: 1px solid #21262d;
+      background: #11161d;
+    }
+    .sql-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: #f0f6fc;
+      letter-spacing: 0.2px;
+    }
+    .sql-subtitle {
+      font-size: 10px;
+      font-weight: 700;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    .sql-code {
+      margin: 0;
+      padding: 14px 16px;
+      overflow: auto;
+      max-height: 240px;
+      font: 12px/1.65 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      color: #c9d1d9;
+      white-space: pre;
+      tab-size: 2;
+    }
+    .sql-code .kw  { color: #ff7b72; font-weight: 700; }
+    .sql-code .id  { color: #79c0ff; }
+    .sql-code .str { color: #a5d6ff; }
+    .sql-code .num { color: #79c0ff; }
+    .sql-code .com { color: #8b949e; font-style: italic; }
+    .sql-code .op  { color: #e3b341; }
+
+    /* ── Navigation ── */
+    .nav {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .btn {
+      padding: 8px 22px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid;
+    }
+    .btn-ghost { background: transparent; border-color: #30363d; color: #c9d1d9; }
+    .btn-ghost:hover:not(:disabled) { background: #21262d; }
+    .btn-primary { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: #388bfd; }
+    .btn:disabled { opacity: 0.25; cursor: not-allowed; }
+    .step-counter { font-size: 12px; color: #6e7681; min-width: 52px; text-align: center; }
+
+    /* ── Keyboard hint ── */
+    .kbd-hint {
+      text-align: center;
+      font-size: 10px;
+      color: #3d444d;
+      margin-top: 8px;
+    }
+    kbd {
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-size: 10px;
+      color: #6e7681;
+    }
+    .runtime-class-probe {
+      display: none;
+    }
+
+    /* ── Encryption toggle (in sql-head) ── */
+    .enc-toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 1px solid #30363d;
+      background: #0d1117;
+      font-size: 11px;
+      font-weight: 700;
+      color: #8b949e;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .enc-toggle-label:hover { border-color: #58a6ff; color: #c9d1d9; }
+    .enc-toggle-label input[type=checkbox] { display: none; }
+    .enc-toggle-label .enc-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: #3d444d;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .enc-toggle-label.on {
+      border-color: #3fb950;
+      color: #3fb950;
+    }
+    .enc-toggle-label.on .enc-dot { background: #3fb950; }
+
+    @media (max-width: 900px) {
+      .slide {
+        padding: 24px 18px 22px;
+      }
+
+      .sql-head {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .sql-code {
+        max-height: 200px;
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="slide">
+
+  <div class="runtime-class-probe" aria-hidden="true">
+    <span class="step-pill active"></span>
+    <span class="seg seg-default seg-storage seg-query seg-dim seg-faded seg-match seg-pos"></span>
+    <span class="seg-above-label storage-lbl query-lbl match-lbl"></span>
+    <span class="query-overlay query-overlay-pos"></span>
+    <span class="value-overlay value-overlay-pos"></span>
+    <span class="match-result-badge match-result-pos"></span>
+    <span class="tick tick-pos"></span>
+    <div class="info-box"><span class="g"></span><span class="o"></span><span class="b"></span><span class="r"></span><span class="em"></span></div>
+  </div>
+
+
+  <div class="step-pills" id="stepPills"></div>
+
+  <h1 id="title"></h1>
+  <p class="subtitle" id="subtitle"></p>
+  <div class="phase-bar" id="phaseBar"></div>
+
+  <div id="vizOuter"></div>
+
+  <div class="legend" id="legend"></div>
+  <div class="metrics" id="metrics"></div>
+  <div class="sql-card" id="sqlCard"></div>
+
+  <div class="info-box" id="infoBox"></div>
+
+  <div class="nav">
+    <button class="btn btn-ghost"    id="btnPrev" onclick="go(-1)">← Précédent</button>
+    <span class="step-counter"       id="stepCounter"></span>
+    <button class="btn btn-primary"  id="btnNext" onclick="go(1)">Suivant →</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd> <kbd>→</kbd> pour naviguer</div>
+
+</div>
+
+<script>
+  // ─── Configuration ─────────────────────────────────────────────
+  const RMIN = 0, RMAX = 25;
+  const unitRange = (start, end) => Array.from({ length: Math.max(0, end - start) }, (_, i) => ({ s: start + i, e: start + i + 1 }));
+  const sqlKeywords = [
+    'CREATE TABLE', 'CREATE INDEX', 'PRIMARY KEY', 'NOT NULL', 'USING', 'GIN',
+    'INSERT INTO', 'VALUES', 'ARRAY', 'SELECT', 'FROM', 'WHERE', 'ORDER BY',
+    'AS', 'ON', 'BIGSERIAL', 'BYTEA', 'TEXT', 'RETURNING'
+  ];
+  const SQL_TABLE = 'qe_items';
+  const SQL_INDEX = 'qe_items_tags_gin_idx';
+
+  const LEVELS = [
+    { label: 'N0', segs: [{s:0, e:25}] },
+    { label: 'N1', segs: [{s:0,e:5},{s:5,e:10},{s:10,e:15},{s:15,e:20},{s:20,e:25}] },
+    { label: 'N2', segs: Array.from({length:25}, (_,i) => ({s:i, e:i+1})) },
+  ];
+
+  // ── Schéma — les deux scénarios ont la même DDL ───────────────
+  // (le champ s'appelle sensitive_number côté applicatif,
+  //  stocké en BYTEA chiffré AES côté serveur)
+
+  const STEPS = [
+    // ── Variante sans arbre — 1/4 ────────────────────────────────
+    {
+      phase: '1. Sans arbre',
+      phaseTone: 'warn',
+      localStep: 1,
+      title:    "Division de l'espace en segments unitaires",
+      subtitle: "On commence sans arbre : seuls les segments unitaires existent",
+      value: null,
+      queryRange: null,
+      storage: null,
+      query: null,
+      levelModes: { 0: 'absent', 1: 'absent' },
+      showN2Labels: false,
+      sqlTitle: 'PostgreSQL — schéma de base',
+      sqlSubtitle: 'Étape 1 · schéma',
+      sql: `-- Table côté serveur : la valeur numérique reste chiffrée
+CREATE TABLE ${SQL_TABLE} (
+  id BIGSERIAL PRIMARY KEY,
+  sensitive_number BYTEA NOT NULL,
+  tags TEXT[] NOT NULL
+);
+
+-- Index pour accélérer les intersections sur le tableau de tags
+CREATE INDEX ${SQL_INDEX}
+  ON ${SQL_TABLE}
+  USING GIN (tags);`,
+      metrics: [
+        { label: 'Point de départ', value: 'N2 seul', tone: 'warn' },
+        { label: 'Granularité', value: '1 unité', tone: 'warn' }
+      ],
+      info: `
+        On commence par la version <span class="o">la plus simple</span> : il n'y a <b>pas d'arbre</b>.<br>
+        Le serveur ne manipule que des segments unitaires de <b>N2</b> ; les niveaux <b>N0</b> et <b>N1</b> n'existent pas encore.<br>
+        Cette base va nous servir de <span class="em">point de comparaison</span> avant d'introduire l'arbre multi-niveaux.
+      `
+    },
+    // ── Variante sans arbre — 2/4 ────────────────────────────────
+    {
+      phase: '1. Sans arbre',
+      phaseTone: 'warn',
+      localStep: 2,
+      title:    "Stockage de la valeur 13",
+      subtitle: "On stocke le segment unitaire [13-14] auquel appartient la valeur",
+      value: 13,
+      queryRange: null,
+      storage: {
+        2: [{s:13,e:14}]
+      },
+      query: null,
+      levelModes: { 0: 'absent', 1: 'absent' },
+      sqlTitle: 'PostgreSQL — insertion',
+      sqlSubtitle: 'Étape 2 · insert',
+      sql: `INSERT INTO ${SQL_TABLE} (sensitive_number, tags)
+VALUES (
+  13,
+  ARRAY['N2:[13-14]']::TEXT[]
+);`,
+      sqlEnc: () => `INSERT INTO ${SQL_TABLE} (sensitive_number, tags)
+VALUES (
+  '\\x8fa1c3d5e7aa9013',
+  ARRAY['\\x${fakeHmac('N2:[13-14]')}']::BYTEA[]
+);`,
+      metrics: [
+        { label: 'Tokens stockage', value: '1', tone: 'info' },
+        { label: 'Segment stocké', value: '[13-14]', tone: 'info' }
+      ],
+      info: `
+        Sans arbre, stocker <span class="r">13</span> revient à conserver uniquement le segment exact <span class="g">[13-14]</span>.<br>
+        Le stockage est simple, car il n'y a qu'un seul niveau et donc <b>un seul tag</b> à écrire en base.<br>
+        Mais cette simplicité va montrer sa limite au moment du <span class="em">requêtage par intervalle</span>.
+      `
+    },
+    // ── Variante sans arbre — 3/4 ────────────────────────────────
+    {
+      phase: '1. Sans arbre',
+      phaseTone: 'warn',
+      localStep: 3,
+      title:    "Requête [9,22]",
+      subtitle: "Il faut énumérer tous les segments unitaires de l'intervalle",
+      value: null,
+      queryRange: { s: 9, e: 22 },
+      storage: null,
+      query: {
+        2: unitRange(9, 22)
+      },
+      levelModes: { 0: 'absent', 1: 'absent' },
+      showN2Labels: false,
+      sqlTitle: 'PostgreSQL — requête d’intersection',
+      sqlSubtitle: 'Étape 3 · select',
+      sql: `SELECT id, sensitive_number, tags
+FROM ${SQL_TABLE}
+WHERE tags && ARRAY[
+  'N2:[9-10]',
+  'N2:[10-11]',
+  'N2:[11-12]',
+  'N2:[12-13]',
+  'N2:[13-14]',
+  'N2:[14-15]',
+  'N2:[15-16]',
+  'N2:[16-17]',
+  'N2:[17-18]',
+  'N2:[18-19]',
+  'N2:[19-20]',
+  'N2:[20-21]',
+  'N2:[21-22]'
+]::TEXT[]
+ORDER BY id;`,
+      metrics: [
+        { label: 'Segments requête', value: '13', tone: 'warn' },
+        { label: 'Intervalle', value: '[9-22]', tone: 'info' }
+      ],
+      match: null,
+      info: `
+        Sans arbre, la requête <span class="o">[9,22]</span> doit lister <b>chaque segment unitaire</b> de l'intervalle.<br>
+        On doit donc envoyer <b>13 tags</b> : [9-10], [10-11], ..., [21-22].<br>
+        C'est exactement le problème que l'arbre va résoudre : <span class="em">compresser la requête en moins de segments</span>.
+      `
+    },
+    // ── Variante sans arbre — 4/4 ────────────────────────────────
+    {
+      phase: '1. Sans arbre',
+      phaseTone: 'warn',
+      localStep: 4,
+      title:    "Résultat",
+      subtitle: "L'item est trouvé via [13-14], mais plus l'interva est étandu, plus la requête est coûteuse",
+      value: 13,
+      queryRange: { s: 9, e: 22 },
+      storage: {
+        2: [{s:13,e:14}]
+      },
+      query: {
+        2: unitRange(9, 22)
+      },
+      match: {
+        2: [{s:13,e:14}]
+      },
+      levelModes: { 0: 'absent', 1: 'absent' },
+      showN2Labels: false,
+      sqlTitle: 'PostgreSQL — résultat',
+      sqlSubtitle: 'Étape 4 · résultats',
+      sql: ` id | sensitive_number | tags
+----+------------------+------------------
+  1 |               13 | {"N2:[13-14]"}
+
+-- La ligne est retenue car le tableau tags intersecte
+-- le tableau des segments demandés par la requête.`,
+      sqlEnc: () => ` id | sensitive_number     | tags
+----+---------------------+-------------------------------
+  1 | \\x8fa1c3d5e7aa9013 | {"\\x${fakeHmac('N2:[13-14]')}"}
+
+-- La ligne est retenue car le tableau tags intersecte
+-- le tableau des segments demandés par la requête.`,
+      metrics: [
+        { label: 'Segment commun', value: '[13-14]', tone: 'info' },
+        { label: 'Coût requête', value: '13 tags', tone: 'warn' }
+      ],
+      info: `
+        L'item est bien retrouvé, ici grâce au segment exact <b>[13-14]</b>.<br>
+        La démonstration marche, mais elle montre aussi la limite du modèle sans arbre : <span class="o">la requête est verbeuse</span> et envoie beaucoup de tags.<br>
+        On peut maintenant introduire l'arbre pour conserver le même résultat, avec une requête <span class="em">beaucoup plus compacte</span>.
+      `
+    },
+    // ── Arbre optimisé — 1/4 ─────────────────────────────────────
+    {
+      phase: '2. On introduit l\'arbre',
+      phaseTone: 'good',
+      localStep: 1,
+      title:    "Introduction de l'arbre multi-niveaux",
+      subtitle: "On ajoute N0 et N1 pour regrouper plusieurs segments unitaires dans des segments plus larges",
+      value: null,
+      queryRange: null,
+      storage:  null,
+      query:    null,
+      sqlTitle: 'PostgreSQL — schéma de base',
+      sqlSubtitle: 'Étape 1 · schéma',
+      sql: `-- Même schéma PostgreSQL : seule la stratégie de tags change
+CREATE TABLE ${SQL_TABLE} (
+  id BIGSERIAL PRIMARY KEY,
+  sensitive_number BYTEA NOT NULL,
+  tags TEXT[] NOT NULL
+);
+
+CREATE INDEX ${SQL_INDEX}
+  ON ${SQL_TABLE}
+  USING GIN (tags);`,
+      metrics: [
+        { label: 'Niveaux', value: '3', tone: 'good' },
+        { label: 'But', value: 'compacter', tone: 'good' }
+      ],
+      info: `
+        On introduit maintenant l'<span class="b">arbre multi-niveaux</span>.<br>
+        <b>N0</b> couvre tout l'espace, <b>N1</b> regroupe des blocs de 5 unités, et <b>N2</b> garde la granularité fine.<br>
+        L'idée est simple : utiliser des segments plus larges quand c'est possible, pour <span class="em">réduire le nombre de tags nécessaires</span>.
+      `
+    },
+    // ── Arbre optimisé — 2/4 ─────────────────────────────────────
+    {
+      phase: '2. On introduit l\'arbre',
+      phaseTone: 'good',
+      localStep: 2,
+      title:    "Stockage de 13 avec l'arbre",
+      subtitle: "On stocke un segment par niveau : large, intermédiaire, puis fin",
+      value: 13,
+      queryRange: null,
+      storage:  {
+        0: [{s:0,e:25}],
+        1: [{s:10,e:15}],
+        2: [{s:13,e:14}]
+      },
+      query: null,
+      sqlTitle: 'PostgreSQL — insertion',
+      sqlSubtitle: 'Étape 2 · insert',
+      sql: `INSERT INTO ${SQL_TABLE} (sensitive_number, tags)
+VALUES (
+  13,
+  ARRAY[
+    'N0:[0-25]',
+    'N1:[10-15]',
+    'N2:[13-14]'
+  ]::TEXT[]
+);`,
+      sqlEnc: () => `INSERT INTO ${SQL_TABLE} (sensitive_number, tags)
+VALUES (
+   '\\x8fa1c3d5e7aa9013',
+  ARRAY[
+    '\\x${fakeHmac('N0:[0-25]')}',
+    '\\x${fakeHmac('N1:[10-15]')}',
+    '\\x${fakeHmac('N2:[13-14]')}'
+  ]::BYTEA[]
+);`,
+      metrics: [
+        { label: 'Tokens stockage', value: '3', tone: 'good' },
+        { label: 'Valeur', value: '13', tone: 'info' }
+      ],
+      info: `
+        Avec l'arbre, la valeur <span class="r">13</span> est représentée à <b>trois niveaux</b> :<br>
+        <span class="g">N0 [0-25]</span>, <span class="g">N1 [10-15]</span>, <span class="g">N2 [13-14]</span>.<br>
+        On stocke donc plus d'information qu'avant, mais en échange on prépare des <span class="em">segments plus utiles pour les requêtes d'intervalle</span>.
+      `
+    },
+    // ── Arbre optimisé — 3/4 ─────────────────────────────────────
+    {
+      phase: '2. On introduit l\'arbre',
+      phaseTone: 'good',
+      localStep: 3,
+      title:    "Requête [9,22] avec l'arbre",
+      subtitle: "Grâce aux niveaux intermédiaires, la requête se compacte en 5 segments",
+      value: null,
+      queryRange: { s: 9, e: 22 },
+      storage: null,
+      query:   {
+        0: [],
+        1: [{s:10,e:15},{s:15,e:20}],
+        2: [{s:9,e:10},{s:20,e:21},{s:21,e:22}]
+      },
+      sqlTitle: 'PostgreSQL — requête d’intersection',
+      sqlSubtitle: 'Étape 3 · select',
+      sql: `SELECT id, sensitive_number, tags
+FROM ${SQL_TABLE}
+WHERE tags && ARRAY[
+  'N1:[10-15]',
+  'N1:[15-20]',
+  'N2:[9-10]',
+  'N2:[20-21]',
+  'N2:[21-22]'
+]::TEXT[]
+ORDER BY id;`,
+      metrics: [
+        { label: 'Sans arbre', value: '13 tags', tone: 'warn' },
+        { label: 'Avec arbre', value: '5 tags', tone: 'good' }
+      ],
+      match: null,
+      info: `
+        Grâce à l'arbre, on peut couvrir <span class="o">[9,22]</span> avec seulement <b>5 segments</b> :<br>
+        deux segments intermédiaires en <b>N1</b> et trois segments fins en <b>N2</b>.<br>
+        C'est le cœur de la démonstration : l'arbre <span class="b">remplace 13 tags par 5</span> pour la même requête.
+      `
+    },
+    // ── Arbre optimisé — 4/4 ─────────────────────────────────────
+    {
+      phase: '2. On introduit l\'arbre',
+      phaseTone: 'good',
+      localStep: 4,
+      title:    "Résultat avec l'arbre",
+      subtitle: "L'item est toujours trouvé, mais cette fois via un segment commun plus large [10-15]",
+      value: 13,
+      queryRange: { s: 9, e: 22 },
+      storage: {
+        0: [{s:0,e:25}],
+        1: [{s:10,e:15}],
+        2: [{s:13,e:14}]
+      },
+      query: {
+        0: [],
+        1: [{s:10,e:15},{s:15,e:20}],
+        2: [{s:9,e:10},{s:20,e:21},{s:21,e:22}]
+      },
+      match: {
+        1: [{s:10,e:15}]
+      },
+      sqlTitle: 'PostgreSQL — résultat',
+      sqlSubtitle: 'Étape 4 · résultats',
+      sql: ` id | sensitive_number | tags
+----+------------------+-----------------------------------------------
+  1 |               13 | {"N0:[0-25]","N1:[10-15]","N2:[13-14]"}
+
+-- L'intersection est vraie car 'N1:[10-15]' est présent
+-- dans tags et dans le tableau des segments de la requête.`,
+      sqlEnc: () => ` id | sensitive_number     | tags
+----+---------------------+-----------------------------------------------
+  1 | \\x8fa1c3d5e7aa9013 | {"\\x${fakeHmac('N0:[0-25]')}","\\x${fakeHmac('N1:[10-15]')}","\\x${fakeHmac('N2:[13-14]')}"}
+
+-- L'intersection est vraie car le HMAC de 'N1:[10-15]' est présent
+-- dans tags et dans le tableau des segments de la requête.`,
+      metrics: [
+        { label: 'Segment commun', value: '[10-15]', tone: 'good' },
+        { label: 'Gain requête', value: '13 → 5', tone: 'good' }
+      ],
+      info: `
+        L'item est toujours retrouvé, mais cette fois grâce au segment commun <b>[10-15]</b> en <b>N1</b>.<br>
+        On obtient donc le <span class="g">même résultat fonctionnel</span> que sans arbre, avec une requête <span class="g">beaucoup plus compacte</span>.<br>
+        C'est précisément ce que l'arbre apporte : <span class="em">moins de tags à manipuler pour les range queries</span>.
+      `
+    },
+  ];
+
+  let step = 0;
+  let encEnabled = false;
+
+  // ─── Helpers ───────────────────────────────────────────────────
+  const pct = v => ((v - RMIN) / (RMAX - RMIN)) * 100;
+  const hasMatch = (seg, list) => list && list.some(s => s.s === seg.s && s.e === seg.e);
+
+  // Simulated HMAC-SHA256 tag (deterministic truncated hex for demo)
+  function fakeHmac(tag) {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < tag.length; i++) {
+      h ^= tag.charCodeAt(i);
+      h = (Math.imul(h, 0x01000193) >>> 0);
+    }
+    return (h >>> 0).toString(16).padStart(8, '0') +
+           ((h * 0x9e3779b9) >>> 0).toString(16).padStart(8, '0');
+  }
+
+  function encryptSql(sql) {
+    // Replace decode('…','hex') → simulated AES ciphertext
+    let out = sql.replace(/decode\('([0-9a-f]+)',\s*'hex'\)/g, (_, h) => `'\\x${h}'`);
+
+    // Replace plain tags 'Nx:[a-b]' → HMAC hex token
+    out = out.replace(/'(N\d:\[\d+-\d+])'/g, (_, tag) => `'\\x${fakeHmac(tag)}'`);
+
+    // Replace result-set tag arrays {"Nx:[a-b]",...} → encrypted form
+    out = out.replace(/\{"([^"]+)"\}/g, (_, inner) => {
+      const encrypted = inner.split('","').map(t => `"\\x${fakeHmac(t)}"`).join(',');
+      return '{' + encrypted + '}';
+    });
+
+    return out;
+  }
+
+
+  function toggleEnc(cb) {
+    encEnabled = cb.checked;
+    render();
+  }
+  const escapeHtml = text => text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  const highlightSql = sql => {
+    let html = escapeHtml(sql);
+    html = html.replace(/(--.*)$/gm, '<span class="com">$1</span>');
+    html = html.replace(/'(?:[^']|'')*'/g, match => `<span class="str">${match}</span>`);
+    html = html.replace(/\b\d+\b/g, match => `<span class="num">${match}</span>`);
+    sqlKeywords.forEach(keyword => {
+      const pattern = new RegExp(`\\b${keyword.replace(/ /g, '\\s+')}\\b`, 'g');
+      html = html.replace(pattern, match => `<span class="kw">${match}</span>`);
+    });
+    html = html.replace(/\b(qe_items|qe_items_tags_gin_idx|id|sensitive_number|tags|decode)\b/g, '<span class="id">$1</span>');
+    html = html.replace(/(&amp;&amp;|::)/g, '<span class="op">$1</span>');
+    return html;
+  };
+
+  // ─── Render ────────────────────────────────────────────────────
+  function render() {
+    const S = STEPS[step];
+
+    // Pills
+    document.getElementById('stepPills').innerHTML =
+      STEPS.map((_, i) =>
+        `<span class="step-pill ${i === step ? 'active' : ''}" onclick="jump(${i})">Étape ${i + 1}</span>`
+      ).join('');
+
+    document.getElementById('title').textContent = S.title;
+    document.getElementById('subtitle').textContent = S.subtitle;
+    document.getElementById('phaseBar').innerHTML = `<span class="phase-chip ${S.phaseTone || ''}">${S.phase} · ${S.localStep}/4</span>`;
+    document.getElementById('btnPrev').disabled = step === 0;
+    document.getElementById('btnNext').disabled = step === STEPS.length - 1;
+    document.getElementById('btnNext').textContent = step === STEPS.length - 1 ? 'Fin ✓' : 'Suivant →';
+    document.getElementById('stepCounter').textContent = `${step + 1} / ${STEPS.length}`;
+
+    const overlayBottom = 38;
+    let html = '<div class="viz-wrapper">';
+
+    // ── Labels column ──
+    html += '<div class="labels-col">';
+    LEVELS.forEach((lv, i) => {
+      const labelClass = S.levelModes?.[i] === 'absent' ? 'row-label muted' : 'row-label';
+      html += `<div class="${labelClass}">${lv.label}</div>`;
+    });
+    html += '<div class="axis-label-spacer"></div></div>';
+
+    // ── Data column ──
+    html += '<div class="data-col">';
+
+    // Query range overlay
+    if (S.queryRange) {
+      const ql = pct(S.queryRange.s);
+      const qr = pct(S.queryRange.e);
+      html += `<div class="query-overlay query-overlay-pos" style="--left:${ql}%; --width:${qr - ql}%; --overlay-bottom:${overlayBottom}px;">
+          <div class="query-badge">Requête [${S.queryRange.s}, ${S.queryRange.e}]</div>
+        </div>`;
+    }
+
+    // Value marker overlay
+    if (S.value !== null) {
+      const valuePct = pct(S.value);
+      html += `<div class="value-overlay value-overlay-pos" style="--left:calc(${valuePct}% - 1px); --overlay-bottom:${overlayBottom}px;">
+          <div class="value-badge">Valeur ${S.value}</div>
+        </div>`;
+    }
+
+    // Level rows
+    LEVELS.forEach((lv, li) => {
+      const levelAbsent = S.levelModes?.[li] === 'absent';
+      const showN2Labels = S.showN2Labels ?? true;
+      html += `<div class="level-row">`;
+
+      if (!levelAbsent) {
+        lv.segs.forEach(seg => {
+          const left = pct(seg.s);
+          const width = pct(seg.e) - pct(seg.s);
+
+          let cls = 'seg-default';
+          if (S.match && hasMatch(seg, S.match[li])) cls = 'seg-match';
+          else if (S.storage && hasMatch(seg, S.storage[li])) cls = 'seg-storage';
+          else if (S.query && hasMatch(seg, S.query[li])) cls = 'seg-query';
+
+          const isOverviewStep = !S.storage && !S.query && !S.match;
+          const extraClass = isOverviewStep && cls === 'seg-default' ? ' seg-overview' : '';
+
+          let dim = '';
+          if (S.match) {
+            if (cls === 'seg-default') dim = ' seg-dim';
+            else if (cls !== 'seg-match') dim = ' seg-faded';
+          } else if (S.storage || S.query) {
+            if (cls === 'seg-default') dim = ' seg-dim';
+          }
+
+          let inner = '';
+          if (li <= 1) {
+            inner = `[${seg.s}-${seg.e}]`;
+          } else if (cls !== 'seg-default' && showN2Labels) {
+            const lblClass = cls === 'seg-storage' ? 'storage-lbl' : cls === 'seg-query' ? 'query-lbl' : 'match-lbl';
+            inner = `<div class="seg-above-label ${lblClass}">[${seg.s}-${seg.e}]</div>`;
+          }
+
+          html += `<div class="seg seg-pos ${cls}${extraClass}${dim}" style="--left:${left}%; --width:${width}% ;">${inner}</div>`;
+        });
+      } else {
+        html += '<div class="row-note">niveau absent dans cette variante</div>';
+      }
+
+      if (S.match && S.match[li]) {
+        S.match[li].forEach(mseg => {
+          const centerPct = (pct(mseg.s) + pct(mseg.e)) / 2;
+          html += `<div class="match-result-badge match-result-pos" style="--left:${centerPct}%;">
+              <div class="match-result-pill">✓ Item trouvé !</div>
+              <div class="match-result-line"></div>
+            </div>`;
+        });
+      }
+
+      html += '</div>';
+    });
+
+    // Axis
+    html += '<div class="axis-row"><div class="axis-line"></div>';
+    for (let v = RMIN; v <= RMAX; v += 5) {
+      html += `<div class="tick tick-pos" style="--left:${pct(v)}%;">
+          <div class="tick-mark"></div>
+          <div class="tick-num">${v}</div>
+        </div>`;
+    }
+    html += '</div>';
+
+    html += '</div>';
+    html += '</div>';
+
+    document.getElementById('vizOuter').innerHTML = html;
+
+    // ── Legend ──
+    const legends = [
+      { bg: '#1c2128', border: '#2d333b', text: 'Segment (inactif)' },
+    ];
+    if (S.storage) legends.push({ bg: '#0a3622', border: '#238636', text: `Segment stocké${S.value !== null ? ` (valeur ${S.value})` : ''}` });
+    if (S.query) legends.push({ bg: '#271d04', border: '#d29922', text: `Segment recherché${S.queryRange ? ` (requête [${S.queryRange.s}-${S.queryRange.e}])` : ''}` });
+    if (S.query && !S.match && S.queryRange) legends.push({ bg: 'transparent', border: 'rgba(210,153,34,0.7)', text: `Intervalle [${S.queryRange.s}-${S.queryRange.e}]`, dashed: true });
+    if (S.match) legends.push({ bg: '#0c2d4a', border: '#79c0ff', text: 'Segment commun (intersection)' });
+    if (S.levelModes && Object.values(S.levelModes).includes('absent')) legends.push({ bg: 'rgba(22,27,34,0.92)', border: '#30363d', text: 'Niveau absent dans la variante', dashed: true });
+
+    document.getElementById('legend').innerHTML = legends.map(l => `
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:${l.bg}; border-color:${l.border}; ${l.dashed ? 'border-style:dashed;' : ''}"></div>
+        ${l.text}
+      </div>`
+    ).join('');
+
+    document.getElementById('metrics').innerHTML = (S.metrics || []).map(metric => `
+      <div class="metric-pill ${metric.tone || ''}">${metric.label}<strong>${metric.value}</strong></div>
+    `).join('');
+
+    const sqlEncValue = typeof S.sqlEnc === 'function' ? S.sqlEnc() : S.sqlEnc;
+    const displaySql = encEnabled
+      ? (sqlEncValue || encryptSql(S.sql || ''))
+      : (S.sql || '');
+
+    document.getElementById('sqlCard').innerHTML = `
+      <div class="sql-head">
+        <div class="sql-title">${S.sqlTitle || 'PostgreSQL'}</div>
+        <label class="enc-toggle-label${encEnabled ? ' on' : ''}" id="encLabel">
+          <input type="checkbox" id="encToggle" ${encEnabled ? 'checked' : ''} onchange="toggleEnc(this)">
+          <span class="enc-dot"></span>
+          ${encEnabled ? 'Chiffrement activé 🔒' : 'Chiffrement désactivé'}
+        </label>
+      </div>
+      <pre class="sql-code">${highlightSql(displaySql)}</pre>
+    `;
+
+    document.getElementById('infoBox').innerHTML = S.info;
+  }
+
+  function go(d) {
+    step = Math.max(0, Math.min(STEPS.length - 1, step + d));
+    history.pushState(null, '', `#etape-${step + 1}`);
+    render();
+  }
+
+  function jump(i) {
+    step = i;
+    history.pushState(null, '', `#etape-${step + 1}`);
+    render();
+  }
+
+  window.addEventListener('popstate', () => {
+    stepFromHash();
+    render();
+  });
+
+  function stepFromHash() {
+    const m = location.hash.match(/^#etape-(\d+)$/);
+    if (m) {
+      const i = parseInt(m[1], 10) - 1;
+      if (i >= 0 && i < STEPS.length) step = i;
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(-1);
+  });
+
+  stepFromHash();
+  render();
+</script>
+</body>
+</html>

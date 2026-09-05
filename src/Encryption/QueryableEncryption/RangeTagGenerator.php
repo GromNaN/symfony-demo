@@ -69,7 +69,7 @@ final class RangeTagGenerator
             $tokens[] = $this->computeToken($level, $bucketIndex);
         }
 
-        return array_values(array_unique($tokens, SORT_STRING));
+        return $tokens;
     }
 
     /**
