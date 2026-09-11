@@ -3,10 +3,10 @@
 This project shows how to render masked contact details on a Symfony page and
 reveal them on demand, one explicit click at a time, with layered protections.
 
-The tutorial builds the feature in five stages, always from the same starting
-point:
+The tutorial builds the feature in five stages, from the smallest useful
+starting point, and installs packages only when a stage needs them:
 
-1. a plain Twig template,
+1. a plain Twig template (no component, no package beyond templates),
 2. the same template turned into a component,
 3. that component turned into a live component with a reveal action,
 4. one security layer added at a time,
@@ -46,70 +46,28 @@ composer create-project symfony/skeleton:^7.4 disclose-live
 cd disclose-live
 ```
 
-Set a value for `APP_SECRET` in `.env` if it is empty:
+Flex generates `APP_SECRET` automatically when the project is created,
+writing it into `app/.env.local`, a file that is gitignored. If yours is still
+empty, generate one and store it there:
 
 ```bash
 php -r 'echo bin2hex(random_bytes(16)), PHP_EOL;'
 ```
 
-Copy the printed value into the `APP_SECRET=` line of `.env`.
+Because `.env.local` is not committed, a fresh clone only needs its own local
+secret. The LiveComponent checksums of step 4 are keyed on this secret.
 
-## Step 2: add the packages
+## Step 2: stage 1, a plain Twig template
+
+The skeleton has no template engine yet. Install Twig for the templates and
+AssetMapper for the `importmap()` asset pipeline referenced by
+[templates/base.html.twig](app/templates/base.html.twig):
 
 ```bash
-composer require twig symfony/asset-mapper symfony/stimulus-bundle \
-    symfony/ux-twig-component symfony/ux-live-component \
-    symfony/lock symfony/rate-limiter
+composer require twig symfony/asset-mapper
 ```
 
-What each package brings:
-
-- `twig` and `symfony/asset-mapper`: templates and the frontend asset pipeline
-  (the `importmap()` entry in [templates/base.html.twig](app/templates/base.html.twig)).
-- `symfony/stimulus-bundle`: loads the JS controllers. The stock `live`
-  controller handles every action round trip; you write no custom JavaScript.
-- `symfony/ux-twig-component` and `symfony/ux-live-component`: the component
-  machinery. Flex registers the bundles, the `/_components` route, the
-  [importmap.php](app/importmap.php) entry and the
-  [assets/controllers.json](app/assets/controllers.json) entry for you.
-- `symfony/lock` provides the lock store. The recipe configures
-  `framework.lock` with `LOCK_DSN=flock` (in
-  [.env](app/.env) and [config/packages/lock.yaml](app/config/packages/lock.yaml)),
-  which FrameworkBundle turns into the `lock.default.factory` service that the
-  rate limiter reuses in step 3.
-- `symfony/rate-limiter`: the token buckets behind `framework.rate_limiter`.
-
-Install them all now; the earlier stages only use a subset, step 4 starts
-adding the rest one by one.
-
-## Step 3: configure the protection primitives
-
-Create [config/packages/rate_limiter.yaml](app/config/packages/rate_limiter.yaml):
-
-```yaml
-framework:
-    rate_limiter:
-        # Shared budget for every disclosure on the page: 5 per minute, keyed
-        # per visitor. The lock_factory serializes concurrent consume() calls
-        # so a burst cannot race past the quota.
-        disclose:
-            policy: fixed_window
-            limit: 5
-            interval: '1 minute'
-            # FrameworkBundle registers this factory for the "framework.lock"
-            # option (LOCK_DSN, see config/packages/lock.yaml), so no custom
-            # lock service is needed.
-            lock_factory: lock.default.factory
-```
-
-The limiter stores its counters in the default `cache.app` pool (filesystem)
-and wraps each `consume()` in the flock lock that FrameworkBundle configured
-from `framework.lock` (the recipe set `LOCK_DSN=flock` in `.env`). No custom
-lock service is required. This file is used from step 4.4 onward.
-
-## Step 4: stage 1, a plain Twig template
-
-Start from the simplest thing that works: a route that renders a list of
+Then build the simplest thing that works: a route that renders a list of
 clients, each card masked on the server. No component, no JavaScript.
 
 [app/src/Controller/LiveController.php](app/src/Controller/LiveController.php),
@@ -196,10 +154,24 @@ And the masked card partial, `templates/client_card.html.twig`:
 At this stage the page is correct but inert: the mask never lifts. The next
 stage keeps the same output and only changes how the card is built.
 
-## Step 5: stage 2, the template becomes a component
+## Step 3: stage 2, the template becomes a component
+
+Components need one more package:
+
+```bash
+composer require symfony/ux-twig-component
+```
 
 Turning the partial into a component encapsulates its markup, its props and
 its CSS behind a named, reusable unit.
+
+The recipe registers the bundle and creates
+[config/packages/twig_component.yaml](app/config/packages/twig_component.yaml),
+whose mapping (`App\Twig\Components\` to `components/`) resolves two things:
+
+- the component name is the short class name, `ClientCard`, usable in Twig as
+  `<twig:ClientCard ... />`;
+- the template is `templates/components/ClientCard.html.twig`.
 
 Create [app/src/Twig/Components/ClientCard.php](app/src/Twig/Components/ClientCard.php)
 as a plain Twig component:
@@ -219,13 +191,9 @@ final class ClientCard
 }
 ```
 
-The [config/packages/twig_component.yaml](app/config/packages/twig_component.yaml)
-mapping (`App\Twig\Components\` to `components/`) resolves two things:
-
-- the component name is the short class name, `ClientCard`, usable in Twig as
-  `<twig:ClientCard ... />`;
-- the template is `templates/components/ClientCard.html.twig`, a copy of the
-  partial from step 4 with two additions:
+Its template is a copy of the partial from step 2 with one addition, the
+`{{ attributes }}` variable that lets the parent pass html attributes, classes
+and data-attributes to the component root:
 
 ```twig
 <div {{ attributes.defaults({class: 'client-card'}) }}>
@@ -233,9 +201,6 @@ mapping (`App\Twig\Components\` to `components/`) resolves two things:
     <span class="client-card__contact">••••••••@•••••••&nbsp;&nbsp;·&nbsp;&nbsp;••••••••</span>
 </div>
 ```
-
-The `{{ attributes }}` variable lets the parent pass html attributes, classes
-and data-attributes to the component root.
 
 The page now uses the component in the loop:
 
@@ -250,13 +215,29 @@ The page now uses the component in the loop:
 The rendering output is unchanged, but the card is now one unit that any page
 can reuse. There is still no interactivity.
 
-## Step 6: stage 3, the component becomes live and reveals on click
+## Step 4: stage 3, the component becomes live and reveals on click
+
+Interactivity needs the LiveComponent machinery, which brings the Stimulus
+bridge with it:
+
+```bash
+composer require symfony/ux-live-component symfony/ux-icons
+```
+
+The recipes do the wiring for you: they register the bundles, import the
+`/_components` route, add the stock `live` controller to
+[importmap.php](app/importmap.php) and to
+[assets/controllers.json](app/assets/controllers.json), and create
+[config/packages/ux_icons.yaml](app/config/packages/ux_icons.yaml). The eye
+icons come from a local icon set in [app/assets/icons/bi](app/assets/icons/bi),
+so the rendered page resolves them without any network call, unlike inline
+SVGs that would have to be duplicated on every card.
 
 Now turn the component into a LiveComponent. The attribute changes, the
 component gains a default action, its props become `LiveProp`, and it gets a
 `reveal()` action that returns the value server side.
 
-### 6.1 The class
+### 4.1 The class
 
 [app/src/Twig/Components/ClientCard.php](app/src/Twig/Components/ClientCard.php):
 
@@ -320,7 +301,7 @@ Three ideas matter here:
   arguments like controllers, run server side, and the component re-renders
   afterwards.
 
-### 6.2 The template
+### 4.2 The template
 
 [app/templates/components/ClientCard.html.twig](app/templates/components/ClientCard.html.twig)
 renders two states. The masked state is the initial HTML; the revealed state is
@@ -340,9 +321,9 @@ produced only by the `reveal()` response:
         {{ live_action(revealed ? 'hide' : 'reveal') }}
     >
         {% if revealed %}
-            <svg class="disclose-icon disclose-icon--eye" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            {{ ux_icon('bi:eye', {class: 'disclose-icon disclose-icon--eye'}) }}
         {% else %}
-            <svg class="disclose-icon disclose-icon--eye-slash" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+            {{ ux_icon('bi:eye-slash', {class: 'disclose-icon disclose-icon--eye-slash'}) }}
         {% endif %}
         <span class="disclose-spinner" aria-hidden="true"></span>
     </button>
@@ -362,8 +343,10 @@ produced only by the `reveal()` response:
   button, no custom JavaScript.
 - `data-loading="addAttribute(disabled)"` disables the button while the
   request is in flight, preventing a double click.
+- The eye and eye-slash glyphs come from the local `bi` icon set, rendered by
+  `ux_icon()` with the same `disclose-icon` classes the CSS targets.
 
-### 6.3 What a click does
+### 4.3 What a click does
 
 1. The `live` controller sends a `POST` to
    `/_components/{component}/{action}`, here `/_components/ClientCard/reveal`,
@@ -372,8 +355,12 @@ produced only by the `reveal()` response:
    [config/routes/ux_live_component.yaml](app/config/routes/ux_live_component.yaml),
    which Flex imported from the LiveComponent bundle.
 2. It sends the current props (`data-live-props-value`) back. The server
-   re-computes the checksum embedded in `@checksum`, keyed on `APP_SECRET` from
-   [.env](app/.env), and rejects tampered props with a 400.
+   re-computes the checksum embedded in `@checksum`, keyed on `APP_SECRET`,
+   and rejects tampered props with a 400. This
+   is the signature of the component state: a client cannot edit the id to
+   target another record, because any edit breaks the checksum. The signature
+   does not expire, so a captured copy can still be traded at the rate limit;
+   the limiter and the audit bound the replay.
 3. It calls `reveal()` on a freshly hydrated component, then re-renders the
    component template.
 4. It returns the new HTML, which the `live` controller merges into the DOM
@@ -382,15 +369,16 @@ produced only by the `reveal()` response:
 At this stage the reveal works, but it is wide open: anyone can click as often
 as they want, nothing is traced. The next stage fixes that layer by layer.
 
-## Step 7: stage 4, one security layer at a time
+## Step 5: stage 4, one security layer at a time
 
 Each layer is a small addition to the component, to the controller, or to the
-config.
+config, plus a package only when one is needed.
 
-### 7.1 Identity: who is the visitor
+### 5.1 Identity: who is the visitor
 
-The rate limiter of step 3 is keyed per visitor. Key it on a cookie the page
-controller sets from the `?r=` query parameter, falling back to the client IP.
+The rate limiter keyed per visitor needs an identity. Key it on a cookie the
+page controller sets from the `?r=` query parameter, falling back to the
+client IP.
 
 In [app/src/Controller/LiveController.php](app/src/Controller/LiveController.php),
 add the cookie:
@@ -422,10 +410,29 @@ private function identity(Request $request): string
 }
 ```
 
-### 7.2 Rate limit: cap the reveals
+### 5.2 Rate limit: cap the reveals
 
-Consume one token of the `disclose` limiter before anything else, and refuse
-inline when the budget is dry. The constructor gains the limiter:
+Install the rate limiting component:
+
+```bash
+composer require symfony/rate-limiter
+```
+
+Declare the limiter in
+[config/packages/rate_limiter.yaml](app/config/packages/rate_limiter.yaml):
+
+```yaml
+framework:
+    rate_limiter:
+        disclose:
+            policy: fixed_window
+            limit: 5
+            interval: '1 minute'
+```
+
+The counters live in the default `cache.app` pool (filesystem). Then inject the
+limiter in the component constructor and consume one token before anything
+else:
 
 ```php
 public function __construct(
@@ -435,8 +442,6 @@ public function __construct(
 ) {
 }
 ```
-
-And `reveal()` starts with the acquisition of a token:
 
 ```php
 $rateLimit = $this->rateLimiterFactory->create($identity)->consume();
@@ -452,16 +457,44 @@ if (!$rateLimit->isAccepted()) {
 The token is consumed before the policy and before any audit write, so a
 refused request still burns a token and a burst cannot flood the audit trail.
 
-### 7.3 Lock: make the quota race safe
+### 5.3 Lock: make the quota race safe
 
 `consume()` reads and writes the counter in the cache. Two simultaneous clicks
 from the same visitor would both read the same remaining budget and raise it.
-The `lock_factory: lock.default.factory` option of [config/packages/rate_limiter.yaml](app/config/packages/rate_limiter.yaml)
-serializes concurrent `consume()` calls under the flock lock that
-[config/packages/lock.yaml](app/config/packages/lock.yaml) provides. This layer
-is pure configuration, no code in the component.
+The Lock component serializes those reads:
 
-### 7.4 Authorization: gate every reveal
+```bash
+composer require symfony/lock
+```
+
+The recipe sets `LOCK_DSN=flock` in [.env](app/.env) and creates
+[config/packages/lock.yaml](app/config/packages/lock.yaml). FrameworkBundle
+turns that into a `lock.default.factory` service. Declare it on the limiter:
+
+```yaml
+framework:
+    rate_limiter:
+        disclose:
+            policy: fixed_window
+            limit: 5
+            interval: '1 minute'
+            lock_factory: lock.default.factory
+```
+
+This layer is pure configuration, no code in the component.
+
+The lock is scoped to the token take, never to the backend work.
+`RateLimiterFactory` builds one lock per limiter key and hands it to the policy
+limiter. `consume()` acquires that lock, reads the counter, writes the new
+value back, then releases it in a `finally` before returning. Everything that
+follows in `reveal()` (policy, authorization, audit, render) runs with no lock
+held. A burst of concurrent clicks therefore serializes only the small read-
+modify-write of the counter (each `consume()` waits its turn and blocks
+briefly) and exactly the configured quota passes. Your whole backend
+transaction is never serialized behind that lock: take the token, release the
+lock, then do the work.
+
+### 5.4 Authorization: gate every reveal
 
 Add an explicit policy step in front of the value read. The demo grants
 everyone; a real app evaluates a Security attribute (role or voter) here.
@@ -479,7 +512,7 @@ private function isGranted(): bool
 }
 ```
 
-### 7.5 Audit: trace every attempt
+### 5.5 Audit: trace every attempt
 
 Inject the `LoggerInterface` in the constructor and add one structured log per
 outcome, with the identity and the target context.
@@ -507,7 +540,7 @@ $this->logger->info('Protected value disclosure: success', ['identity' => $ident
 $context = ['class' => $client::class, 'id' => $client->id];
 ```
 
-### 7.6 Events: let consumers plug in
+### 5.6 Events: let consumers plug in
 
 Domain events decouple the reveal from audit stores, metrics or alerts. Add
 [app/src/Event/ClientDiscloseEvent.php](app/src/Event/ClientDiscloseEvent.php):
@@ -543,14 +576,14 @@ $this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client
 $this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'success', $client), ClientDiscloseEvent::SUCCESS);
 ```
 
-### 7.7 The final component
+### 5.7 The final component
 
 With every layer in place, `reveal()` reads as a checkpoint chain. The browser
 keeps seeing only the id and the name in its state; the email and the phone
 are read server side and rendered for the single re-render that follows a
-click. The whole chain is verified end to end in step 9.
+click. The whole chain is verified end to end in step 7.
 
-## Step 8: stage 5, accept the Client object
+## Step 6: stage 5, accept the Client object
 
 The id-and-name props work, but a nicer API passes the whole object, matching
 how the page thinks about its data. Custom hydration gives this without
@@ -588,7 +621,10 @@ an id and a name, just the object:
 <twig:ClientCard :client="client" />
 ```
 
-The template becomes a slightly cleaner version of the one in step 6.2:
+The template becomes a slightly cleaner version of the one in step 4.2, with
+`data-live-card` marking the card, the eye icons still rendered by `ux_icon()`
+from the local `bi` set, and the contact details read from the hydrated
+object:
 
 ```twig
 {% set revealed = revealed ?? false %}
@@ -618,9 +654,9 @@ component root with `aria-busy` while a request is in flight):
 .client-card[data-live-card][aria-busy='true'] .disclose-icon { opacity: 0.3; }
 ```
 
-## Step 9: the final files and the verify checklist
+## Step 7: the final files and the verify checklist
 
-The appendix lists each final file; they are all in `app/`:
+All final files are in `app/`:
 
 - [app/src/Twig/Components/ClientCard.php](app/src/Twig/Components/ClientCard.php)
 - [app/templates/components/ClientCard.html.twig](app/templates/components/ClientCard.html.twig)
@@ -684,17 +720,17 @@ final class DiscloseAuditSubscriber implements EventSubscriberInterface
 
 ## How each layer maps to a guarantee
 
-| Layer | Added in | Guarantee |
+| Layer | Added in | Package |
 | --- | --- | --- |
-| Value kept off the HTML | stage 1 (step 4) | View source and scrapes leak nothing |
-| Minimal client state | stage 3 + 5 (steps 6 and 8) | Only the id is serialized, under a checksum |
-| Rate limit | layer 7.2 | A bulk harvest hits a small quota |
-| Lock | layer 7.3 | Concurrent clicks cannot race past the quota |
-| Authorization | layer 7.4 | The policy is enforced server side at every click |
-| Audit trail | layer 7.5 | Abuse is loud and traceable |
-| Domain events | layer 7.6 | Plug audit stores, metrics, alerting |
-| Inline errors | layers 7.2 and 7.4 | Failures stay inside the component UI |
-| Same-origin protection | stage 3 | Actions require `X-Requested-With` and the custom `Accept` header |
+| Value kept off the HTML | stage 1 (step 2) | none |
+| Minimal client state | stages 3 and 5 (steps 4 and 6) | none |
+| Same-origin protection | stage 3 (step 4) | spawned by the live recipe |
+| Rate limit | layer 5.2 | `symfony/rate-limiter` |
+| Lock | layer 5.3 | `symfony/lock` |
+| Authorization | layer 5.4 | none |
+| Audit trail | layer 5.5 | none |
+| Domain events | layer 5.6 | none |
+| Inline errors | layers 5.2 and 5.4 | none |
 
 ## Production notes
 
@@ -703,8 +739,10 @@ final class DiscloseAuditSubscriber implements EventSubscriberInterface
 - Key the limiter on the authenticated user instead of a visitor cookie.
 - Replace `isGranted()` with a real policy: roles or voters on the Security
   component, possibly field aware.
-- Add a lifetime to what the client holds, so a captured page cannot be
-  replayed forever.
+- Add a lifetime to what the client holds. The checksum stops tampering but
+  not replay: it carries no expiry, so a captured props blob stays valid. An
+  `expiresAt` LiveProp, verified inside `reveal()`, reproduces the expiry of a
+  signed URL; the rate limiter bounds the replay in the meantime.
 - Tradeoff: hiding then re-revealing a card consumes another token, because
   every action is a fresh server round trip. Prefetching or caching the value
   client side would bypass the audit each reveal is meant to produce.
@@ -713,4 +751,4 @@ final class DiscloseAuditSubscriber implements EventSubscriberInterface
 
 The full application, at its final state, is in `app/`. Copy each file from its
 linked source, or run the whole `app/` as a reference, and re-verify with step
-9.
+7.

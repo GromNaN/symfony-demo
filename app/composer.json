@@ -17,6 +17,7 @@
         "symfony/runtime": "7.4.*",
         "symfony/stimulus-bundle": "^3.4",
         "symfony/twig-bundle": "7.4.*",
+        "symfony/ux-icons": "*",
         "symfony/ux-live-component": "^3.4",
         "symfony/ux-twig-component": "^3.4",
         "symfony/yaml": "7.4.*",
