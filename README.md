@@ -2,9 +2,20 @@
 
 This project shows how to render masked contact details on a Symfony page and
 reveal them on demand, one explicit click at a time, with layered protections.
-The complete application lives in [`app/`](app/) and this file is the
-step-by-step tutorial that rebuilds it from scratch. Every code block links to
-its file inside `app/`.
+
+The tutorial builds the feature in five stages, always from the same starting
+point:
+
+1. a plain Twig template,
+2. the same template turned into a component,
+3. that component turned into a live component with a reveal action,
+4. one security layer added at a time,
+5. a final refinement where the component accepts a `Client` object instead of
+   an id.
+
+The complete application, at its final state, lives in [`app/`](app/). Every
+code block links to its file in `app/`; intermediate blocks show the file at
+that stage, which does not match the final `app/` version yet.
 
 ## The security layers
 
@@ -68,7 +79,10 @@ What each package brings:
   rate limiter reuses in step 3.
 - `symfony/rate-limiter`: the token buckets behind `framework.rate_limiter`.
 
-## Step 3: configure the rate limiter and the lock
+Install them all now; the earlier stages only use a subset, step 4 starts
+adding the rest one by one.
+
+## Step 3: configure the protection primitives
 
 Create [config/packages/rate_limiter.yaml](app/config/packages/rate_limiter.yaml):
 
@@ -91,23 +105,40 @@ framework:
 The limiter stores its counters in the default `cache.app` pool (filesystem)
 and wraps each `consume()` in the flock lock that FrameworkBundle configured
 from `framework.lock` (the recipe set `LOCK_DSN=flock` in `.env`). No custom
-lock service is required.
+lock service is required. This file is used from step 4.4 onward.
 
-## Step 4: the reference data
+## Step 4: stage 1, a plain Twig template
 
-A `Client` is a plain value object and `ClientStore` holds the in-memory list.
-Swap this for Doctrine, an API or any other source in a real application.
+Start from the simplest thing that works: a route that renders a list of
+clients, each card masked on the server. No component, no JavaScript.
 
-**Source:** [app/src/Client/Client.php](app/src/Client/Client.php)
+[app/src/Controller/LiveController.php](app/src/Controller/LiveController.php),
+at this stage without the cookie:
 
 ```php
 <?php
 
-namespace App\Client;
+namespace App\Controller;
 
-/**
- * A reference record whose contact details are sensitive.
- */
+use App\Client\ClientStore;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+class LiveController extends AbstractController
+{
+    #[Route('/', name: 'home')]
+    public function index(ClientStore $clients): Response
+    {
+        return $this->render('index.html.twig', ['clients' => $clients->all()]);
+    }
+}
+```
+
+The data comes from [app/src/Client/ClientStore.php](app/src/Client/ClientStore.php),
+an in-memory list of [app/src/Client/Client.php](app/src/Client/Client.php).
+
+```php
 final class Client
 {
     public function __construct(
@@ -119,537 +150,10 @@ final class Client
 }
 ```
 
-**Source:** [app/src/Client/ClientStore.php](app/src/Client/ClientStore.php)
+The page template renders each client through a dedicated partial, keeping the
+secret out of the loop body:
 
-```php
-<?php
-
-namespace App\Client;
-
-/**
- * Reference data for the demo: a handful of in-memory clients. A real app
- * would load the record from Doctrine, an API or any other source.
- */
-final class ClientStore
-{
-    /** @var Client[] */
-    private array $clients = [];
-
-    public function __construct()
-    {
-        foreach (range(1, 6) as $i) {
-            $this->clients[] = new Client(
-                $i,
-                sprintf('Client %d', $i),
-                sprintf('client%03d@example.org', $i),
-                sprintf('+1 555 010 %04d', $i),
-            );
-        }
-    }
-
-    /** @return Client[] */
-    public function all(): array
-    {
-        return $this->clients;
-    }
-
-    public function find(int $id): ?Client
-    {
-        foreach ($this->clients as $client) {
-            if ($client->id === $id) {
-                return $client;
-            }
-        }
-
-        return null;
-    }
-}
-```
-
-## Step 5: the domain event
-
-[app/src/Event/ClientDiscloseEvent.php](app/src/Event/ClientDiscloseEvent.php)
-mirrors the lifecycle of a disclosure so consumers can subscribe to the same
-three moments regardless of the mechanism that triggered them:
-
-```php
-<?php
-
-namespace App\Event;
-
-use Symfony\Contracts\EventDispatcher\Event;
-
-/**
- * Fired around a card disclosure so applications can plug their own audit
- * storage, notifications or metrics.
- */
-final class ClientDiscloseEvent extends Event
-{
-    /**
-     * Dispatched right before the value is revealed, once the policy passed.
-     */
-    public const ATTEMPT = 'client_card.attempt';
-
-    /**
-     * Dispatched after the value was revealed.
-     */
-    public const SUCCESS = 'client_card.success';
-
-    /**
-     * Dispatched when the reveal is rejected (rate limit or access denied);
-     * the status carries the exact reason.
-     */
-    public const REJECTED = 'client_card.rejected';
-
-    public function __construct(
-        public readonly string $class,
-        public readonly string|int $id,
-        public readonly string $status,
-        public readonly ?object $subject = null,
-    ) {}
-}
-```
-
-## Step 6: the LiveComponent
-
-This step builds [app/src/Twig/Components/ClientCard.php](app/src/Twig/Components/ClientCard.php)
-piece by piece. The full file is reproduced at the end of the step.
-
-### 6.1 Where the component lives
-
-A LiveComponent is a plain PHP class, usually in `src/Twig/Components/`, marked
-with the attribute `#[AsLiveComponent]`. Two conventions come from the
-[config/packages/twig_component.yaml](app/config/packages/twig_component.yaml)
-mapping (`App\Twig\Components\` to `components/`):
-
-- the component name is its short class name, `ClientCard`; it is used in Twig
-  as the `<twig:ClientCard :client="client" />` tag from step 8;
-- the template is resolved to `templates/components/ClientCard.html.twig` (step
-  7).
-
-Every component must define a default action, which `DefaultActionTrait`
-provides (`__invoke()`). Without it the container refuses to build the
-component.
-
-```php
-use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
-use Symfony\UX\LiveComponent\DefaultActionTrait;
-
-#[AsLiveComponent]
-final class ClientCard
-{
-    use DefaultActionTrait;
-}
-```
-
-### 6.2 The input: a prop with custom hydration
-
-The component receives its data through `#[LiveProp]` properties. A LiveProp is
-the part of the state that travels to the browser: on every render it is
-serialized into `data-live-props-value`, and on every action it is sent back
-and re-hydrated on the server.
-
-We want the component to receive a whole `Client`, because the card displays
-its name and reveals its email and phone. But serializing the whole object
-would put the contact details into the page state, which is exactly what we
-must avoid. The solution is a **custom hydration pair**: the prop keeps a
-`Client` type on the server, yet only its id is dehydrated to the browser.
-
-```php
-#[LiveProp(hydrateWith: 'hydrateClient', dehydrateWith: 'dehydrateClient')]
-public ?Client $client = null;
-
-/**
- * Rebuilds the client server side from the dehydrated id.
- */
-public function hydrateClient(int $data): ?Client
-{
-    return $this->clientStore->find($data);
-}
-
-/**
- * Serializes the client as its id only: the contact details never reach
- * data-live-props-value.
- */
-public function dehydrateClient(Client $client): int
-{
-    return $client->id;
-}
-```
-
-The property is nullable because the masked card has no value to display until
-the page passes one. `hydrateClient()` runs on every action and re-fetches the
-object from the store, so the whole `Client` is available server side without
-ever being serialized.
-
-### 6.3 The server-side state
-
-The revealed flag and the inline error are plain public properties. They are
-not `LiveProp`, so they are never serialized: they are reset to their default
-on every request and only changed by an action for the re-render of that same
-request. Twig still sees them because `#[AsLiveComponent]` exposes public
-properties by default.
-
-```php
-public bool $revealed = false;
-public string $error = '';
-```
-
-### 6.4 The services
-
-The component is a service: its constructor is autowired and built fresh on
-every request. Services are never serialized, which is another safe place to
-hold collaborators (the rate limiter, the logger, the event dispatcher, the
-store).
-
-```php
-public function __construct(
-    // The framework rate limiter "disclose": fixed_window, 5 per minute,
-    // serialized by FrameworkBundle's lock (see the yaml above).
-    #[Autowire(service: 'limiter.disclose')]
-    private readonly RateLimiterFactory $rateLimiterFactory,
-    private readonly EventDispatcherInterface $eventDispatcher,
-    private readonly LoggerInterface $logger,
-    private readonly ClientStore $clientStore,
-) {}
-```
-
-The `#[Autowire(service: 'limiter.disclose')]` attribute targets the exact
-limiter declared in [config/packages/rate_limiter.yaml](app/config/packages/rate_limiter.yaml),
-because several limiters can coexist and autowiring by class alone would be
-ambiguous. The lock that serializes `consume()` comes from
-[config/packages/lock.yaml](app/config/packages/lock.yaml), which the
-`framework.lock` option turns into `lock.default.factory`.
-
-### 6.5 The actions
-
-An action is a method marked `#[LiveAction]`. It is the entry point of a
-request coming from the component: LiveComponent resolves its arguments like a
-controller (the `Request` below is injected), and its return value is ignored,
-the component is re-rendered instead.
-
-```php
-#[LiveAction]
-public function reveal(Request $request): void
-{
-    // this method runs the whole security chain...
-}
-
-#[LiveAction]
-public function hide(): void
-{
-    // ...and this one only flips the state back
-}
-```
-
-### 6.6 What happens on a click
-
-The template (step 7) renders the button with the `live_action()` helper:
-
-```twig
-<button type="button" {{ live_action(revealed ? 'hide' : 'reveal') }}></button>
-```
-
-It expands to `data-action="live#action"` and
-`data-live-action-param="reveal"`. The stock `live` controller then:
-
-1. sends a `POST` to `/_components/{component}/{action}`, here
-   `/_components/ClientCard/reveal`, with the `X-Requested-With` and the
-   `Accept: application/vnd.live-component+html` headers that the server
-   requires. The route comes from
-   [config/routes/ux_live_component.yaml](app/config/routes/ux_live_component.yaml),
-   which Flex imported from the LiveComponent bundle;
-2. sends the current props (`data-live-props-value`) back. The server re-
-   computes the checksum embedded in `@checksum`, keyed on `APP_SECRET` from
-   [.env](app/.env), and rejects tampered props with a 400;
-3. calls `reveal(Request)` on the freshly hydrated component, then re-renders
-   the component template;
-4. returns the new HTML, which the `live` controller merges into the DOM
-   (morphdom). The `data-loading="addAttribute(disabled)"` attribute disables
-   the button synchronously while the request is in flight.
-
-The whole chain you will see in the full file below runs inside step 4 of this
-round trip.
-
-### 6.7 The full file
-
-```php
-<?php
-
-namespace App\Twig\Components;
-
-use App\Client\Client;
-use App\Client\ClientStore;
-use App\Event\ClientDiscloseEvent;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
-use Symfony\UX\LiveComponent\Attribute\LiveAction;
-use Symfony\UX\LiveComponent\Attribute\LiveProp;
-use Symfony\UX\LiveComponent\DefaultActionTrait;
-
-/**
- * Renders a masked client card. The component takes the whole Client object as
- * input, but custom hydration dehydrates it to its id and re-fetches the
- * record server side, so only the id ever travels in data-live-props-value.
- * The contact details never enter the initial HTML: the reveal action renders
- * them only for its own response, after the security chain below.
- */
-#[AsLiveComponent]
-final class ClientCard
-{
-    use DefaultActionTrait;
-
-    /**
-     * The client whose contact details this card can disclose. Only its id is
-     * serialized into data-live-props-value (see hydrateClient and
-     * dehydrateClient); the object is rebuilt server side on every request.
-     */
-    #[LiveProp(hydrateWith: 'hydrateClient', dehydrateWith: 'dehydrateClient')]
-    public ?Client $client = null;
-
-    /**
-     * Server-side disclosure state. Deliberately not a LiveProp so it never
-     * leaves the server: it is reset on every mount and only mutated by the
-     * reveal/hide actions for the re-render of their own request.
-     */
-    public bool $revealed = false;
-
-    /**
-     * Inline error shown when the reveal was refused (rate limit, access).
-     */
-    public string $error = '';
-
-    public function __construct(
-        // The framework rate limiter "disclose": fixed_window, 5 per minute,
-        // serialized by FrameworkBundle's lock (see
-        // config/packages/rate_limiter.yaml).
-        #[Autowire(service: 'limiter.disclose')]
-        private readonly RateLimiterFactory $rateLimiterFactory,
-        private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly LoggerInterface $logger,
-        private readonly ClientStore $clientStore,
-    ) {}
-
-    #[LiveAction]
-    public function reveal(Request $request): void
-    {
-        // Belt and suspenders on top of the disabled-while-loading button: a
-        // second click that slips through must not consume another token.
-        if ($this->revealed) {
-            return;
-        }
-
-        // A local copy narrows the nullable prop (Client|null) to a plain
-        // Client after the guard, so the rest of the method needs no null-safe
-        // access. The prop is nullable because the masked state has no client
-        // until the parent passes one.
-        $client = $this->client;
-        if (null === $client) {
-            $this->error = 'This client no longer exists.';
-
-            return;
-        }
-
-        $context = ['class' => $client::class, 'id' => $client->id];
-        $identity = $this->identity($request);
-
-        // 1. Rate limit first: one token is consumed under the lock, so a
-        //    refused request never reaches the policy or the audit.
-        $rateLimit = $this->rateLimiterFactory->create($identity)->consume();
-        if (!$rateLimit->isAccepted()) {
-            $retryAfter = $rateLimit->getRetryAfter();
-            $seconds = $retryAfter ? max(0, $retryAfter->getTimestamp() - time()) : 1;
-            $this->logger->warning('Protected value disclosure: rate_limited', ['identity' => $identity, 'context' => $context, 'retry_after' => $seconds]);
-            $this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'rate_limited'), ClientDiscloseEvent::REJECTED);
-            $this->error = 'Rate limit exceeded. Try again later.';
-
-            return;
-        }
-
-        // 2. Authorization: an explicit policy step. The demo grants everyone;
-        //    a real app would evaluate a Security attribute (voter, role).
-        if (!$this->isGranted()) {
-            $this->logger->warning('Protected value disclosure: auth_denied', ['identity' => $identity, 'context' => $context]);
-            $this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'auth_denied', $client), ClientDiscloseEvent::REJECTED);
-            $this->error = 'Access denied.';
-
-            return;
-        }
-
-        // 3. Attempt audit and event, right before the value is revealed.
-        $this->logger->info('Protected value disclosure: attempt', ['identity' => $identity, 'context' => $context]);
-        $this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'attempt', $client), ClientDiscloseEvent::ATTEMPT);
-
-        // 4. Reveal: the email/phone are rendered only by this response, from
-        //    the server-side Client object.
-        $this->revealed = true;
-        $this->error = '';
-
-        // 5. Success audit and event.
-        $this->logger->info('Protected value disclosure: success', ['identity' => $identity, 'context' => $context]);
-        $this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'success', $client), ClientDiscloseEvent::SUCCESS);
-    }
-
-    #[LiveAction]
-    public function hide(): void
-    {
-        // Pure UI toggle: hiding back is intentionally not rate limited nor
-        // audited. Tradeoff: re-revealing the same card consumes another token.
-        $this->revealed = false;
-        $this->error = '';
-    }
-
-    /**
-     * Rebuilds the client server side from the dehydrated id.
-     */
-    public function hydrateClient(int $data): ?Client
-    {
-        return $this->clientStore->find($data);
-    }
-
-    /**
-     * Serializes the client as its id only: the contact details never reach
-     * data-live-props-value.
-     */
-    public function dehydrateClient(Client $client): int
-    {
-        return $client->id;
-    }
-
-    /**
-     * Demo policy: everyone may reveal contact details. A real app would
-     * evaluate a Security attribute here.
-     */
-    private function isGranted(): bool
-    {
-        return true;
-    }
-
-    /**
-     * Keys the rate limiter on a per-visitor cookie reference, then falls back
-     * to the client IP. The cookie is set by the page controller via "?r=".
-     */
-    private function identity(Request $request): string
-    {
-        return $request->cookies->has('disclose_subject')
-            ? 'reference:' . $request->cookies->get('disclose_subject')
-            : 'ip:' . $request->getClientIp();
-    }
-}
-```
-
-The order matters. The rate limit is consumed before any lookup of the policy
-and before the audit success, so a denied request still burns a token and a
-burst cannot flood the audit trail. Authorization runs before any value is
-read. Attempt and success are audited and dispatched around the actual reveal.
-
-LiveComponent actions are "controllers": they can inject the `Request` and any
-service, and every request is rejected unless it carries the
-`X-Requested-With` and the custom `Accept` headers the stock `live` controller
-sends, which gives same-origin protection out of the box.
-
-A `LiveProp` without `dehydrateWith` would serialize the whole `Client`,
-email and phone included. The dehydration step is exactly what keeps the
-secret out of the page state.
-
-## Step 7: the component template
-
-[app/templates/components/ClientCard.html.twig](app/templates/components/ClientCard.html.twig)
-renders two states. The masked state is the initial HTML; the revealed state
-is produced only by the `reveal()` response. The template reads the client
-fields straight from the hydrated object, which exists entirely server side.
-
-```twig
-{% set revealed = revealed ?? false %}
-<div {{ attributes.defaults({class: 'client-card', 'data-live-card': ''}) }}>
-    <span class="client-card__name">{{ client.name }}</span>
-
-    <button
-        type="button"
-        class="client-card__toggle"
-        data-loading="addAttribute(disabled)"
-        aria-label="{{ revealed ? 'Hide contact' : 'Reveal contact' }}"
-        title="{{ revealed ? 'Hide contact' : 'Reveal contact' }}"
-        {{ live_action(revealed ? 'hide' : 'reveal') }}
-    >
-        {% if revealed %}
-            <svg class="disclose-icon disclose-icon--eye" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-        {% else %}
-            <svg class="disclose-icon disclose-icon--eye-slash" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
-        {% endif %}
-        <span class="disclose-spinner" aria-hidden="true"></span>
-    </button>
-
-    <span class="client-card__contact">
-        {% if revealed %}
-            <span class="client-card__detail">{{ client.email }}</span><span class="client-card__sep" aria-hidden="true">·</span><span class="client-card__detail">{{ client.phone }}</span>
-        {% else %}
-            ••••••••@•••••••&nbsp;&nbsp;·&nbsp;&nbsp;••••••••
-        {% endif %}
-    </span>
-
-    {% if error %}
-        <p class="client-card__error" role="alert">{{ error }}</p>
-    {% endif %}
-</div>
-```
-
-The stock `live` controller sets `aria-busy` on the component root while a
-request is in flight, so the spinner is always present in the markup and only
-shown during a round trip. The styles live in
-[app/assets/styles/app.css](app/assets/styles/app.css); the rules that matter
-for security are the two icon display states and the spinner on `aria-busy`:
-
-```css
-.client-card__toggle .disclose-icon--eye-slash { display: inline-block; }
-.client-card[data-live-card] .disclose-icon--eye { display: inline-block; }
-
-.client-card[data-live-card][aria-busy='true'] .disclose-spinner { display: block; }
-.client-card[data-live-card][aria-busy='true'] .disclose-icon { opacity: 0.3; }
-```
-
-## Step 8: the page
-
-[app/src/Controller/LiveController.php](app/src/Controller/LiveController.php)
-renders the list and sets a per-visitor cookie from the `r` query parameter:
-
-```php
-<?php
-
-namespace App\Controller;
-
-use App\Client\ClientStore;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Cookie;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
-
-class LiveController extends AbstractController
-{
-    #[Route('/', name: 'home')]
-    public function index(Request $request, ClientStore $clients): Response
-    {
-        $response = $this->render('index.html.twig', ['clients' => $clients->all()]);
-
-        // The disclosure rate limiter keys on this cookie, so each visitor
-        // gets an isolated budget across page reloads. Demo only: in a real
-        // app you would key on the authenticated user.
-        if ($request->query->has('r')) {
-            $response->headers->setCookie(new Cookie('disclose_subject', (string) $request->query->get('r'), 0, '/', null, false, true));
-        }
-
-        return $response;
-    }
-}
-```
-
-[app/templates/index.html.twig](app/templates/index.html.twig) loops over the
-cards and passes each `Client` object to the component:
+[templates/index.html.twig](app/templates/index.html.twig)
 
 ```twig
 {% extends 'base.html.twig' %}
@@ -669,7 +173,7 @@ cards and passes each `Client` object to the component:
 
         <div class="client-list">
             {% for client in clients %}
-                <twig:ClientCard :client="client" />
+                {% include 'client_card.html.twig' with {client} only %}
             {% else %}
                 <p class="empty-state">No clients yet.</p>
             {% endfor %}
@@ -678,7 +182,457 @@ cards and passes each `Client` object to the component:
 {% endblock %}
 ```
 
-## Step 9: run and verify
+And the masked card partial, `templates/client_card.html.twig`:
+
+```twig
+{# Only the display name is public. The contact details are NOT printed, so
+   the page HTML and any scrape leaks nothing. #}
+<div class="client-card">
+    <span class="client-card__name">{{ client.name }}</span>
+    <span class="client-card__contact">••••••••@•••••••&nbsp;&nbsp;·&nbsp;&nbsp;••••••••</span>
+</div>
+```
+
+At this stage the page is correct but inert: the mask never lifts. The next
+stage keeps the same output and only changes how the card is built.
+
+## Step 5: stage 2, the template becomes a component
+
+Turning the partial into a component encapsulates its markup, its props and
+its CSS behind a named, reusable unit.
+
+Create [app/src/Twig/Components/ClientCard.php](app/src/Twig/Components/ClientCard.php)
+as a plain Twig component:
+
+```php
+<?php
+
+namespace App\Twig\Components;
+
+use App\Client\Client;
+use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
+
+#[AsTwigComponent]
+final class ClientCard
+{
+    public ?Client $client = null;
+}
+```
+
+The [config/packages/twig_component.yaml](app/config/packages/twig_component.yaml)
+mapping (`App\Twig\Components\` to `components/`) resolves two things:
+
+- the component name is the short class name, `ClientCard`, usable in Twig as
+  `<twig:ClientCard ... />`;
+- the template is `templates/components/ClientCard.html.twig`, a copy of the
+  partial from step 4 with two additions:
+
+```twig
+<div {{ attributes.defaults({class: 'client-card'}) }}>
+    <span class="client-card__name">{{ client.name }}</span>
+    <span class="client-card__contact">••••••••@•••••••&nbsp;&nbsp;·&nbsp;&nbsp;••••••••</span>
+</div>
+```
+
+The `{{ attributes }}` variable lets the parent pass html attributes, classes
+and data-attributes to the component root.
+
+The page now uses the component in the loop:
+
+```twig
+{% for client in clients %}
+    <twig:ClientCard :client="client" />
+{% else %}
+    ...
+{% endfor %}
+```
+
+The rendering output is unchanged, but the card is now one unit that any page
+can reuse. There is still no interactivity.
+
+## Step 6: stage 3, the component becomes live and reveals on click
+
+Now turn the component into a LiveComponent. The attribute changes, the
+component gains a default action, its props become `LiveProp`, and it gets a
+`reveal()` action that returns the value server side.
+
+### 6.1 The class
+
+[app/src/Twig/Components/ClientCard.php](app/src/Twig/Components/ClientCard.php):
+
+```php
+<?php
+
+namespace App\Twig\Components;
+
+use App\Client\ClientStore;
+use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
+use Symfony\UX\LiveComponent\Attribute\LiveAction;
+use Symfony\UX\LiveComponent\Attribute\LiveProp;
+use Symfony\UX\LiveComponent\DefaultActionTrait;
+
+#[AsLiveComponent]
+final class ClientCard
+{
+    use DefaultActionTrait;
+
+    #[LiveProp]
+    public ?int $clientId = null;
+
+    #[LiveProp]
+    public string $name = '';
+
+    public bool $revealed = false;
+
+    public string $email = '';
+
+    public string $phone = '';
+
+    public function __construct(private readonly ClientStore $clientStore)
+    {
+    }
+
+    #[LiveAction]
+    public function reveal(): void
+    {
+        $client = $this->clientStore->find($this->clientId ?? -1);
+        $this->email = (string) ($client?->email ?? '');
+        $this->phone = (string) ($client?->phone ?? '');
+        $this->revealed = true;
+    }
+
+    #[LiveAction]
+    public function hide(): void
+    {
+        $this->revealed = false;
+    }
+}
+```
+
+Three ideas matter here:
+
+- `#[LiveProp]` props are the state that travels to the browser. Only the id
+  and the name are props, and neither is sensitive.
+- `$revealed`, `$email` and `$phone` are plain public properties: never
+  serialized, reset on every mount, set by the action for the re-render of
+  that request only.
+- `#[LiveAction]` methods are the click entry points. They resolve their
+  arguments like controllers, run server side, and the component re-renders
+  afterwards.
+
+### 6.2 The template
+
+[app/templates/components/ClientCard.html.twig](app/templates/components/ClientCard.html.twig)
+renders two states. The masked state is the initial HTML; the revealed state is
+produced only by the `reveal()` response:
+
+```twig
+{% set revealed = revealed ?? false %}
+<div {{ attributes.defaults({class: 'client-card'}) }}>
+    <span class="client-card__name">{{ name }}</span>
+
+    <button
+        type="button"
+        class="client-card__toggle"
+        data-loading="addAttribute(disabled)"
+        aria-label="{{ revealed ? 'Hide contact' : 'Reveal contact' }}"
+        title="{{ revealed ? 'Hide contact' : 'Reveal contact' }}"
+        {{ live_action(revealed ? 'hide' : 'reveal') }}
+    >
+        {% if revealed %}
+            <svg class="disclose-icon disclose-icon--eye" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+        {% else %}
+            <svg class="disclose-icon disclose-icon--eye-slash" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+        {% endif %}
+        <span class="disclose-spinner" aria-hidden="true"></span>
+    </button>
+
+    <span class="client-card__contact">
+        {% if revealed %}
+            <span class="client-card__detail">{{ email }}</span><span class="client-card__sep" aria-hidden="true">·</span><span class="client-card__detail">{{ phone }}</span>
+        {% else %}
+            ••••••••@•••••••&nbsp;&nbsp;·&nbsp;&nbsp;••••••••
+        {% endif %}
+    </span>
+</div>
+```
+
+- `live_action('reveal')` expands to `data-action="live#action"` and
+  `data-live-action-param="reveal"`: the stock `live` controller wires the
+  button, no custom JavaScript.
+- `data-loading="addAttribute(disabled)"` disables the button while the
+  request is in flight, preventing a double click.
+
+### 6.3 What a click does
+
+1. The `live` controller sends a `POST` to
+   `/_components/{component}/{action}`, here `/_components/ClientCard/reveal`,
+   with the `X-Requested-With` and the `Accept: application/vnd.live-component+html`
+   headers the server requires. The route comes from
+   [config/routes/ux_live_component.yaml](app/config/routes/ux_live_component.yaml),
+   which Flex imported from the LiveComponent bundle.
+2. It sends the current props (`data-live-props-value`) back. The server
+   re-computes the checksum embedded in `@checksum`, keyed on `APP_SECRET` from
+   [.env](app/.env), and rejects tampered props with a 400.
+3. It calls `reveal()` on a freshly hydrated component, then re-renders the
+   component template.
+4. It returns the new HTML, which the `live` controller merges into the DOM
+   (morphdom).
+
+At this stage the reveal works, but it is wide open: anyone can click as often
+as they want, nothing is traced. The next stage fixes that layer by layer.
+
+## Step 7: stage 4, one security layer at a time
+
+Each layer is a small addition to the component, to the controller, or to the
+config.
+
+### 7.1 Identity: who is the visitor
+
+The rate limiter of step 3 is keyed per visitor. Key it on a cookie the page
+controller sets from the `?r=` query parameter, falling back to the client IP.
+
+In [app/src/Controller/LiveController.php](app/src/Controller/LiveController.php),
+add the cookie:
+
+```php
+public function index(Request $request, ClientStore $clients): Response
+{
+    $response = $this->render('index.html.twig', ['clients' => $clients->all()]);
+
+    // The disclosure rate limiter keys on this cookie, so each visitor gets
+    // an isolated budget across page reloads. Demo only: in a real app you
+    // would key on the authenticated user.
+    if ($request->query->has('r')) {
+        $response->headers->setCookie(new Cookie('disclose_subject', (string) $request->query->get('r'), 0, '/', null, false, true));
+    }
+
+    return $response;
+}
+```
+
+In the component, add a private `identity()` helper:
+
+```php
+private function identity(Request $request): string
+{
+    return $request->cookies->has('disclose_subject')
+        ? 'reference:' . $request->cookies->get('disclose_subject')
+        : 'ip:' . $request->getClientIp();
+}
+```
+
+### 7.2 Rate limit: cap the reveals
+
+Consume one token of the `disclose` limiter before anything else, and refuse
+inline when the budget is dry. The constructor gains the limiter:
+
+```php
+public function __construct(
+    #[Autowire(service: 'limiter.disclose')]
+    private readonly RateLimiterFactory $rateLimiterFactory,
+    private readonly ClientStore $clientStore,
+) {
+}
+```
+
+And `reveal()` starts with the acquisition of a token:
+
+```php
+$rateLimit = $this->rateLimiterFactory->create($identity)->consume();
+if (!$rateLimit->isAccepted()) {
+    $retryAfter = $rateLimit->getRetryAfter();
+    $seconds = $retryAfter ? max(0, $retryAfter->getTimestamp() - time()) : 1;
+    $this->error = 'Rate limit exceeded. Try again later.';
+
+    return;
+}
+```
+
+The token is consumed before the policy and before any audit write, so a
+refused request still burns a token and a burst cannot flood the audit trail.
+
+### 7.3 Lock: make the quota race safe
+
+`consume()` reads and writes the counter in the cache. Two simultaneous clicks
+from the same visitor would both read the same remaining budget and raise it.
+The `lock_factory: lock.default.factory` option of [config/packages/rate_limiter.yaml](app/config/packages/rate_limiter.yaml)
+serializes concurrent `consume()` calls under the flock lock that
+[config/packages/lock.yaml](app/config/packages/lock.yaml) provides. This layer
+is pure configuration, no code in the component.
+
+### 7.4 Authorization: gate every reveal
+
+Add an explicit policy step in front of the value read. The demo grants
+everyone; a real app evaluates a Security attribute (role or voter) here.
+
+```php
+if (!$this->isGranted()) {
+    $this->error = 'Access denied.';
+
+    return;
+}
+
+private function isGranted(): bool
+{
+    return true;
+}
+```
+
+### 7.5 Audit: trace every attempt
+
+Inject the `LoggerInterface` in the constructor and add one structured log per
+outcome, with the identity and the target context.
+
+```php
+public function __construct(
+    ...,
+    private readonly LoggerInterface $logger,
+) {
+}
+```
+
+In `reveal()`, each branch now writes its line:
+
+```php
+$this->logger->warning('Protected value disclosure: rate_limited', ['identity' => $identity, 'context' => $context, 'retry_after' => $seconds]);
+$this->logger->warning('Protected value disclosure: auth_denied', ['identity' => $identity, 'context' => $context]);
+$this->logger->info('Protected value disclosure: attempt', ['identity' => $identity, 'context' => $context]);
+$this->logger->info('Protected value disclosure: success', ['identity' => $identity, 'context' => $context]);
+```
+
+`$context` gathers the target so a bulk harvest is easy to spot:
+
+```php
+$context = ['class' => $client::class, 'id' => $client->id];
+```
+
+### 7.6 Events: let consumers plug in
+
+Domain events decouple the reveal from audit stores, metrics or alerts. Add
+[app/src/Event/ClientDiscloseEvent.php](app/src/Event/ClientDiscloseEvent.php):
+
+```php
+<?php
+
+namespace App\Event;
+
+use Symfony\Contracts\EventDispatcher\Event;
+
+final class ClientDiscloseEvent extends Event
+{
+    public const ATTEMPT = 'client_card.attempt';
+    public const SUCCESS = 'client_card.success';
+    public const REJECTED = 'client_card.rejected';
+
+    public function __construct(
+        public readonly string $class,
+        public readonly string|int $id,
+        public readonly string $status,
+        public readonly ?object $subject = null,
+    ) {}
+}
+```
+
+Inject the `EventDispatcherInterface` and dispatch one event per outcome:
+
+```php
+$this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'rate_limited'), ClientDiscloseEvent::REJECTED);
+$this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'auth_denied', $client), ClientDiscloseEvent::REJECTED);
+$this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'attempt', $client), ClientDiscloseEvent::ATTEMPT);
+$this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'success', $client), ClientDiscloseEvent::SUCCESS);
+```
+
+### 7.7 The final component
+
+With every layer in place, `reveal()` reads as a checkpoint chain. The browser
+keeps seeing only the id and the name in its state; the email and the phone
+are read server side and rendered for the single re-render that follows a
+click. The whole chain is verified end to end in step 9.
+
+## Step 8: stage 5, accept the Client object
+
+The id-and-name props work, but a nicer API passes the whole object, matching
+how the page thinks about its data. Custom hydration gives this without
+weakening the security: the object is dehydrated to its id, then rebuilt
+server side on every request.
+
+Replace the two props with one:
+
+```php
+#[LiveProp(hydrateWith: 'hydrateClient', dehydrateWith: 'dehydrateClient')]
+public ?Client $client = null;
+
+public function hydrateClient(int $data): ?Client
+{
+    return $this->clientStore->find($data);
+}
+
+public function dehydrateClient(Client $client): int
+{
+    return $client->id;
+}
+```
+
+- `dehydrateClient()` turns the object into its id when the component state is
+  written to the page. Without it, the whole `Client`, email and phone
+  included, would end up in `data-live-props-value`.
+- `hydrateClient()` rebuilds the object server side from that id on every
+  action, so the template and the actions always see a full `Client`.
+
+The `email` and `phone` local props disappear: the template reads them from
+the hydrated object, which exists only server side. The page no longer passes
+an id and a name, just the object:
+
+```twig
+<twig:ClientCard :client="client" />
+```
+
+The template becomes a slightly cleaner version of the one in step 6.2:
+
+```twig
+{% set revealed = revealed ?? false %}
+<div {{ attributes.defaults({class: 'client-card', 'data-live-card': ''}) }}>
+    <span class="client-card__name">{{ client.name }}</span>
+    ...
+    <span class="client-card__contact">
+        {% if revealed %}
+            <span class="client-card__detail">{{ client.email }}</span><span class="client-card__sep" aria-hidden="true">·</span><span class="client-card__detail">{{ client.phone }}</span>
+        {% else %}
+            ••••••••@•••••••&nbsp;&nbsp;·&nbsp;&nbsp;••••••••
+        {% endif %}
+    </span>
+</div>
+```
+
+The styles in [app/assets/styles/app.css](app/assets/styles/app.css) drive the
+visual states; the rules that matter for security are the two icon display
+states and the spinner on `aria-busy` (the stock `live` controller marks the
+component root with `aria-busy` while a request is in flight):
+
+```css
+.client-card__toggle .disclose-icon--eye-slash { display: inline-block; }
+.client-card[data-live-card] .disclose-icon--eye { display: inline-block; }
+
+.client-card[data-live-card][aria-busy='true'] .disclose-spinner { display: block; }
+.client-card[data-live-card][aria-busy='true'] .disclose-icon { opacity: 0.3; }
+```
+
+## Step 9: the final files and the verify checklist
+
+The appendix lists each final file; they are all in `app/`:
+
+- [app/src/Twig/Components/ClientCard.php](app/src/Twig/Components/ClientCard.php)
+- [app/templates/components/ClientCard.html.twig](app/templates/components/ClientCard.html.twig)
+- [app/src/Controller/LiveController.php](app/src/Controller/LiveController.php)
+- [app/templates/index.html.twig](app/templates/index.html.twig)
+- [app/src/Event/ClientDiscloseEvent.php](app/src/Event/ClientDiscloseEvent.php)
+- [app/src/Client/Client.php](app/src/Client/Client.php) and
+  [app/src/Client/ClientStore.php](app/src/Client/ClientStore.php)
+- [app/config/packages/rate_limiter.yaml](app/config/packages/rate_limiter.yaml)
+- [app/assets/styles/app.css](app/assets/styles/app.css)
+
+Run it:
 
 ```bash
 php bin/console cache:clear
@@ -730,17 +684,17 @@ final class DiscloseAuditSubscriber implements EventSubscriberInterface
 
 ## How each layer maps to a guarantee
 
-| Layer | Location | Guarantee |
+| Layer | Added in | Guarantee |
 | --- | --- | --- |
-| Value kept off the HTML | `reveal()` and template | View source and scrapes leak nothing |
-| Minimal client state | `dehydrateClient()` on the `client` prop | Only the id is serialized, under a checksum |
-| Rate limit | `reveal()`, step 1 | A bulk harvest hits a small quota |
-| Lock | `rate_limiter.yaml`, `lock_factory` | Concurrent clicks cannot race past the quota |
-| Authorization | `reveal()`, step 2 | The policy is enforced server side at every click |
-| Audit trail | `reveal()`, steps 1/2/3/5 | Abuse is loud and traceable |
-| Domain events | dispatches in `reveal()` | Plug audit stores, metrics, alerting |
-| Inline errors | `error` property | Failures stay inside the component UI |
-| Same-origin protection | stock `live` controller | Actions require `X-Requested-With` and the custom `Accept` header |
+| Value kept off the HTML | stage 1 (step 4) | View source and scrapes leak nothing |
+| Minimal client state | stage 3 + 5 (steps 6 and 8) | Only the id is serialized, under a checksum |
+| Rate limit | layer 7.2 | A bulk harvest hits a small quota |
+| Lock | layer 7.3 | Concurrent clicks cannot race past the quota |
+| Authorization | layer 7.4 | The policy is enforced server side at every click |
+| Audit trail | layer 7.5 | Abuse is loud and traceable |
+| Domain events | layer 7.6 | Plug audit stores, metrics, alerting |
+| Inline errors | layers 7.2 and 7.4 | Failures stay inside the component UI |
+| Same-origin protection | stage 3 | Actions require `X-Requested-With` and the custom `Accept` header |
 
 ## Production notes
 
@@ -757,5 +711,6 @@ final class DiscloseAuditSubscriber implements EventSubscriberInterface
 
 ## Where the code lives
 
-The full application is in `app/`. The code blocks above match it exactly, so
-any of them can be copied into a fresh skeleton and re-verified with step 9.
+The full application, at its final state, is in `app/`. Copy each file from its
+linked source, or run the whole `app/` as a reference, and re-verify with step
+9.
