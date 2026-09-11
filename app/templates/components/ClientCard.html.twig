@@ -1,6 +1,6 @@
 {% set revealed = revealed ?? false %}
 <div {{ attributes.defaults({class: 'client-card', 'data-live-card': ''}) }}>
-    <span class="client-card__name">{{ name }}</span>
+    <span class="client-card__name">{{ client.name }}</span>
 
     <button
         type="button"
@@ -20,7 +20,7 @@
 
     <span class="client-card__contact">
         {% if revealed %}
-            <span class="client-card__detail">{{ email }}</span><span class="client-card__sep" aria-hidden="true">·</span><span class="client-card__detail">{{ phone }}</span>
+            <span class="client-card__detail">{{ client.email }}</span><span class="client-card__sep" aria-hidden="true">·</span><span class="client-card__detail">{{ client.phone }}</span>
         {% else %}
             ••••••••@•••••••&nbsp;&nbsp;·&nbsp;&nbsp;••••••••
         {% endif %}

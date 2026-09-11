@@ -3,13 +3,15 @@
 This project shows how to render masked contact details on a Symfony page and
 reveal them on demand, one explicit click at a time, with layered protections.
 The complete application lives in [`app/`](app/) and this file is the
-step-by-step tutorial that rebuilds it from scratch.
+step-by-step tutorial that rebuilds it from scratch. Every code block links to
+its file inside `app/`.
 
 ## The security layers
 
 1. The sensitive value never enters the initial HTML.
-2. Only the record id and a display name travel in the client-side state
-   (`data-live-props-value`). The value is read server-side on click.
+2. The component takes a whole `Client` object as input, but custom hydration
+   serializes only its id into `data-live-props-value`. The value is read
+   server side on click.
 3. Every reveal is rate limited per visitor (5 per minute by default).
 4. The rate limiter is serialized by a lock, so concurrent clicks cannot race
    past the quota.
@@ -52,18 +54,23 @@ composer require twig symfony/asset-mapper symfony/stimulus-bundle \
 What each package brings:
 
 - `twig` and `symfony/asset-mapper`: templates and the frontend asset pipeline
-  (the `importmap()` entry in `base.html.twig`).
+  (the `importmap()` entry in [templates/base.html.twig](app/templates/base.html.twig)).
 - `symfony/stimulus-bundle`: loads the JS controllers. The stock `live`
   controller handles every action round trip; you write no custom JavaScript.
 - `symfony/ux-twig-component` and `symfony/ux-live-component`: the component
   machinery. Flex registers the bundles, the `/_components` route, the
-  `importmap.php` entry and the `assets/controllers.json` entry for you.
-- `symfony/lock` and `symfony/rate-limiter`: the protection primitives used in
-  step 3.
+  [importmap.php](app/importmap.php) entry and the
+  [assets/controllers.json](app/assets/controllers.json) entry for you.
+- `symfony/lock` provides the lock store. The recipe configures
+  `framework.lock` with `LOCK_DSN=flock` (in
+  [.env](app/.env) and [config/packages/lock.yaml](app/config/packages/lock.yaml)),
+  which FrameworkBundle turns into the `lock.default.factory` service that the
+  rate limiter reuses in step 3.
+- `symfony/rate-limiter`: the token buckets behind `framework.rate_limiter`.
 
 ## Step 3: configure the rate limiter and the lock
 
-Create `config/packages/rate_limiter.yaml`:
+Create [config/packages/rate_limiter.yaml](app/config/packages/rate_limiter.yaml):
 
 ```yaml
 framework:
@@ -71,35 +78,27 @@ framework:
         # Shared budget for every disclosure on the page: 5 per minute, keyed
         # per visitor. The lock_factory serializes concurrent consume() calls
         # so a burst cannot race past the quota.
-        ux_disclose:
+        disclose:
             policy: fixed_window
             limit: 5
             interval: '1 minute'
-            lock_factory: app.lock.factory
-
-services:
-    # Race-safe disclosures: consume() runs under a filesystem lock stored in
-    # the cache directory. Production should use a shared store (Redis, DBAL)
-    # and a shared cache pool so quotas survive restarts and scale to several
-    # instances.
-    app.lock.store:
-        class: Symfony\Component\Lock\Store\FlockStore
-        arguments: ['%kernel.cache_dir%/locks']
-
-    app.lock.factory:
-        class: Symfony\Component\Lock\LockFactory
-        arguments: ['@app.lock.store']
+            # FrameworkBundle registers this factory for the "framework.lock"
+            # option (LOCK_DSN, see config/packages/lock.yaml), so no custom
+            # lock service is needed.
+            lock_factory: lock.default.factory
 ```
 
 The limiter stores its counters in the default `cache.app` pool (filesystem)
-and wraps each `consume()` in a filesystem lock.
+and wraps each `consume()` in the flock lock that FrameworkBundle configured
+from `framework.lock` (the recipe set `LOCK_DSN=flock` in `.env`). No custom
+lock service is required.
 
 ## Step 4: the reference data
 
 A `Client` is a plain value object and `ClientStore` holds the in-memory list.
 Swap this for Doctrine, an API or any other source in a real application.
 
-`src/Client/Client.php`:
+**Source:** [app/src/Client/Client.php](app/src/Client/Client.php)
 
 ```php
 <?php
@@ -120,7 +119,7 @@ final class Client
 }
 ```
 
-`src/Client/ClientStore.php`:
+**Source:** [app/src/Client/ClientStore.php](app/src/Client/ClientStore.php)
 
 ```php
 <?php
@@ -169,9 +168,9 @@ final class ClientStore
 
 ## Step 5: the domain event
 
-`src/Event/ClientDiscloseEvent.php` mirrors the lifecycle of a disclosure so
-consumers can subscribe to the same three moments regardless of the mechanism
-that triggered them:
+[app/src/Event/ClientDiscloseEvent.php](app/src/Event/ClientDiscloseEvent.php)
+mirrors the lifecycle of a disclosure so consumers can subscribe to the same
+three moments regardless of the mechanism that triggered them:
 
 ```php
 <?php
@@ -213,11 +212,18 @@ final class ClientDiscloseEvent extends Event
 
 ## Step 6: the LiveComponent
 
-`src/Twig/Components/ClientCard.php` is the heart of the feature. Note which
-fields are `LiveProp` and which are not: only the non-sensitive identifier and
-name reach the browser. Contact details, the revealed flag and the inline error
-are plain public properties, so they never appear in `data-live-props-value`
-and are reset on every request.
+[app/src/Twig/Components/ClientCard.php](app/src/Twig/Components/ClientCard.php)
+is the heart of the feature. It takes the whole `Client` object as input. The
+`client` prop declares a custom hydration pair, which is the security hinge:
+
+- `dehydrateClient()` turns the object into its id when the component state is
+  written to the page, so the email and the phone never reach
+  `data-live-props-value`.
+- `hydrateClient()` rebuilds the object server side from that id on every
+  action.
+
+The revealed flag and the inline error are plain public properties, so they
+are never serialized either.
 
 ```php
 <?php
@@ -238,9 +244,11 @@ use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 
 /**
- * Renders a masked client card. The contact details never enter the initial
- * HTML nor the component props: the reveal action reads them server-side and
- * renders them only for its own response, after the security chain below.
+ * Renders a masked client card. The component takes the whole Client object as
+ * input, but custom hydration dehydrates it to its id and re-fetches the
+ * record server side, so only the id ever travels in data-live-props-value.
+ * The contact details never enter the initial HTML: the reveal action renders
+ * them only for its own response, after the security chain below.
  */
 #[AsLiveComponent]
 final class ClientCard
@@ -248,14 +256,12 @@ final class ClientCard
     use DefaultActionTrait;
 
     /**
-     * Only these two fields travel in data-live-props-value: the identifier
-     * and the display name. Neither is sensitive.
+     * The client whose contact details this card can disclose. Only its id is
+     * serialized into data-live-props-value (see hydrateClient and
+     * dehydrateClient); the object is rebuilt server side on every request.
      */
-    #[LiveProp]
-    public ?int $clientId = null;
-
-    #[LiveProp]
-    public string $name = '';
+    #[LiveProp(hydrateWith: 'hydrateClient', dehydrateWith: 'dehydrateClient')]
+    public ?Client $client = null;
 
     /**
      * Server-side disclosure state. Deliberately not a LiveProp so it never
@@ -269,18 +275,11 @@ final class ClientCard
      */
     public string $error = '';
 
-    /**
-     * Contact details, set by the reveal action for the re-render only, so
-     * they stay out of the client-side state.
-     */
-    public string $email = '';
-
-    public string $phone = '';
-
     public function __construct(
-        // The framework rate limiter "ux_disclose": fixed_window, 5 per
-        // minute, serialized by a lock (see config/packages/rate_limiter.yaml).
-        #[Autowire(service: 'limiter.ux_disclose')]
+        // The framework rate limiter "disclose": fixed_window, 5 per minute,
+        // serialized by FrameworkBundle's lock (see
+        // config/packages/rate_limiter.yaml).
+        #[Autowire(service: 'limiter.disclose')]
         private readonly RateLimiterFactory $rateLimiterFactory,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly LoggerInterface $logger,
@@ -296,7 +295,11 @@ final class ClientCard
             return;
         }
 
-        $client = $this->clientStore->find($this->clientId ?? -1);
+        // A local copy narrows the nullable prop (Client|null) to a plain
+        // Client after the guard, so the rest of the method needs no null-safe
+        // access. The prop is nullable because the masked state has no client
+        // until the parent passes one.
+        $client = $this->client;
         if (null === $client) {
             $this->error = 'This client no longer exists.';
 
@@ -333,9 +336,8 @@ final class ClientCard
         $this->logger->info('Protected value disclosure: attempt', ['identity' => $identity, 'context' => $context]);
         $this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'attempt', $client), ClientDiscloseEvent::ATTEMPT);
 
-        // 4. Reveal: the email/phone are rendered only by this response.
-        $this->email = $client->email;
-        $this->phone = $client->phone;
+        // 4. Reveal: the email/phone are rendered only by this response, from
+        //    the server-side Client object.
         $this->revealed = true;
         $this->error = '';
 
@@ -354,6 +356,23 @@ final class ClientCard
     }
 
     /**
+     * Rebuilds the client server side from the dehydrated id.
+     */
+    public function hydrateClient(int $data): ?Client
+    {
+        return $this->clientStore->find($data);
+    }
+
+    /**
+     * Serializes the client as its id only: the contact details never reach
+     * data-live-props-value.
+     */
+    public function dehydrateClient(Client $client): int
+    {
+        return $client->id;
+    }
+
+    /**
      * Demo policy: everyone may reveal contact details. A real app would
      * evaluate a Security attribute here.
      */
@@ -368,8 +387,8 @@ final class ClientCard
      */
     private function identity(Request $request): string
     {
-        return $request->cookies->has('ux_disclose_subject')
-            ? 'reference:' . $request->cookies->get('ux_disclose_subject')
+        return $request->cookies->has('disclose_subject')
+            ? 'reference:' . $request->cookies->get('disclose_subject')
             : 'ip:' . $request->getClientIp();
     }
 }
@@ -385,16 +404,21 @@ service, and every request is rejected unless it carries the
 `X-Requested-With` and the custom `Accept` headers the stock `live` controller
 sends, which gives same-origin protection out of the box.
 
+A `LiveProp` without `dehydrateWith` would serialize the whole `Client`,
+email and phone included. The dehydration step is exactly what keeps the
+secret out of the page state.
+
 ## Step 7: the component template
 
-`templates/components/ClientCard.html.twig` renders two states. The masked
-state is the initial HTML; the revealed state is produced only by the
-`reveal()` response.
+[app/templates/components/ClientCard.html.twig](app/templates/components/ClientCard.html.twig)
+renders two states. The masked state is the initial HTML; the revealed state
+is produced only by the `reveal()` response. The template reads the client
+fields straight from the hydrated object, which exists entirely server side.
 
 ```twig
 {% set revealed = revealed ?? false %}
 <div {{ attributes.defaults({class: 'client-card', 'data-live-card': ''}) }}>
-    <span class="client-card__name">{{ name }}</span>
+    <span class="client-card__name">{{ client.name }}</span>
 
     <button
         type="button"
@@ -414,7 +438,7 @@ state is the initial HTML; the revealed state is produced only by the
 
     <span class="client-card__contact">
         {% if revealed %}
-            <span class="client-card__detail">{{ email }}</span><span class="client-card__sep" aria-hidden="true">·</span><span class="client-card__detail">{{ phone }}</span>
+            <span class="client-card__detail">{{ client.email }}</span><span class="client-card__sep" aria-hidden="true">·</span><span class="client-card__detail">{{ client.phone }}</span>
         {% else %}
             ••••••••@•••••••&nbsp;&nbsp;·&nbsp;&nbsp;••••••••
         {% endif %}
@@ -428,13 +452,22 @@ state is the initial HTML; the revealed state is produced only by the
 
 The stock `live` controller sets `aria-busy` on the component root while a
 request is in flight, so the spinner is always present in the markup and only
-shown during a round trip. The `{% set revealed = revealed ?? false %}`
-guard makes the initial mount safe even before the property is exposed.
+shown during a round trip. The styles live in
+[app/assets/styles/app.css](app/assets/styles/app.css); the rules that matter
+for security are the two icon display states and the spinner on `aria-busy`:
+
+```css
+.client-card__toggle .disclose-icon--eye-slash { display: inline-block; }
+.client-card[data-live-card] .disclose-icon--eye { display: inline-block; }
+
+.client-card[data-live-card][aria-busy='true'] .disclose-spinner { display: block; }
+.client-card[data-live-card][aria-busy='true'] .disclose-icon { opacity: 0.3; }
+```
 
 ## Step 8: the page
 
-`src/Controller/LiveController.php` renders the list and sets a per-visitor
-cookie from the `r` query parameter:
+[app/src/Controller/LiveController.php](app/src/Controller/LiveController.php)
+renders the list and sets a per-visitor cookie from the `r` query parameter:
 
 ```php
 <?php
@@ -459,7 +492,7 @@ class LiveController extends AbstractController
         // gets an isolated budget across page reloads. Demo only: in a real
         // app you would key on the authenticated user.
         if ($request->query->has('r')) {
-            $response->headers->setCookie(new Cookie('ux_disclose_subject', (string) $request->query->get('r'), 0, '/', null, false, true));
+            $response->headers->setCookie(new Cookie('disclose_subject', (string) $request->query->get('r'), 0, '/', null, false, true));
         }
 
         return $response;
@@ -467,7 +500,8 @@ class LiveController extends AbstractController
 }
 ```
 
-`templates/index.html.twig` loops over the cards:
+[app/templates/index.html.twig](app/templates/index.html.twig) loops over the
+cards and passes each `Client` object to the component:
 
 ```twig
 {% extends 'base.html.twig' %}
@@ -487,7 +521,7 @@ class LiveController extends AbstractController
 
         <div class="client-list">
             {% for client in clients %}
-                <twig:ClientCard :clientId="client.id" :name="client.name" />
+                <twig:ClientCard :client="client" />
             {% else %}
                 <p class="empty-state">No clients yet.</p>
             {% endfor %}
@@ -495,9 +529,6 @@ class LiveController extends AbstractController
     </main>
 {% endblock %}
 ```
-
-Only the id and the name are passed to the component: the email and the phone
-leave the server only after a click.
 
 ## Step 9: run and verify
 
@@ -509,8 +540,8 @@ php -S 127.0.0.1:8000 -t public public/index.php
 Open `http://127.0.0.1:8000/?r=demo`.
 
 - View the source: no `example.org` and no `+1 555` string appears, and each
-  card `data-live-props-value` contains only `clientId`, `name`, `@attributes`
-  and a checksum.
+  card `data-live-props-value` contains only `client`, `@attributes` and a
+  checksum.
 - Click an eye: the email and phone appear without a full page reload, and a
   second click masks them again.
 - Click five eyes (or the same card five times): the sixth reveal shows the
@@ -554,7 +585,7 @@ final class DiscloseAuditSubscriber implements EventSubscriberInterface
 | Layer | Location | Guarantee |
 | --- | --- | --- |
 | Value kept off the HTML | `reveal()` and template | View source and scrapes leak nothing |
-| Minimal client state | `LiveProp clientId` and `name` | The props are checksum protected, the value is never in them |
+| Minimal client state | `dehydrateClient()` on the `client` prop | Only the id is serialized, under a checksum |
 | Rate limit | `reveal()`, step 1 | A bulk harvest hits a small quota |
 | Lock | `rate_limiter.yaml`, `lock_factory` | Concurrent clicks cannot race past the quota |
 | Authorization | `reveal()`, step 2 | The policy is enforced server side at every click |

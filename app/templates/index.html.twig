@@ -15,7 +15,7 @@
 
         <div class="client-list">
             {% for client in clients %}
-                <twig:ClientCard :clientId="client.id" :name="client.name" />
+                <twig:ClientCard :client="client" />
             {% else %}
                 <p class="empty-state">No clients yet.</p>
             {% endfor %}

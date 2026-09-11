@@ -16,9 +16,11 @@ use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 
 /**
- * Renders a masked client card. The contact details never enter the initial
- * HTML nor the component props: the reveal action reads them server-side and
- * renders them only for its own response, after the security chain below.
+ * Renders a masked client card. The component takes the whole Client object as
+ * input, but custom hydration dehydrates it to its id and re-fetches the
+ * record server side, so only the id ever travels in data-live-props-value.
+ * The contact details never enter the initial HTML: the reveal action renders
+ * them only for its own response, after the security chain below.
  */
 #[AsLiveComponent]
 final class ClientCard
@@ -26,14 +28,12 @@ final class ClientCard
     use DefaultActionTrait;
 
     /**
-     * Only these two fields travel in data-live-props-value: the identifier
-     * and the display name. Neither is sensitive.
+     * The client whose contact details this card can disclose. Only its id is
+     * serialized into data-live-props-value (see hydrateClient and
+     * dehydrateClient); the object is rebuilt server side on every request.
      */
-    #[LiveProp]
-    public ?int $clientId = null;
-
-    #[LiveProp]
-    public string $name = '';
+    #[LiveProp(hydrateWith: 'hydrateClient', dehydrateWith: 'dehydrateClient')]
+    public ?Client $client = null;
 
     /**
      * Server-side disclosure state. Deliberately not a LiveProp so it never
@@ -47,18 +47,11 @@ final class ClientCard
      */
     public string $error = '';
 
-    /**
-     * Contact details, set by the reveal action for the re-render only, so
-     * they stay out of the client-side state.
-     */
-    public string $email = '';
-
-    public string $phone = '';
-
     public function __construct(
-        // The framework rate limiter "ux_disclose": fixed_window, 5 per
-        // minute, serialized by a lock (see config/packages/rate_limiter.yaml).
-        #[Autowire(service: 'limiter.ux_disclose')]
+        // The framework rate limiter "disclose": fixed_window, 5 per minute,
+        // serialized by FrameworkBundle's lock (see
+        // config/packages/rate_limiter.yaml).
+        #[Autowire(service: 'limiter.disclose')]
         private readonly RateLimiterFactory $rateLimiterFactory,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly LoggerInterface $logger,
@@ -74,7 +67,11 @@ final class ClientCard
             return;
         }
 
-        $client = $this->clientStore->find($this->clientId ?? -1);
+        // A local copy narrows the nullable prop (Client|null) to a plain
+        // Client after the guard, so the rest of the method needs no null-safe
+        // access. The prop is nullable because the masked state has no client
+        // until the parent passes one.
+        $client = $this->client;
         if (null === $client) {
             $this->error = 'This client no longer exists.';
 
@@ -111,9 +108,8 @@ final class ClientCard
         $this->logger->info('Protected value disclosure: attempt', ['identity' => $identity, 'context' => $context]);
         $this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'attempt', $client), ClientDiscloseEvent::ATTEMPT);
 
-        // 4. Reveal: the email/phone are rendered only by this response.
-        $this->email = $client->email;
-        $this->phone = $client->phone;
+        // 4. Reveal: the email/phone are rendered only by this response, from
+        //    the server-side Client object.
         $this->revealed = true;
         $this->error = '';
 
@@ -132,6 +128,23 @@ final class ClientCard
     }
 
     /**
+     * Rebuilds the client server side from the dehydrated id.
+     */
+    public function hydrateClient(int $data): ?Client
+    {
+        return $this->clientStore->find($data);
+    }
+
+    /**
+     * Serializes the client as its id only: the contact details never reach
+     * data-live-props-value.
+     */
+    public function dehydrateClient(Client $client): int
+    {
+        return $client->id;
+    }
+
+    /**
      * Demo policy: everyone may reveal contact details. A real app would
      * evaluate a Security attribute here.
      */
@@ -146,8 +159,8 @@ final class ClientCard
      */
     private function identity(Request $request): string
     {
-        return $request->cookies->has('ux_disclose_subject')
-            ? 'reference:' . $request->cookies->get('ux_disclose_subject')
+        return $request->cookies->has('disclose_subject')
+            ? 'reference:' . $request->cookies->get('disclose_subject')
             : 'ip:' . $request->getClientIp();
     }
 }

@@ -3,21 +3,11 @@ framework:
         # Shared budget for every disclosure on the page: 5 per minute, keyed
         # per visitor. The lock_factory serializes concurrent consume() calls
         # so a burst cannot race past the quota.
-        ux_disclose:
+        disclose:
             policy: fixed_window
             limit: 5
             interval: '1 minute'
-            lock_factory: app.lock.factory
-
-services:
-    # Race-safe disclosures: consume() runs under a filesystem lock stored in
-    # the cache directory. Production should use a shared store (Redis, DBAL)
-    # and a shared cache pool so quotas survive restarts and scale to several
-    # instances.
-    app.lock.store:
-        class: Symfony\Component\Lock\Store\FlockStore
-        arguments: ['%kernel.cache_dir%/locks']
-
-    app.lock.factory:
-        class: Symfony\Component\Lock\LockFactory
-        arguments: ['@app.lock.store']
+            # FrameworkBundle registers this factory for the "framework.lock"
+            # option (LOCK_DSN, see config/packages/lock.yaml), so no custom
+            # lock service is needed.
+            lock_factory: lock.default.factory

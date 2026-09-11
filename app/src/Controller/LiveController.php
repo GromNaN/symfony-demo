@@ -20,7 +20,7 @@ class LiveController extends AbstractController
         // gets an isolated budget across page reloads. Demo only: in a real
         // app you would key on the authenticated user.
         if ($request->query->has('r')) {
-            $response->headers->setCookie(new Cookie('ux_disclose_subject', (string) $request->query->get('r'), 0, '/', null, false, true));
+            $response->headers->setCookie(new Cookie('disclose_subject', (string) $request->query->get('r'), 0, '/', null, false, true));
         }
 
         return $response;
