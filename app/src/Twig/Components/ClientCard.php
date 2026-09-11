@@ -4,12 +4,10 @@ namespace App\Twig\Components;
 
 use App\Client\Client;
 use App\Client\ClientStore;
-use App\Event\ClientDiscloseEvent;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
@@ -53,7 +51,6 @@ final class ClientCard
         // config/packages/rate_limiter.yaml).
         #[Autowire(service: 'limiter.disclose')]
         private readonly RateLimiterFactory $rateLimiterFactory,
-        private readonly EventDispatcherInterface $eventDispatcher,
         private readonly LoggerInterface $logger,
         private readonly ClientStore $clientStore,
     ) {}
@@ -88,7 +85,6 @@ final class ClientCard
             $retryAfter = $rateLimit->getRetryAfter();
             $seconds = $retryAfter ? max(0, $retryAfter->getTimestamp() - time()) : 1;
             $this->logger->warning('Protected value disclosure: rate_limited', ['identity' => $identity, 'context' => $context, 'retry_after' => $seconds]);
-            $this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'rate_limited'), ClientDiscloseEvent::REJECTED);
             $this->error = 'Rate limit exceeded. Try again later.';
 
             return;
@@ -98,24 +94,21 @@ final class ClientCard
         //    a real app would evaluate a Security attribute (voter, role).
         if (!$this->isGranted()) {
             $this->logger->warning('Protected value disclosure: auth_denied', ['identity' => $identity, 'context' => $context]);
-            $this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'auth_denied', $client), ClientDiscloseEvent::REJECTED);
             $this->error = 'Access denied.';
 
             return;
         }
 
-        // 3. Attempt audit and event, right before the value is revealed.
+        // 3. Attempt audit, right before the value is revealed.
         $this->logger->info('Protected value disclosure: attempt', ['identity' => $identity, 'context' => $context]);
-        $this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'attempt', $client), ClientDiscloseEvent::ATTEMPT);
 
         // 4. Reveal: the email/phone are rendered only by this response, from
         //    the server-side Client object.
         $this->revealed = true;
         $this->error = '';
 
-        // 5. Success audit and event.
+        // 5. Success audit.
         $this->logger->info('Protected value disclosure: success', ['identity' => $identity, 'context' => $context]);
-        $this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'success', $client), ClientDiscloseEvent::SUCCESS);
     }
 
     #[LiveAction]

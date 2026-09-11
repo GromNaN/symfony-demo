@@ -29,8 +29,7 @@ that stage, which does not match the final `app/` version yet.
 5. An authorization step gates every reveal (the demo grants everyone, a real
    app evaluates a Security attribute).
 6. Every attempt is audited with the identity, the target and the outcome.
-7. Local domain events let you plug audit stores, metrics or alerts.
-8. Failures (rate limit, access denied) are handled inline, inside the
+7. Failures (rate limit, access denied) are handled inline, inside the
    component.
 
 ## Requirements
@@ -125,7 +124,7 @@ secret out of the loop body:
             <p>
                 Contact details are masked and revealed on demand: the value never
                 reaches the initial HTML, each reveal is rate limited and locked,
-                and every attempt is audited and dispatched as an event.
+                and every attempt is audited.
             </p>
         </header>
 
@@ -540,43 +539,7 @@ $this->logger->info('Protected value disclosure: success', ['identity' => $ident
 $context = ['class' => $client::class, 'id' => $client->id];
 ```
 
-### 5.6 Events: let consumers plug in
-
-Domain events decouple the reveal from audit stores, metrics or alerts. Add
-[app/src/Event/ClientDiscloseEvent.php](app/src/Event/ClientDiscloseEvent.php):
-
-```php
-<?php
-
-namespace App\Event;
-
-use Symfony\Contracts\EventDispatcher\Event;
-
-final class ClientDiscloseEvent extends Event
-{
-    public const ATTEMPT = 'client_card.attempt';
-    public const SUCCESS = 'client_card.success';
-    public const REJECTED = 'client_card.rejected';
-
-    public function __construct(
-        public readonly string $class,
-        public readonly string|int $id,
-        public readonly string $status,
-        public readonly ?object $subject = null,
-    ) {}
-}
-```
-
-Inject the `EventDispatcherInterface` and dispatch one event per outcome:
-
-```php
-$this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'rate_limited'), ClientDiscloseEvent::REJECTED);
-$this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'auth_denied', $client), ClientDiscloseEvent::REJECTED);
-$this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'attempt', $client), ClientDiscloseEvent::ATTEMPT);
-$this->eventDispatcher->dispatch(new ClientDiscloseEvent($client::class, $client->id, 'success', $client), ClientDiscloseEvent::SUCCESS);
-```
-
-### 5.7 The final component
+### 5.6 The final component
 
 With every layer in place, `reveal()` reads as a checkpoint chain. The browser
 keeps seeing only the id and the name in its state; the email and the phone
@@ -662,7 +625,6 @@ All final files are in `app/`:
 - [app/templates/components/ClientCard.html.twig](app/templates/components/ClientCard.html.twig)
 - [app/src/Controller/LiveController.php](app/src/Controller/LiveController.php)
 - [app/templates/index.html.twig](app/templates/index.html.twig)
-- [app/src/Event/ClientDiscloseEvent.php](app/src/Event/ClientDiscloseEvent.php)
 - [app/src/Client/Client.php](app/src/Client/Client.php) and
   [app/src/Client/ClientStore.php](app/src/Client/ClientStore.php)
 - [app/config/packages/rate_limiter.yaml](app/config/packages/rate_limiter.yaml)
@@ -688,36 +650,6 @@ Open `http://127.0.0.1:8000/?r=demo`.
 - The server output shows the audit trail: five `attempt` + `success` lines
   then one `rate_limited` line, each with the identity and the target context.
 
-Subscribe to the events to plug your own audit store, metrics or alerting. The
-subscriber below is registered automatically by the `App\` service scan:
-
-```php
-<?php
-// src/EventSubscriber/DiscloseAuditSubscriber.php
-
-namespace App\EventSubscriber;
-
-use App\Event\ClientDiscloseEvent;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-
-final class DiscloseAuditSubscriber implements EventSubscriberInterface
-{
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            ClientDiscloseEvent::ATTEMPT => 'onDisclose',
-            ClientDiscloseEvent::SUCCESS => 'onDisclose',
-            ClientDiscloseEvent::REJECTED => 'onDisclose',
-        ];
-    }
-
-    public function onDisclose(ClientDiscloseEvent $event): void
-    {
-        // Persist to your audit store here.
-    }
-}
-```
-
 ## How each layer maps to a guarantee
 
 | Layer | Added in | Package |
@@ -729,7 +661,6 @@ final class DiscloseAuditSubscriber implements EventSubscriberInterface
 | Lock | layer 5.3 | `symfony/lock` |
 | Authorization | layer 5.4 | none |
 | Audit trail | layer 5.5 | none |
-| Domain events | layer 5.6 | none |
 | Inline errors | layers 5.2 and 5.4 | none |
 
 ## Production notes
