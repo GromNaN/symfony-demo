@@ -69,7 +69,7 @@ composer require twig symfony/asset-mapper
 Then build the simplest thing that works: a route that renders a list of
 clients, each card masked on the server. No component, no JavaScript.
 
-[app/src/Controller/LiveController.php](app/src/Controller/LiveController.php),
+[app/src/Controller/DemoController.php](app/src/Controller/DemoController.php),
 at this stage without the cookie:
 
 ```php
@@ -82,7 +82,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-class LiveController extends AbstractController
+class DemoController extends AbstractController
 {
     #[Route('/', name: 'home')]
     public function index(ClientStore $clients): Response
@@ -379,7 +379,7 @@ The rate limiter keyed per visitor needs an identity. Key it on a cookie the
 page controller sets from the `?r=` query parameter, falling back to the
 client IP.
 
-In [app/src/Controller/LiveController.php](app/src/Controller/LiveController.php),
+In [app/src/Controller/DemoController.php](app/src/Controller/DemoController.php),
 add the cookie:
 
 ```php
@@ -623,7 +623,7 @@ All final files are in `app/`:
 
 - [app/src/Twig/Components/ClientCard.php](app/src/Twig/Components/ClientCard.php)
 - [app/templates/components/ClientCard.html.twig](app/templates/components/ClientCard.html.twig)
-- [app/src/Controller/LiveController.php](app/src/Controller/LiveController.php)
+- [app/src/Controller/DemoController.php](app/src/Controller/DemoController.php)
 - [app/templates/index.html.twig](app/templates/index.html.twig)
 - [app/src/Client/Client.php](app/src/Client/Client.php) and
   [app/src/Client/ClientStore.php](app/src/Client/ClientStore.php)

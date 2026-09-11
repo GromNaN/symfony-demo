@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-class LiveController extends AbstractController
+class DemoController extends AbstractController
 {
     #[Route('/', name: 'home')]
     public function index(Request $request, ClientStore $clients): Response
