@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Clients - masked, disclosed on demand{% endblock %}
+
+{% block body %}
+    <main class="shell">
+        <header class="page-head">
+            <h1>Clients</h1>
+            <p>
+                Contact details are masked and revealed on demand: the value never
+                reaches the initial HTML, each reveal is rate limited and locked,
+                and every attempt is audited and dispatched as an event.
+            </p>
+        </header>
+
+        <div class="client-list">
+            {% for client in clients %}
+                <twig:ClientCard :clientId="client.id" :name="client.name" />
+            {% else %}
+                <p class="empty-state">No clients yet.</p>
+            {% endfor %}
+        </div>
+    </main>
+{% endblock %}

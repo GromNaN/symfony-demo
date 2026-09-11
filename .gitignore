@@ -1,0 +1,4 @@
+.ignored/
+app/var/
+app/vendor/
+.DS_Store
