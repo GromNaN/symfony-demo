@@ -212,18 +212,166 @@ final class ClientDiscloseEvent extends Event
 
 ## Step 6: the LiveComponent
 
-[app/src/Twig/Components/ClientCard.php](app/src/Twig/Components/ClientCard.php)
-is the heart of the feature. It takes the whole `Client` object as input. The
-`client` prop declares a custom hydration pair, which is the security hinge:
+This step builds [app/src/Twig/Components/ClientCard.php](app/src/Twig/Components/ClientCard.php)
+piece by piece. The full file is reproduced at the end of the step.
 
-- `dehydrateClient()` turns the object into its id when the component state is
-  written to the page, so the email and the phone never reach
-  `data-live-props-value`.
-- `hydrateClient()` rebuilds the object server side from that id on every
-  action.
+### 6.1 Where the component lives
 
-The revealed flag and the inline error are plain public properties, so they
-are never serialized either.
+A LiveComponent is a plain PHP class, usually in `src/Twig/Components/`, marked
+with the attribute `#[AsLiveComponent]`. Two conventions come from the
+[config/packages/twig_component.yaml](app/config/packages/twig_component.yaml)
+mapping (`App\Twig\Components\` to `components/`):
+
+- the component name is its short class name, `ClientCard`; it is used in Twig
+  as the `<twig:ClientCard :client="client" />` tag from step 8;
+- the template is resolved to `templates/components/ClientCard.html.twig` (step
+  7).
+
+Every component must define a default action, which `DefaultActionTrait`
+provides (`__invoke()`). Without it the container refuses to build the
+component.
+
+```php
+use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
+use Symfony\UX\LiveComponent\DefaultActionTrait;
+
+#[AsLiveComponent]
+final class ClientCard
+{
+    use DefaultActionTrait;
+}
+```
+
+### 6.2 The input: a prop with custom hydration
+
+The component receives its data through `#[LiveProp]` properties. A LiveProp is
+the part of the state that travels to the browser: on every render it is
+serialized into `data-live-props-value`, and on every action it is sent back
+and re-hydrated on the server.
+
+We want the component to receive a whole `Client`, because the card displays
+its name and reveals its email and phone. But serializing the whole object
+would put the contact details into the page state, which is exactly what we
+must avoid. The solution is a **custom hydration pair**: the prop keeps a
+`Client` type on the server, yet only its id is dehydrated to the browser.
+
+```php
+#[LiveProp(hydrateWith: 'hydrateClient', dehydrateWith: 'dehydrateClient')]
+public ?Client $client = null;
+
+/**
+ * Rebuilds the client server side from the dehydrated id.
+ */
+public function hydrateClient(int $data): ?Client
+{
+    return $this->clientStore->find($data);
+}
+
+/**
+ * Serializes the client as its id only: the contact details never reach
+ * data-live-props-value.
+ */
+public function dehydrateClient(Client $client): int
+{
+    return $client->id;
+}
+```
+
+The property is nullable because the masked card has no value to display until
+the page passes one. `hydrateClient()` runs on every action and re-fetches the
+object from the store, so the whole `Client` is available server side without
+ever being serialized.
+
+### 6.3 The server-side state
+
+The revealed flag and the inline error are plain public properties. They are
+not `LiveProp`, so they are never serialized: they are reset to their default
+on every request and only changed by an action for the re-render of that same
+request. Twig still sees them because `#[AsLiveComponent]` exposes public
+properties by default.
+
+```php
+public bool $revealed = false;
+public string $error = '';
+```
+
+### 6.4 The services
+
+The component is a service: its constructor is autowired and built fresh on
+every request. Services are never serialized, which is another safe place to
+hold collaborators (the rate limiter, the logger, the event dispatcher, the
+store).
+
+```php
+public function __construct(
+    // The framework rate limiter "disclose": fixed_window, 5 per minute,
+    // serialized by FrameworkBundle's lock (see the yaml above).
+    #[Autowire(service: 'limiter.disclose')]
+    private readonly RateLimiterFactory $rateLimiterFactory,
+    private readonly EventDispatcherInterface $eventDispatcher,
+    private readonly LoggerInterface $logger,
+    private readonly ClientStore $clientStore,
+) {}
+```
+
+The `#[Autowire(service: 'limiter.disclose')]` attribute targets the exact
+limiter declared in [config/packages/rate_limiter.yaml](app/config/packages/rate_limiter.yaml),
+because several limiters can coexist and autowiring by class alone would be
+ambiguous. The lock that serializes `consume()` comes from
+[config/packages/lock.yaml](app/config/packages/lock.yaml), which the
+`framework.lock` option turns into `lock.default.factory`.
+
+### 6.5 The actions
+
+An action is a method marked `#[LiveAction]`. It is the entry point of a
+request coming from the component: LiveComponent resolves its arguments like a
+controller (the `Request` below is injected), and its return value is ignored,
+the component is re-rendered instead.
+
+```php
+#[LiveAction]
+public function reveal(Request $request): void
+{
+    // this method runs the whole security chain...
+}
+
+#[LiveAction]
+public function hide(): void
+{
+    // ...and this one only flips the state back
+}
+```
+
+### 6.6 What happens on a click
+
+The template (step 7) renders the button with the `live_action()` helper:
+
+```twig
+<button type="button" {{ live_action(revealed ? 'hide' : 'reveal') }}></button>
+```
+
+It expands to `data-action="live#action"` and
+`data-live-action-param="reveal"`. The stock `live` controller then:
+
+1. sends a `POST` to `/_components/{component}/{action}`, here
+   `/_components/ClientCard/reveal`, with the `X-Requested-With` and the
+   `Accept: application/vnd.live-component+html` headers that the server
+   requires. The route comes from
+   [config/routes/ux_live_component.yaml](app/config/routes/ux_live_component.yaml),
+   which Flex imported from the LiveComponent bundle;
+2. sends the current props (`data-live-props-value`) back. The server re-
+   computes the checksum embedded in `@checksum`, keyed on `APP_SECRET` from
+   [.env](app/.env), and rejects tampered props with a 400;
+3. calls `reveal(Request)` on the freshly hydrated component, then re-renders
+   the component template;
+4. returns the new HTML, which the `live` controller merges into the DOM
+   (morphdom). The `data-loading="addAttribute(disabled)"` attribute disables
+   the button synchronously while the request is in flight.
+
+The whole chain you will see in the full file below runs inside step 4 of this
+round trip.
+
+### 6.7 The full file
 
 ```php
 <?php
