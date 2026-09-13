@@ -18,5 +18,15 @@
     "SYMFONY_TRUSTED_PROXIES": "127.0.0.1",
     "SYMFONY_TRUSTED_HEADERS": "x-forwarded-for,x-forwarded-host,x-forwarded-proto,x-forwarded-port",
     "XDEBUG_CONFIG": "start_with_request=trigger"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "symfony.language-tools",
+        "bmewburn.vscode-intelephense-client",
+        "xdebug.php-debug",
+        "mblode.twig-language-2"
+      ]
+    }
   }
 }
