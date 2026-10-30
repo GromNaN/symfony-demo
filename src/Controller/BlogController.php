@@ -77,9 +77,17 @@ final class BlogController extends AbstractController
      * also has multiple arguments.
      * See https://symfony.com/doc/current/doctrine.html#automatically-fetching-objects-entityvalueresolver.
      */
-    #[Route('/posts/{slug:post}', name: 'blog_post', requirements: ['slug' => Requirement::ASCII_SLUG], methods: ['GET'])]
-    public function postShow(Post $post): Response
+    #[Route('/posts/{slug}', name: 'blog_post', requirements: ['slug' => Requirement::ASCII_SLUG], methods: ['GET'])]
+    public function postShow(PostRepository $repo, string $slug): Response
     {
+        $post = $repo->createQueryBuilder('p')
+            ->select('p', 'a', 't', 'c')
+            ->where('p.slug = :slug')
+            ->join('p.author', 'a')
+            ->join('p.tags', 't')
+            ->join('p.comments', 'c')
+            ->setParameter('slug', $slug)
+            ->getQuery()->getOneOrNullResult();
         // Symfony's 'dump()' function is an improved version of PHP's 'var_dump()' but
         // it's not available in the 'prod' environment to prevent leaking sensitive information.
         // It can be used both in PHP files and Twig templates, but it requires to
