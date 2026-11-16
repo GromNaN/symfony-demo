@@ -1,3 +1,6 @@
 key_management:
     default_client: default
     clients: 'sodium://?keys[app]=I2Rm7v0ZMUavxEoSkpCUkIoJkxThjhdCVYM7UXQ3cBg'
+    store:
+        connection: doctrine.dbal.default_connection
+        key_id: 'app'
