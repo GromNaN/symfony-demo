@@ -14,6 +14,7 @@ namespace App\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Clock\DatePoint;
+use Symfony\Component\KeyManagement\Bridge\DoctrineOrm\Attribute\Encrypted;
 use Symfony\Component\Validator\Constraints as Assert;
 
 use function Symfony\Component\String\u;
@@ -40,6 +41,7 @@ class Comment
     private ?Post $post = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Encrypted(key: 'app')]
     #[Assert\NotBlank(message: 'comment.blank')]
     #[Assert\Length(min: 5, max: 10000, minMessage: 'comment.too_short', maxMessage: 'comment.too_long')]
     private ?string $content = null;

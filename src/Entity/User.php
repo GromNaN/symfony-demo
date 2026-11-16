@@ -14,6 +14,8 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\KeyManagement\Bridge\DoctrineOrm\Attribute\BlindIndexed;
+use Symfony\Component\KeyManagement\Bridge\DoctrineOrm\Attribute\Encrypted;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -51,8 +53,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $username = null;
 
     #[ORM\Column(type: Types::STRING, unique: true)]
+    #[Encrypted(key: 'app')]
     #[Assert\Email]
     private ?string $email = null;
+
+    #[ORM\Column(type: Types::STRING, length: 64)]
+    #[BlindIndexed('email', 'user-email')]
+    private ?string $emailIndex = null;
 
     #[ORM\Column(type: Types::STRING)]
     private ?string $password = null;
@@ -101,6 +108,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): void
     {
         $this->email = $email;
+    }
+
+    public function getEmailIndex(): ?string
+    {
+        return $this->emailIndex;
     }
 
     public function getPassword(): ?string

@@ -27,5 +27,19 @@ services:
     App\:
         resource: '../src/'
 
+    # blind index of the encrypted email column
+    app.index.user_email:
+        class: Symfony\Component\KeyManagement\BlindIndex
+        autoconfigure: false
+        public: true
+        arguments:
+            $kms: '@key_management.default'
+            $wrappedKey: !service
+                class: Symfony\Component\KeyManagement\Ciphertext
+                arguments: ['%env(base64:APP_INDEX_KEY)%', 'app']
+            $projection: !service { class: Symfony\Component\KeyManagement\BlindIndex\Projection\Email }
+        tags:
+            - { name: key_management.blind_index, index: 'user-email' }
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

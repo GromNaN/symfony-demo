@@ -1,0 +1,3 @@
+key_management:
+    default_client: default
+    clients: 'sodium://?keys[app]=I2Rm7v0ZMUavxEoSkpCUkIoJkxThjhdCVYM7UXQ3cBg'

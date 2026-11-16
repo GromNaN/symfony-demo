@@ -17,12 +17,12 @@ export default class extends Controller {
   // but for the demo application, it's very convenient to do so
 
   prefillJohnUser() {
-    this.usernameTarget.value = 'john_user'
+    this.usernameTarget.value = 'john_user@symfony.com'
     this.passwordTarget.value = 'kitten'
   }
 
   prefillJaneAdmin() {
-    this.usernameTarget.value = 'jane_admin'
+    this.usernameTarget.value = 'jane_admin@symfony.com'
     this.passwordTarget.value = 'kitten'
   }
 
